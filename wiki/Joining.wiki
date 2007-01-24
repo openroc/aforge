@@ -1,0 +1,31 @@
+#summary The document provides some information about how to join the AForge.NET project
+#labels Featured
+
+=Joining AForge.NET project=
+
+==How to join the project?==
+There is very nice comment on this matter on Code Google: "_Most projects have mailing lists that the developers use to discuss the project. To become a developer, first participate on the mailing list by showing your interest in the project and your ability to help the project. Then, ask the project owners to make you a member of the project._"
+
+So, if you would like to participate in the project, the first thing to do is to join the associated discussion group. If you really want to be a member of the project, then, I suppose, you should choose “e-mail” type subscription, so you could react quicker to the events in the group and provide in-time support. The aim is to make each participant to be not only developer. At this point we don’t want to have a team of developers, a team of technical writers, a team of supporters, etc. We’d like to have a team of members, who are developed in all areas and may participate in all cycles of project development. Looks like agile development, is not it? Yes, at this point of project’s life, it should be the best.
+
+So, show your interest to the project, show what can you give to it, how can you improve it. What are your interests? Are you new to project areas or do you have some experience? When you think you are ready to join, send an e-mail to project owners and provide some brief information about you.
+
+
+==You became a member. What is next?==
+When you are registered as a project member, you will get your own brunch of source codes. Since it takes too much time from project owners and from you to do initial moderation, we’ll do it in another way. Until the moment you are authorized as trusted project member, you should do all your commits to your brunch only. If you try to do any commits to project trunk or other brunches, you will be removed from project members and all your updates will be reverted. When you believe, that you made some very important fixes or introduced new functionality, which may become part of the AForge.NET framework, just let project owners know - we’ll review your updates and, in the case if everything is fine, we’ll merge them with the trunk.
+
+
+==How to become trusted member and get access to the trunk?==
+The rule is simple – do the best for the project.
+  *Take a look at already existing code and how it is written. Writing new code, try to use the same style, which is already used in the library.
+  *Make your code easy to read, providing meaningful variable/methods/classes names. Provide good code comments – yes, we are humans, and we’d like to make the code readable for humans.
+  *Provide not only internal code comments, but XML comments as well. All public/protected members should be documented appropriately, so it could be possible to generate good documentation from sources. No one wants to do your work commenting your code, so be polite to all project participants and comment your code on your own. Lacks of writing skills or English knowledge are not excuses.
+  *Provide comments committing any changes to source control – it will make much easer to get knowledge about updates from revision log.
+  *Try to use the best design practices, the best object oriented design and the best coding styles. Let’s do the best for the project instead of making its support to be nightmare.
+  *Take a look at reported project issues and try to participate in their resolution.
+
+Following the above simple rules, will only move you forward to becoming trusted member and will increase your points. Ignoring them – will lead to the fact, that your updates are not merged with trunk and you are still allowed to work with your branch only.
+
+
+==Finally==
+If you are still reading this and did not loose your interest to the project – you are welcome. In the case you have any comments or ideas – let project owners to know.
