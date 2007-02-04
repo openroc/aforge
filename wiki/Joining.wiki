@@ -17,12 +17,12 @@ When you are registered as a project member, you will get your own brunch of sou
 
 ==How to become trusted member and get access to the trunk?==
 The rule is simple – do the best for the project.
-  *Take a look at already existing code and how it is written. Writing new code, try to use the same style, which is already used in the library.
-  *Make your code easy to read, providing meaningful variable/methods/classes names. Provide good code comments – yes, we are humans, and we’d like to make the code readable for humans.
-  *Provide not only internal code comments, but XML comments as well. All public/protected members should be documented appropriately, so it could be possible to generate good documentation from sources. No one wants to do your work commenting your code, so be polite to all project participants and comment your code on your own. Lacks of writing skills or English knowledge are not excuses.
-  *Provide comments committing any changes to source control – it will make much easer to get knowledge about updates from revision log.
-  *Try to use the best design practices, the best object oriented design and the best coding styles. Let’s do the best for the project instead of making its support to be nightmare.
-  *Take a look at reported project issues and try to participate in their resolution.
+  * Take a look at already existing code and how it is written. Writing new code, try to use the same style, which is already used in the library.
+  * Make your code easy to read, providing meaningful variable/methods/classes names. Provide good code comments – yes, we are humans, and we’d like to make the code readable for humans.
+  * Provide not only internal code comments, but XML comments as well. All public/protected members should be documented appropriately, so it could be possible to generate good documentation from sources. No one wants to do your work commenting your code, so be polite to all project participants and comment your code on your own. Lacks of writing skills or English knowledge are not excuses.
+  * Provide comments committing any changes to source control – it will make much easer to get knowledge about updates from revision log.
+  * Try to use the best design practices, the best object oriented design and the best coding styles. Let’s do the best for the project instead of making its support to be nightmare.
+  * Take a look at reported project issues and try to participate in their resolution.
 
 Following the above simple rules, will only move you forward to becoming trusted member and will increase your points. Ignoring them – will lead to the fact, that your updates are not merged with trunk and you are still allowed to work with your branch only.
 
