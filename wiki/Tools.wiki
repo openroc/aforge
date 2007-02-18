@@ -24,3 +24,7 @@ The first thing to do is to build the AForge.NET libraries, which sources are pl
 }}}
 
 After that, you can go into *Samples* folder and open and build any of the provided samples. Or you can go to the next step and build project documentation.
+
+= Building project documentation =
+
+At this moment [http://www.microsoft.com/downloads/details.aspx?FamilyId=E82EA71D-DA89-42EE-A715-696E3A4873B2&displaylang=en Sandcastle] is used as a tool to build project documentation. It provides you with ability to build nice documentation in the VS.NET 2005 style. But, since Sandcastle provides only command line utilities, it is not so convenient in use. That is why [http://www.codeplex.com/SHFB Sandcastle Help File Builder] was used as GUI for Sandcastle, which allows to create help file projects and build them.
