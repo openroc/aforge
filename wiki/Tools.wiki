@@ -27,4 +27,11 @@ After that, you can go into *Samples* folder and open and build any of the provi
 
 = Building project documentation =
 
-At this moment [http://www.microsoft.com/downloads/details.aspx?FamilyId=E82EA71D-DA89-42EE-A715-696E3A4873B2&displaylang=en Sandcastle] is used as a tool to build project documentation. It provides you with ability to build nice documentation in the VS.NET 2005 style. But, since Sandcastle provides only command line utilities, it is not so convenient in use. That is why [http://www.codeplex.com/SHFB Sandcastle Help File Builder] was used as GUI for Sandcastle, which allows to create help file projects and build them.
+At this moment [http://www.microsoft.com/downloads/details.aspx?FamilyId=E82EA71D-DA89-42EE-A715-696E3A4873B2&displaylang=en Sandcastle] is used as a tool to build project documentation. It provides you with ability to build nice documentation in the VS.NET 2005 style. But, since Sandcastle provides only command line utilities, it is not so convenient in use. That is why [http://www.codeplex.com/SHFB Sandcastle Help File Builder] was used as GUI for Sandcastle, which allows to create help file projects and build them. Help file project files are placed in *Sources/Docs Projects* folder. After you open and build each project one by one, you get complete *AForge.NET* documentation in the *Docs* folder:
+{{{
+[AForge Home]
+  |- Docs
+  |- Release
+  |- Samples
+  \- Sources
+}}}
