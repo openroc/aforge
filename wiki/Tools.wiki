@@ -13,7 +13,7 @@ When you checked out the project, you should have 2 folders in your file system:
 
 = Working with source codes and building the project =
 
-Once you checked out project sources you will need an IDE to work with them, update them and build. You can use any IDE, which supports .NET 2.0 projects. For example Notepad and command line tool could be fine J. But, if you don't want to lose a lot of time, I would suggest you to download free [http://msdn.microsoft.com/vstudio/express/visualcsharp/download/ C# 2005 Express Edition] from Microsoft, which was used for development of the framework.
+Once you checked out project sources you will need an IDE to work with them, update them and build. You can use any IDE, which supports .NET 2.0 projects. For example Notepad and command line tool could be fine. But, if you don't want to lose a lot of time, I would suggest you to download free [http://msdn.microsoft.com/vstudio/express/visualcsharp/download/ C# 2005 Express Edition] from Microsoft, which was used for development of the framework.
 
 The first thing to do is to build the AForge.NET libraries, which sources are placed in the *Sources* folder. When you build libraries successfully, you will get *Release* folder with all AForge.NET libraries:
 {{{
