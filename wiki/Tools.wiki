@@ -36,3 +36,20 @@ At this moment [http://www.microsoft.com/downloads/details.aspx?FamilyId=E82EA71
   |- Samples
   \- Sources
 }}}
+
+= Building installation package =
+
+To build installation package [http://www.jrsoftware.org/isinfo.php Inno Setup] installer is used. The setup project can be found in the */Sources/Setup Project* folder. To build successfully an installation package the next directory structure should be in the setup project folder:
+{{{
+[Setup Project]
+  |- aforge.iss
+  |- gpl.txt
+  \- Files
+      |- Docs
+      |- IPLab
+      |- Release
+      |- Samples
+      |- Sources
+      |- Copyright.txt
+      \- Release notes.txt
+}}}
