@@ -1,0 +1,7 @@
+#summary The page describes how to support the project
+
+=Support the project=
+
+[https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=aforge%2enet%40gmail%2ecom&item_name=AForge%2eNET%20framework%20donation&no_shipping=2&no_note=1&tax=0&currency_code=USD&bn=PP%2dDonationsBF&charset=UTF%2d8 https://www.paypal.com/en_US/i/btn/x-click-but04.gif]
+
+
