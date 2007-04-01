@@ -1,5 +1,5 @@
 #summary The page describes how to support the project
-#labels Featured
+#labels Featured,Project-About
 
 =Support the project=
 
