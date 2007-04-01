@@ -1,5 +1,5 @@
 #summary The document provides some information about how to join the AForge.NET project
-#labels Featured
+#labels Featured,Project-About
 
 =Joining AForge.NET project=
 
