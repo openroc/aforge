@@ -3,10 +3,12 @@
 
 *AForge.NET* is a C# framework designed for researchers in the fields of Computer Vision and Artificial Intelligence - image processing, neural networks, genetic algorithms, etc.
 
-At this point the framework is comprised of 3 main libraries:
+At this point the framework is comprised of 5 main and some additional libraries:
   * *AForge.Imaging* – a library for image processing routines and filers;
   * *AForge.Neuro* – neural networks computation library;
-  * *AForge.Genetic* – evolution programming library.
+  * *AForge.Genetic* – evolution programming library;
+  * *AForge.Vision* – computer vision library;
+  * *AForge.MachineLearning* – machine learning library.
 
 The work on the framework's improvement is in constants progress, what means that new feature and namespaces are coming constantly. To get knowledge about its progress you may track source repository's log or visit project discussion group to get the latest information about it.
 
