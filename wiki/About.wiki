@@ -8,7 +8,7 @@ At this point the framework is comprised of 5 main and some additional libraries
   * *AForge.Neuro* – neural networks computation library;
   * *AForge.Genetic* – evolution programming library;
   * *AForge.Vision* – computer vision library;
-  * *AForge.MachineLearning* – machine learning library.
+  * *AForge.Machine Learning* – machine learning library.
 
 The work on the framework's improvement is in constants progress, what means that new feature and namespaces are coming constantly. To get knowledge about its progress you may track source repository's log or visit project discussion group to get the latest information about it.
 
@@ -17,3 +17,12 @@ The framework is provided with not only different libraries and their sources, b
 In the case you found an issue in any component of the framework or you would like to request for a new feature, you may feel free to submit the issue/request on the “Issues” page.
 
 In case you are interested in the project and would like to learn about it more or in case you would like to contribute it, you are more than welcome to participate in the project’s discussion group.
+
+
+
+
+
+
+
+
+
