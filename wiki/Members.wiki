@@ -13,7 +13,7 @@ Project members are people, who have joint the project and work on extending, im
 = Junior Members =
 
 Junior members are those people, who have joint the project recently. These people work on extending, improving and supporting the project, but they don’t commit their code to the development trunk. Each junior member has his own code branch, where he works on the project.
-  * ?
+  * Shishir Pandey (shishir.py).
 
 
 = Contributors =
