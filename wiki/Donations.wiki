@@ -19,3 +19,8 @@ There are no obligations to do this, so you don't need to do it if you don't bel
 People who work on this project are great enthusiasts, who provide a lot of effort and their own time to make the project exist and grow. More of it, in some cases the area of this project requires some more special equipment except computer to work on it and extend it with new features. So the project takes not only our time, but funds as well. If you like the project, appreciate our work and value our effort, you are more then welcome support us well.
 
 Thank you.
+
+
+==Thank to people who supported the project==
+
+  * Karl Barber.
