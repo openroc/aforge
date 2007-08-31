@@ -6,6 +6,8 @@
   * [http://www.codeproject.com/cs/media/Image_Processing_Lab.asp Image Processing Lab] by Andrew Kirillov
   * [http://www.codeproject.com/cs/media/Motion_Detection.asp Motion Detector] by Andrew Kirillov
   * [http://igor.moochnick.googlepages.com/timelapsevideorecorder Motion-activated TimeLapse Video Recorder] by Igor Moochnick
+  * [http://www.waterhobo.com/ Waterhobo - Ever Diligent Ever Watching] by Tim Higgins
+
 
 
 Of course the page does not provide complete list of projects, because there are a lot of them and it is hard to track them all. The framework is used a lot by different students working on theirs bachelors and master degrees, by different other researchers from different fields and by many other developers in their projects.
