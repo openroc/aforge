@@ -16,7 +16,7 @@ There are no obligations to do this, so you don't need to do it if you don't bel
   * To support the project allowing it to grow and extend with new features, which will amaze you even more.
   * Just to say "Thank you".
 
-People who work on this project are great enthusiasts, who provide a lot of effort and their own time to make the project exist and grow. More of it, in some cases the area of this project requires some more special equipment except computer to work on it and extend it with new features. So the project takes not only our time, but funds as well. If you like the project, appreciate our work and value our effort, you are more then welcome support us well.
+People who work on this project are great enthusiasts, who provide a lot of effort and their own time to make the project exist and grow. If you like the project, appreciate our work and value our effort, you are more then welcome to support it as well.
 
 Thank you.
 
@@ -24,3 +24,4 @@ Thank you.
 ==Thank to people who made donation to the project==
 
   * Karl Barber.
+ 
