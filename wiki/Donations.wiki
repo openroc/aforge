@@ -23,5 +23,6 @@ Thank you.
 
 ==Thank to people who made donation to the project==
 
-  * Karl Barber.
+  * Karl Barber,
+  * Luke Poortinga.
  
