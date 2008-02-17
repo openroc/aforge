@@ -18,4 +18,5 @@ Junior members are those people, who have joint the project recently. These peop
 
 Contributors of the project are those people, who don't join the project, but contribute it providing some code, share ideas and participate in the project's life. The list of contributors is:
   * Markus Falkensteiner;
-  * Volodymyr Goncharov.
+  * Volodymyr Goncharov;
+  * Mladen Prajdic.
