@@ -1,0 +1,11 @@
+#summary Some ideas about Hands Gesture Recognition in still image and video feeds using AForge.NET framework.
+
+= Introduction =
+
+Since the time I’ve wrote my first article about motion detection, I’ve got a lot of e-mails from different people around the world, which found the article quite useful and found a lot of applications of the code in many different areas. Those areas were including from simple video surveillance topics to quite impressing applications, like laser gestures recognition, detecting comets with telescope, detecting humming-birds and making camera shots of them, controlling water cannon and many other applications.
+
+In this article I would like to discuss one more application, which uses motion detection as its first step and then does some interesting routines with the detected object – hands gesture recognition. Let’s suppose we have a camera, which monitors some area. When somebody gets into the area and makes some hands gestures in front of the camera, application should detect type of the gesture and raise an event, for example. When the hands gesture recognition is detected, the application may perform different actions depending on the type of gesture. For example, gestures recognition application may control some sort of device or another application sending different commands to it depending on the recognized gesture. What type of hands gestures are talking about? This particular application, which is discussed in the article, may recognize up to 12 gestures, which are combination of 4 different positions of 2 hands – hand is not raised, raised diagonally down, diagonally up or raised straight.
+
+All the algorithms described in the article are based on the [http://code.google.com/p/aforge/ AForge.NET framework], which provides different image processing routines used by the application. The application also uses some motion detection routines, which are inspired by the framework and another article dedicated to [http://www.codeproject.com/KB/audio-video/Motion_Detection.aspx motion detection].
+
+Before we go into deep discussions about what the application does and how it is implemented, let’s take a look at the very quick demo ...
