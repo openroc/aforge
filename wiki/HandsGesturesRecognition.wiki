@@ -10,7 +10,7 @@ In this article I would like to discuss one more application, which uses motion 
 
 All the algorithms described in the article are based on the [http://code.google.com/p/aforge/ AForge.NET framework], which provides different image processing routines used by the application. The application also uses some motion detection routines, which are inspired by the framework and another article dedicated to [http://www.codeproject.com/KB/audio-video/Motion_Detection.aspx motion detection].
 
-Before we go into deep discussions about what the application does and how it is implemented, let’s take a look at the very quick demo ...
+Before we go into deep discussions about what the application does and how it is implemented, let’s take a look at the very quick [http://www.youtube.com/v/lKkGOUW_xas demo] ...
 
 
 = Article to be completed ... =
