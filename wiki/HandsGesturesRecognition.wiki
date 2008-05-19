@@ -1,6 +1,6 @@
 #summary Some ideas about Hands Gesture Recognition in still image and video feeds using AForge.NET framework.
 
-[http://code.google.com/p/aforge/source/browse/wiki/images/Hands%20Gestures%20Recognition/Gestures%20Recognition.jpg]
+[http://code.google.com/p/aforge/source/browse/wiki/images/hgr/Gestures%20Recognition.jpg]
 
 = Introduction =
 
