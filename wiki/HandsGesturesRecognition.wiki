@@ -1,5 +1,7 @@
 #summary Some ideas about Hands Gesture Recognition in still image and video feeds using AForge.NET framework.
 
+[http://code.google.com/p/aforge/source/browse/wiki/images/Hands%20Gestures%20Recognition/Gestures%20Recognition.jpg]
+
 = Introduction =
 
 Since the time I’ve wrote my first article about motion detection, I’ve got a lot of e-mails from different people around the world, which found the article quite useful and found a lot of applications of the code in many different areas. Those areas were including from simple video surveillance topics to quite impressing applications, like laser gestures recognition, detecting comets with telescope, detecting humming-birds and making camera shots of them, controlling water cannon and many other applications.
