@@ -206,4 +206,37 @@ if ( framesWithoutMotion >= minFramesWithoutMotion )
 }
 }}}
 
+One more comment before we move to the hands gesture recognition discussion. To make sure we don’t have false gesture recognition, we make one more additional check – we check that the same gesture can be recognized on several consequent frames. This additional check makes sure that the object we’ve detected really demonstrates us one gesture for a while and that gesture recognition module provides an accurate result.
+
+{{{
+// check if gestures has changed since the previous frame
+if (
+    ( gesture.LeftHand == previousGesture.LeftHand ) &&
+    ( gesture.RightHand == previousGesture.RightHand )
+    )
+{
+    framesWithoutGestureChange++;
+}
+else
+{
+    framesWithoutGestureChange = 0;
+}
+
+// check if gesture was not changing for a while
+if ( framesWithoutGestureChange >= minFramesWithoutGestureChange )
+{
+    if ( GestureDetected != null )
+    {
+        GestureDetected( this, gesture );
+    }
+    notDetected = false;
+}
+
+previousGesture = gesture;
+}}}
+
+= Hands Gesture Recognition =
+
+...
+
 = Article to be completed ... =
