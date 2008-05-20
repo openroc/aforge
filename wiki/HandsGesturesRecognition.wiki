@@ -139,4 +139,71 @@ Yes, we’ve detected a quite big object, which may be a human’s body demonstr
 
 After we detected an abject, which is a candidate for further processing, we would like to give it a chance to stop for a while and demonstrate us something – a gesture. If the object is constantly moving, it does not want to demonstrate us anything, so we can skip its processing. To catch the moment when the object has stopped, we are going to use another motion detector, which is based on between frames difference. The motion detector checks the amount of changes between two consequent video frames (the current and the previous one) and depending on this makes a decision if there is or not motion detected. But, in this particular case we are interested in not motion detection, but detection of motion absence.
 
+{{{
+// check motion level between frames
+differenceFilter.OverlayImage = previousFrame;
+
+// apply difference filter
+Bitmap betweenFramesMotion = differenceFilter.Apply( currentFrame );
+
+// lock image with between frames motion for faster further processing
+BitmapData betweenFramesMotionData = betweenFramesMotion.LockBits(
+    new Rectangle( 0, 0, width, height ),
+    ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
+
+// apply threshold filter
+thresholdFilter.ApplyInPlace( betweenFramesMotionData );
+
+// apply opening filter to remove noise
+openingFilter.ApplyInPlace( betweenFramesMotionData );
+
+// calculate amount of changed pixels
+VerticalIntensityStatistics vis = new VerticalIntensityStatistics( betweenFramesMotionData );
+
+int[] histogram = vis.Gray.Values;
+int   changedPixels = 0;
+
+for ( int i = 0, n = histogram.Length; i < n; i++ )
+{
+    changedPixels += histogram[i] / 255;
+}
+
+// free temporary image
+betweenFramesMotion.UnlockBits( betweenFramesMotionData );
+betweenFramesMotion.Dispose( );
+
+// check motion level
+if ( (double) changedPixels / frameSize <= motionLimit )
+{
+    framesWithoutMotion++;
+}
+else
+{
+    // reset counters
+    framesWithoutMotion = 0;
+    framesWithoutGestureChange = 0;
+    notDetected = true;
+}
+}}}
+
+As it can be seen from the code above the between frames difference is checked by analyzing changedPixel variable, which is used to calculate the amount of changes in percents and then the value is compared with configured motion limit to check if we have motion or not. But, as it also can be seen from the code above, we don’t call gesture recognition routine immediately after we detect that there is no motion. Instead of this we keep counter, which calculates the amount of consequent frames without motion. And only when the amount of consequent frames without motion reaches some certain value, we finally pass the object to hands gesture recognition module.
+
+{{{
+// check if we don't have motion for a while
+if ( framesWithoutMotion >= minFramesWithoutMotion )
+{
+    if ( notDetected )
+    {
+        // extract the biggest blob
+        blobCounter.ExtractBlobsImage( motionObjectsData, maxObject );
+
+        // recognize gesture from the image
+        Gesture gesture = gestureRecognizer.Recognize( maxObject.Image, true );
+        maxObject.Image.Dispose( );
+
+        ...
+    }
+}
+}}}
+
 = Article to be completed ... =
