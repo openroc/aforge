@@ -51,10 +51,10 @@ When we have two images, the background and the image with an object, we may use
 {{{
 // apply the grayscale filter
 Bitmap currentFrame = grayscaleFilter.Apply( image );
-
+ 
 // set backgroud frame as an overlay for difference filter
 differenceFilter.OverlayImage = backgroundFrame;
-
+ 
 // apply difference filter
 Bitmap motionObjectsImage = differenceFilter.Apply( currentFrame );
 }}}
@@ -98,7 +98,7 @@ if ( blobs != null )
     foreach ( Blob blob in blobs )
     {
         int blobSize = blob.Rectangle.Width * blob.Rectangle.Height;
-
+ 
         if ( blobSize > maxSize )
         {
             maxSize = blobSize;
@@ -196,7 +196,7 @@ if ( framesWithoutMotion >= minFramesWithoutMotion )
     {
         // extract the biggest blob
         blobCounter.ExtractBlobsImage( motionObjectsData, maxObject );
-
+ 
         // recognize gesture from the image
         Gesture gesture = gestureRecognizer.Recognize( maxObject.Image, true );
         maxObject.Image.Dispose( );
