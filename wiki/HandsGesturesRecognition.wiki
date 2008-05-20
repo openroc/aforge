@@ -34,10 +34,10 @@ if ( backgroundFrame == null )
     width     = image.Width;
     height    = image.Height;
     frameSize = width * height;
-
+ 
     // create initial backgroung image
     backgroundFrame = grayscaleFilter.Apply( image );
-
+ 
     return;
 }
 }}}
@@ -72,10 +72,10 @@ On the difference image it is possible to see absolute difference between two im
 BitmapData motionObjectsData = motionObjectsImage.LockBits(
     new Rectangle( 0, 0, width, height ),
     ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
-
+ 
 // apply threshold filter
 thresholdFilter.ApplyInPlace( motionObjectsData );
-
+ 
 // apply opening filter to remove noise
 openingFilter.ApplyInPlace( motionObjectsData );
 }}}
@@ -88,10 +88,10 @@ It looks like we got quite good hands gesture image and we are ready for the nex
 // process blobs
 blobCounter.ProcessImage( motionObjectsData );
 Blob[] blobs = blobCounter.GetObjectInformation( );
-
+ 
 int maxSize = 0;
 Blob maxObject = new Blob( 0, new Rectangle( 0, 0, 0, 0 ) );
-
+ 
 // find the biggest blob
 if ( blobs != null )
 {
@@ -200,7 +200,7 @@ if ( framesWithoutMotion >= minFramesWithoutMotion )
         // recognize gesture from the image
         Gesture gesture = gestureRecognizer.Recognize( maxObject.Image, true );
         maxObject.Image.Dispose( );
-
+ 
         ...
     }
 }
@@ -221,7 +221,7 @@ else
 {
     framesWithoutGestureChange = 0;
 }
-
+ 
 // check if gesture was not changing for a while
 if ( framesWithoutGestureChange >= minFramesWithoutGestureChange )
 {
@@ -231,7 +231,7 @@ if ( framesWithoutGestureChange >= minFramesWithoutGestureChange )
     }
     notDetected = false;
 }
-
+ 
 previousGesture = gesture;
 }}}
 
