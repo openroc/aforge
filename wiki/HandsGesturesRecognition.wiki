@@ -80,4 +80,30 @@ openingFilter.ApplyInPlace( motionObjectsData );
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/gesture.jpg]
 
+It looks like we got quite good hands gesture image and we are ready for the next step – recognition ... Not yet. The object’s image we got as an example represents quite recognizable human’s body, which demonstrates us some hands gesture. But, before we get such image in our video stream, we’ll receive a lot of other frames, where we may have many other different objects, which are far from being human body. Such objects could be anything else moving across the scene, or it even could be quite bigger noise than the one we filtered out before. To get rid of some false objects, let’s go through all objects in the image and check their size. To achieve this we are going to use _BlobCounter_ class:
+
+{{{
+// process blobs
+blobCounter.ProcessImage( motionObjectsData );
+Blob[] blobs = blobCounter.GetObjectInformation( );
+
+int maxSize = 0;
+Blob maxObject = new Blob( 0, new Rectangle( 0, 0, 0, 0 ) );
+
+// find the biggest blob
+if ( blobs != null )
+{
+    foreach ( Blob blob in blobs )
+    {
+        int blobSize = blob.Rectangle.Width * blob.Rectangle.Height;
+
+        if ( blobSize > maxSize )
+        {
+            maxSize = blobSize;
+            maxObject = blob;
+        }
+    }
+}
+}}}
+
 = Article to be completed ... =
