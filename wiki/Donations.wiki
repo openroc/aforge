@@ -23,6 +23,7 @@ Thank you.
 
 ==Thank to people who made donation to the project==
 
+  * Cristian Rotundu,
   * Karl Barber,
   * Luke Poortinga,
   * Tibor Dudjik.
