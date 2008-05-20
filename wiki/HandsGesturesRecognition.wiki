@@ -44,5 +44,20 @@ Now let’s suppose that after a while we receive a new frame, which contains so
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/object.jpg]
 
+When we have two images, the background and the image with an object, we may use _Difference_ filter to get a difference image:
+
+{{{
+// apply the grayscale filter
+Bitmap currentFrame = grayscaleFilter.Apply( image );
+
+// set backgroud frame as an overlay for difference filter
+differenceFilter.OverlayImage = backgroundFrame;
+
+// apply difference filter
+Bitmap motionObjectsImage = differenceFilter.Apply( currentFrame );
+}}}
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/dif.jpg]
+
 
 = Article to be completed ... =
