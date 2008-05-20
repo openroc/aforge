@@ -106,4 +106,18 @@ if ( blobs != null )
 }
 }}}
 
+How are we going to use the information about the biggest object’s size? First of all we are going to implement adaptive background, which we’ve mentioned before. Suppose that from time to time we may have some minor changes in the scene, like minor changes of light condition, some movements of small objects or even a small object has appeared and stayed on the scene. To take these changes into account, we are going to have adaptive background – we are going to change our background frame (which is initially initialized from the first video frame) in the direction of our changes using _MoveTowards+ filter. The _MoveTowards_ filter changes slightly one image in the direction to make smaller difference with the second provided image. For example, if we have a background image, which contains scene only, and an object image, which contains the same scene plus an object on it, then applying sequentially _MoveTowards_ filter to the background image, will make it the same as object image after a while – the more we apply _MoveTowards_ filter to the background image, the more evident becomes the presence of the object on it (the background image becomes "closer" to the object image – the difference becomes smaller).
+
+So, we are checking the size of the biggest object on the current frame and, if it is not that big, we consider the object as not significant and we just update our background frame to adapt to the changes:
+
+{{{
+// if we have only small objects then let's adopt to changes in the scene
+if ( ( maxObject.Rectangle.Width < 20 ) || ( maxObject.Rectangle.Height < 20 ) )
+{
+    // move background towards current frame
+    moveTowardsFilter.OverlayImage = currentFrame;
+    moveTowardsFilter.ApplyInPlace( backgroundFrame );
+}
+}}}
+
 = Article to be completed ... =
