@@ -120,4 +120,15 @@ if ( ( maxObject.Rectangle.Width < 20 ) || ( maxObject.Rectangle.Height < 20 ) )
 }
 }}}
 
+The second usage of maximum object’s size is to find the one, which is quite significant and which may potentially be a human’s body. To save CPU time our hands gesture recognition algorithm is not going to analyze any object, which is the biggest on the current frame, but only objects which satisfy some requirements:
+
+{{{
+if ( ( maxObject.Rectangle.Width >= minBodyWidth ) &&
+     ( maxObject.Rectangle.Height >= minBodyHeight ) &&
+     ( previousFrame != null ) )
+{
+    // do further processing of the frame
+}
+}}}
+
 = Article to be completed ... =
