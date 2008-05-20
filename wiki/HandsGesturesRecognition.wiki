@@ -142,36 +142,36 @@ After we detected an abject, which is a candidate for further processing, we wou
 {{{
 // check motion level between frames
 differenceFilter.OverlayImage = previousFrame;
-
+ 
 // apply difference filter
 Bitmap betweenFramesMotion = differenceFilter.Apply( currentFrame );
-
+ 
 // lock image with between frames motion for faster further processing
 BitmapData betweenFramesMotionData = betweenFramesMotion.LockBits(
     new Rectangle( 0, 0, width, height ),
     ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
-
+ 
 // apply threshold filter
 thresholdFilter.ApplyInPlace( betweenFramesMotionData );
-
+ 
 // apply opening filter to remove noise
 openingFilter.ApplyInPlace( betweenFramesMotionData );
-
+ 
 // calculate amount of changed pixels
 VerticalIntensityStatistics vis = new VerticalIntensityStatistics( betweenFramesMotionData );
-
+ 
 int[] histogram = vis.Gray.Values;
 int   changedPixels = 0;
-
+ 
 for ( int i = 0, n = histogram.Length; i < n; i++ )
 {
     changedPixels += histogram[i] / 255;
 }
-
+ 
 // free temporary image
 betweenFramesMotion.UnlockBits( betweenFramesMotionData );
 betweenFramesMotion.Dispose( );
-
+ 
 // check motion level
 if ( (double) changedPixels / frameSize <= motionLimit )
 {
