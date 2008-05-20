@@ -59,5 +59,25 @@ Bitmap motionObjectsImage = differenceFilter.Apply( currentFrame );
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/dif.jpg]
 
+On the difference image it is possible to see absolute difference between two images – whiter areas show the areas of higher difference and black areas show the areas of no difference. The next two steps are:
+
+*1)* Threshold the difference image using _Threshold_ filter, so each pixel may be classified as significant change (most probably caused by moving object) or as non significant change.
+
+*2)* Remove noise from the thresholded difference image using _Opening_ filter. After this step the stand alone pixels, which could be caused by noisy camera and other circumstances, will be removed, so we’ll have an image, which depicts only more or less significant areas of changes (motion areas).
+
+{{{
+// lock motion objects image for further faster processing
+BitmapData motionObjectsData = motionObjectsImage.LockBits(
+    new Rectangle( 0, 0, width, height ),
+    ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
+
+// apply threshold filter
+thresholdFilter.ApplyInPlace( motionObjectsData );
+
+// apply opening filter to remove noise
+openingFilter.ApplyInPlace( motionObjectsData );
+}}}
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/gesture.jpg]
 
 = Article to be completed ... =
