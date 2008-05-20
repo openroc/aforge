@@ -22,6 +22,22 @@ For object extraction task we are going to use the approach, which is based on b
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/bg.jpg]
 
-Of course such assumption can not be valid for call cases. But, first of all, it may be valid for most of the cases, so it is quite applicable, and the second – our algorithm is going to be adaptive, so it could handle situations, when the first frame contains not only the background. But, let’s be consecutive … So, our very fist frame can be taken as approximation of background frame.
+Of course such assumption can not be valid for call cases. But, first of all, it may be valid for most of the cases, so it is quite applicable, and the second – our algorithm is going to be adaptive, so it could handle situations, when the first frame contains not only the background. But, let’s be consecutive ... So, our very fist frame can be taken as approximation of background frame.
+
+{{{
+// check background frame
+if ( backgroundFrame == null )
+{
+    // save image dimension
+    width     = image.Width;
+    height    = image.Height;
+    frameSize = width * height;
+
+    // create initial backgroung image
+    backgroundFrame = grayscaleFilter.Apply( image );
+
+    return;
+}
+}}}
 
 = Article to be completed ... =
