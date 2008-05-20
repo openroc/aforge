@@ -1,4 +1,5 @@
 #summary Some ideas about Hands Gesture Recognition in still image and video feeds using AForge.NET framework.
+#labels Project-Article
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/Gestures_Recognition.jpg]
 
@@ -12,5 +13,15 @@ All the algorithms described in the article are based on the [http://code.google
 
 Before we go into deep discussions about what the application does and how it is implemented, let’s take a look at the very quick [http://www.youtube.com/v/lKkGOUW_xas demo] ...
 
+= Motion detection and object extraction =
+
+Before we can start with hands gesture recognition, first of all we need to extract human’s body, which demonstrates some gesture, and find a good moment, when the actual gesture recognition should be done. For both these tasks we are going to reuse some motion detection ideas described in the dedicated to
+[http://www.codeproject.com/KB/audio-video/Motion_Detection.aspx motion detection article].
+
+For object extraction task we are going to use the approach, which is based on background modeling. Let’s suppose that the very first frame of a video stream does not contain any moving objects, but just contains a background scene.
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/bg.jpg]
+
+Of course such assumption can not be valid for call cases. But, first of all, it may be valid for most of the cases, so it is quite applicable, and the second – our algorithm is going to be adaptive, so it could handle situations, when the first frame contains not only the background. But, let’s be consecutive … So, our very fist frame can be taken as approximation of background frame.
 
 = Article to be completed ... =
