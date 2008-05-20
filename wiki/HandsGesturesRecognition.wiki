@@ -13,6 +13,8 @@ All the algorithms described in the article are based on the [http://code.google
 
 Before we go into deep discussions about what the application does and how it is implemented, let’s take a look at the very quick [http://www.youtube.com/v/lKkGOUW_xas demo] ...
 
+*Note*: There will be some code snippets provided in the article. Don’t try to build them – they are just provided to clarify the idea. However, this code snippets represent real working code, which are copy-pasted from attached to the article source code. So, if you would like to see the complete code and build it, check article’s attachments.
+
 = Motion detection and object extraction =
 
 Before we can start with hands gesture recognition, first of all we need to extract human’s body, which demonstrates some gesture, and find a good moment, when the actual gesture recognition should be done. For both these tasks we are going to reuse some motion detection ideas described in the dedicated to
@@ -134,5 +136,7 @@ if ( ( maxObject.Rectangle.Width >= minBodyWidth ) &&
 Ok, now we have an image, which contains moving object, and the object's size is quite reasonable so it could be a human’s body potentially. Are we ready to pass the image to the hands gesture recognition module for further processing? Again, not yet ...
 
 Yes, we’ve detected a quite big object, which may be a human’s body demonstrating some gesture. But, what if the object is still moving? What if the object did not stop yet and it is not yet ready to demonstrate us the real gesture it would like to demonstrate? Do we really want to pass all these frames to the hands gesture recognition module while the object is still in motion, loading our CPU with more computations? More of it, since the object is still in motion, we may even detect the gesture, which is not the one the object would like to demonstrate. So, let’s not hurry with gesture recognition yet.
+
+After we detected an abject, which is a candidate for further processing, we would like to give it a chance to stop for a while and demonstrate us something – a gesture. If the object is constantly moving, it does not want to demonstrate us anything, so we can skip its processing. To catch the moment when the object has stopped, we are going to use another motion detector, which is based on between frames difference. The motion detector checks the amount of changes between two consequent video frames (the current and the previous one) and depending on this makes a decision if there is or not motion detected. But, in this particular case we are interested in not motion detection, but detection of motion absence.
 
 = Article to be completed ... =
