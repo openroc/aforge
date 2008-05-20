@@ -186,7 +186,7 @@ else
 }
 }}}
 
-As it can be seen from the code above the between frames difference is checked by analyzing changedPixel variable, which is used to calculate the amount of changes in percents and then the value is compared with configured motion limit to check if we have motion or not. But, as it also can be seen from the code above, we don’t call gesture recognition routine immediately after we detect that there is no motion. Instead of this we keep counter, which calculates the amount of consequent frames without motion. And only when the amount of consequent frames without motion reaches some certain value, we finally pass the object to hands gesture recognition module.
+As it can be seen from the code above the between frames difference is checked by analyzing _changedPixel_ variable, which is used to calculate the amount of changes in percents and then the value is compared with configured motion limit to check if we have motion or not. But, as it also can be seen from the code above, we don’t call gesture recognition routine immediately after we detect that there is no motion. Instead of this we keep counter, which calculates the amount of consequent frames without motion. And only when the amount of consequent frames without motion reaches some certain value, we finally pass the object to hands gesture recognition module.
 
 {{{
 // check if we don't have motion for a while
