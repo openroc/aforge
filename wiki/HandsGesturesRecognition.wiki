@@ -40,4 +40,9 @@ if ( backgroundFrame == null )
 }
 }}}
 
+Now let’s suppose that after a while we receive a new frame, which contains some object, and our task is to extract it.
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/object.jpg]
+
+
 = Article to be completed ... =
