@@ -131,4 +131,8 @@ if ( ( maxObject.Rectangle.Width >= minBodyWidth ) &&
 }
 }}}
 
+Ok, now we have an image, which contains moving object, and the object's size is quite reasonable so it could be a human’s body potentially. Are we ready to pass the image to the hands gesture recognition module for further processing? Again, not yet ...
+
+Yes, we’ve detected a quite big object, which may be a human’s body demonstrating some gesture. But, what if the object is still moving? What if the object did not stop yet and it is not yet ready to demonstrate us the real gesture it would like to demonstrate? Do we really want to pass all these frames to the hands gesture recognition module while the object is still in motion, loading our CPU with more computations? More of it, since the object is still in motion, we may even detect the gesture, which is not the one the object would like to demonstrate. So, let’s not hurry with gesture recognition yet.
+
 = Article to be completed ... =
