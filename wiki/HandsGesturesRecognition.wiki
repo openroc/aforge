@@ -284,7 +284,23 @@ rightHand = bodyWidth - ( rightHand + 1 );
 int torsoWidth = bodyWidth - leftHand - rightHand;
 }}}
 
+Now, when we have hand’s length and torso’s width, we can determine if the hand is raised or not. For each hand, the algorithm is trying to detect if the hand is not raised, raised diagonally down, raised straight or raised diagonally up. All 4 possible positions are demonstrated on the image below in the order they were listed above:
 
+[http://aforge.googlecode.com/svn/wiki/images/hgr/hands.jpg]
+
+To check if a hand is raised or not we are going to use some statistical assumptions about body proportions again. If the hand is not raised it’s width on horizontal histogram will not exceed 30% of torso’s width, for example. Otherwise it is raised somehow.
+
+{{{
+// process left hand
+if ( ( (double) leftHand / torsoWidth ) >= handsMinProportion )
+{
+    // hand is raised
+}
+else
+{
+    // hand is not raised
+}
+}}}
 
 ...
 
