@@ -325,6 +325,22 @@ The image above contains quite good samples and using above histograms it is qui
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/shadow.jpg]
 
+At this point we should have quite clear vertical histograms, like the ones we’ve seen before, so now we are few steps away from recognizing the hands gesture.
+
+Let’s start with recognizing straight raised hand first. If we take a look at the image of straight hand, then we may make one more assumption about body proportions – length of the hand is much bigger than its width. In the case of straight raised hand its histogram should have quite high, but thin peak. So, let’s use these properties to check if the hand is raised straight:
+
+{{{
+if ( ( (double) handImage.Width / ( histogram.Max - histogram.Min + 1 ) ) > minStraightHandProportion )
+{
+    handPosition = HandPosition.RaisedStraigh;
+}
+else
+{
+    // processing of diagonaly raised hand
+}
+}}}
+
+(Note:  _Min_ and _Max_ properties of _Histogram_ class return minimum and maximum values with non-zero probability. In the above sample code these values are used to calculate the width of the histogram area occupied by hand. See documentation to _AForge.Math_ namespace).
 
 ...
 
