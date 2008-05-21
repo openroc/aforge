@@ -302,6 +302,19 @@ else
 }
 }}}
 
+So far we are able to recognize one hand's position – when hand is not raised. Now we need to complete the algorithm recognizing exact hand's position when it is raised. And to do this we’ll use the _VerticalIntensityStatistics_ class, which was mentioned before. But now the class will be applied not to the entire object’s image, but only to the hand’s image:
+
+{{{
+// extract left hand's image
+Crop cropFilter = new Crop( new Rectangle( 0, 0, leftHand, bodyHeight ) );
+Bitmap handImage = cropFilter.Apply( bodyImageData );
+ 
+// get vertical intensity statistics of the hand
+VerticalIntensityStatistics stat = new VerticalIntensityStatistics( handImage );
+}}}
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/vhistograms.jpg]
+
 ...
 
 = Article to be completed ... =
