@@ -267,6 +267,25 @@ for ( int i = 0; i < bodyWidth; i++ )
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/hhistogram.jpg]
 
+From the thresholded horizontal histogram we can easily calculate hands’ length and body torso’s width – the length of the right hand is the width of the empty area on the histogram from the right, the length of the left hand is the width of the empty area from the left and the torso’s width is the width of the area between empty areas:
+
+{{{
+// get hands' length
+int leftHand = 0;
+while ( ( hisValues[leftHand] == 0 ) && ( leftHand < bodyWidth ) )
+    leftHand++;
+ 
+int rightHand = bodyWidth - 1;
+while ( ( hisValues[rightHand] == 0 ) && ( rightHand > 0 ) )
+    rightHand--;
+rightHand = bodyWidth - ( rightHand + 1 );
+ 
+// get torso's width
+int torsoWidth = bodyWidth - leftHand - rightHand;
+}}}
+
+
+
 ...
 
 = Article to be completed ... =
