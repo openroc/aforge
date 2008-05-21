@@ -243,7 +243,7 @@ Now, when we detected an object to process, we can analyze it trying to recogniz
 
 The idea of our hands gesture recognition algorithm is quite simple and 100% based on histograms and statistics, but not on something like pattern recognition, neural networks, etc. This makes this algorithm quite easy in implementation and understanding.
 
-The core idea of this algorithm is based on analyzing two kinds of object’s histograms – horizontal and vertical histograms, which could be calculated using _HorizontalIntensityStatistics_ and _VerticalIntensityStatistics_ classes:
+The core idea of this algorithm is based on analyzing two kinds of object’s histograms – horizontal and vertical histograms, which can be calculated using _HorizontalIntensityStatistics_ and _VerticalIntensityStatistics_ classes:
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/histograms.jpg]
 
