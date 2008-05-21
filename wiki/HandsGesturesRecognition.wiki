@@ -247,6 +247,26 @@ The core idea of this algorithm is based on analyzing two kinds of object’s hi
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/histograms.jpg]
 
+We are going to start hands gesture recognition from utilizing horizontal histogram since for the first step it looks more useful. The first thing we are going to do is to find areas of the image, which are occupied by hands, and the area, which is occupied by torso.
+
+Let’s take a closer look at the horizontal histogram. As it can be seen from the histogram, the hands’ areas have relatively small values on the histogram, but the torso area is represented by a peak of high values. Taking into account some simple relative proportions of humans’ body, we may say that human hand’s thickness can never exceed 30% percent of human’s body height (30% is quite big value, but let’s take this for safety and as an example). So, applying simple thresholding to the horizontal histogram, we can easily classify hands’ areas and torso area:
+
+{{{
+// get statistics about horizontal pixels distribution 
+HorizontalIntensityStatistics his = new HorizontalIntensityStatistics( bodyImageData );
+int[] hisValues = (int[]) his.Gray.Values.Clone( );
+ 
+// build map of hands (0) and torso (1)
+double torsoLimit = torsoCoefficient * bodyHeight; // torsoCoefficient = 0.3
+ 
+for ( int i = 0; i < bodyWidth; i++ )
+{
+    hisValues[i] = ( (double) hisValues[i] / 255 > torsoLimit ) ? 1 : 0;
+}
+}}}
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/hhistogram.jpg]
+
 ...
 
 = Article to be completed ... =
