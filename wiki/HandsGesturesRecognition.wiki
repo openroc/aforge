@@ -315,6 +315,17 @@ VerticalIntensityStatistics stat = new VerticalIntensityStatistics( handImage );
 
 [http://aforge.googlecode.com/svn/wiki/images/hgr/vhistograms.jpg]
 
+The image above contains quite good samples and using above histograms it is quite easy to recognize the gesture. But, in some cases we may not have such clear histograms like the ones above, but some noisy histograms, which may be caused by light conditions and shadows. So before making any final decision about the raised hand, let’s perform two small preprocessing steps of the vertical histogram. These two additional steps are quite simple, so their code is not provided here, but can be retrieved from the attached to the article source code.
+
+*1)* First of all we need to remove low values from the histogram, which are lower then 10% of maximum histogram’s value, for example. The image below demonstrates a hand’s image, which contains some artifacts caused by shadows. Such type of artifacts can be easily removed by filtering low values on the histogram, what is also demonstrated on the image below (the histogram is filtered already).
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/lowvalues.jpg]
+
+*2)* Another type of issue, which we also need to take care about, is a “twin” hand, which is actually a shadow. This also could be easily solved by walking through the histogram and removing all peaks, which are not the highest peak.
+
+[http://aforge.googlecode.com/svn/wiki/images/hgr/shadow.jpg]
+
+
 ...
 
 = Article to be completed ... =
