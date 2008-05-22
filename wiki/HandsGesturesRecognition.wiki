@@ -362,4 +362,12 @@ We are done! Now our algorithm is able to recognize 4 positions of each hand. Ap
   * Left hand is raised diagonally up; Right hand is not raised.
 If two not raised hands is not considered to be a gesture, then the algorithm can recognize 12 hands gestures, which are combination of different hands positions.
 
-= Article to be completed ... =
+= Conclusion =
+
+As we can see from the above article, we got algorithms, which, first of all, allow us to extract moving object from a video feed, and, the second, to recognize successfully hands gestures demonstrated by the object. The recognition algorithm is very simple and easy as in implementation, as in understanding. Also, since it is based only on information from histograms, it is quite efficient in performance and does not require a lot of computational resources, which is quite important in case if we need to process a lot of frames per second.
+
+To make the algorithms easy to understand I’ve used generic image processing routines from AForge.Imaging library, which is part of AForge.NET framework. This means that going from generic routines to specialized (routines which may combine several steps in one) it is easily possible to improve performance of these algorithms even more.
+
+Concerning possible areas of improvements for these algorithms, we may identify next areas:
+  * More robust recognition in case of hands’ shadows on walls;
+  * Handling of dynamic scene, where different kind of motion may occur behind the main object.
