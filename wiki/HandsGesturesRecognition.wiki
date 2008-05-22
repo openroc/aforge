@@ -342,6 +342,20 @@ else
 
 (Note:  _Min_ and _Max_ properties of _Histogram_ class return minimum and maximum values with non-zero probability. In the above sample code these values are used to calculate the width of the histogram area occupied by hand. See documentation to _AForge.Math_ namespace).
 
+Now we need to make the last check to determine if the hand is raised diagonally up or diagonally down. As we can see from histograms of raised diagonally up/down hands, the peak for the diagonally up hand is shifted to the beginning of the histogram (to the top in the case of vertical histogram), but the peak of the diagonally down hand is shifted more to the center. Again we can use this property to check the exact type raised hand:
+
+{{{
+if ( ( (double) histogram.Min / ( histogram.Max - histogram.Min + 1 ) ) <
+        maxRaisedUpHandProportion )
+{
+    handPosition = HandPosition.RaisedDiagonallyUp;
+}
+else
+{
+    handPosition = HandPosition.RaisedDiagonallyDown;
+}
+}}}
+
 ...
 
 = Article to be completed ... =
