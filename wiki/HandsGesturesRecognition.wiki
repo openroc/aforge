@@ -1,6 +1,9 @@
 #summary Some ideas about Hands Gesture Recognition in still image and video feeds using AForge.NET framework.
 #labels Project-Article
 
+[http://aforge.googlecode.com/files/Gestures%20Recognion%20-%20src.zip Download demo - 208 Kb]
+[http://aforge.googlecode.com/files/Gestures%20Recognion%20-%20bin.zip Download source - 231 Kb]
+
 [http://aforge.googlecode.com/svn/wiki/images/hgr/Gestures_Recognition.jpg]
 
 = Introduction =
