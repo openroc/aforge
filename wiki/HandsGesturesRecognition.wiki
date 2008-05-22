@@ -345,8 +345,7 @@ else
 Now we need to make the last check to determine if the hand is raised diagonally up or diagonally down. As we can see from histograms of raised diagonally up/down hands, the peak for the diagonally up hand is shifted to the beginning of the histogram (to the top in the case of vertical histogram), but the peak of the diagonally down hand is shifted more to the center. Again we can use this property to check the exact type raised hand:
 
 {{{
-if ( ( (double) histogram.Min / ( histogram.Max - histogram.Min + 1 ) ) <
-        maxRaisedUpHandProportion )
+if ( ( (double) histogram.Min / ( histogram.Max - histogram.Min + 1 ) ) < maxRaisedUpHandProportion )
 {
     handPosition = HandPosition.RaisedDiagonallyUp;
 }
@@ -356,6 +355,12 @@ else
 }
 }}}
 
-...
+We are done! Now our algorithm is able to recognize 4 positions of each hand. Applying the same for the second hand, our algorithm will provide next results for those 4 hands gestures, which were demonstrated above:
+  # Left hand is not raised; Right hand is not raised;
+  # Left hand is raised diagonally down; Right hand is not raised;
+  # Left hand is raised straight; Right hand is not raised;
+  # Left hand is raised diagonally up; Right hand is not raised.
+
+If two not raised hands is not considered to be a gesture, then the algorithm can recognize 12 hands gestures, which are combination of different hands positions.
 
 = Article to be completed ... =
