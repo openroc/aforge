@@ -5,6 +5,7 @@
 
   * [http://www.codeproject.com/cs/media/Image_Processing_Lab.asp Image Processing Lab] by Andrew Kirillov
   * [http://www.codeproject.com/cs/media/Motion_Detection.asp Motion Detector] by Andrew Kirillov
+  * [http://www.codeproject.com/KB/audio-video/hands_gesture_recognition.aspx Hands Gesture Recognition] by Andrew Kirillov
   * [http://igor.moochnick.googlepages.com/timelapsevideorecorder Motion-activated TimeLapse Video Recorder] by Igor Moochnick
   * [http://www.waterhobo.com/ Waterhobo - Ever Diligent Ever Watching] by Tim Higgins
   * [http://penguindreams.org/page/see/Rear%20View%20Mirror Rear View Mirror] by Sumit Khanna
