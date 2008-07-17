@@ -20,4 +20,5 @@ Contributors of the project are those people, who don't join the project, but co
   * Markus Falkensteiner;
   * Volodymyr Goncharov;
   * Mladen Prajdic;
-  * Frank Nagl.
+  * Frank Nagl;
+  * Joan Charmant.
