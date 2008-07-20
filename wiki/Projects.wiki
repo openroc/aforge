@@ -11,6 +11,7 @@
   * [http://penguindreams.org/page/see/Rear%20View%20Mirror Rear View Mirror] by Sumit Khanna
   * [http://www.kinovea.org/en/ Kinovea] by Joan Charmant. Kinovea is free and open source video anlalysis software for coaches, athletes and medical professionals.
   * [http://www.synapsick.net/rackattack/articles/article/billboard-substitution-in-soccer-videos/29.html Billboard substitution in soccer videos] by Stephan Petzl
+  * [http://ispy.developerinabox.com/ iSpy] by Sean Tearney. iSpy is a motion detection, sound detection, live streaming and notification software.
 
 Of course the page does not provide complete list of projects, because there are a lot of them and it is hard to track them all. The framework is used a lot by different students working on theirs bachelors and master degrees, by different other researchers from different fields and by many other developers in their projects.
 
