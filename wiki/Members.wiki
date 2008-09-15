@@ -16,13 +16,14 @@ Junior members are those people, who have joint the project recently. These peop
   * Vincent Maillot,
   * Israel Lot,
   * Cezary Wagner,
-  * Fábio Caversan.
+  * Fábio Caversan,
+  * Frank Nagl.
+
 
 = Contributors =
 
 Contributors of the project are those people, who don't join the project, but contribute it providing some code, share ideas and participate in the project's life. The list of contributors is:
-  * Markus Falkensteiner;
-  * Volodymyr Goncharov;
-  * Mladen Prajdic;
-  * Frank Nagl;
+  * Markus Falkensteiner,
+  * Volodymyr Goncharov,
+  * Mladen Prajdic,
   * Joan Charmant.
