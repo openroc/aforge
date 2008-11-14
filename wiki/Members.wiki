@@ -8,11 +8,7 @@ At this point the only project owner is *Andrew Kirillov*, who started the proje
 = Members =
 
 Project members are people, who have joint the project and work on extending, improving and supporting it. The list of members is:
-  * Andrew Kirillov.
-
-= Junior Members =
-
-Junior members are those people, who have joint the project recently. These people work on extending, improving and supporting the project, but they don’t commit their code to the development trunk. Each junior member has his own code branch, where he works on the project.
+  * Andrew Kirillov,
   * Israel Lot,
   * Cezary Wagner,
   * Fábio Caversan,
@@ -21,8 +17,9 @@ Junior members are those people, who have joint the project recently. These peop
 
 = Contributors =
 
-Contributors of the project are those people, who don't join the project, but contribute it providing some code, share ideas and participate in the project's life. The list of contributors is:
+Contributors of the project are those people, who did not join the project, but contributed it providing some code, sharing ideas and participatingin the project's life. The list of contributors is:
   * Markus Falkensteiner,
   * Volodymyr Goncharov,
   * Mladen Prajdic,
-  * Joan Charmant.
+  * Joan Charmant,
+  * Alejandro Pirola.
