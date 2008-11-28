@@ -1,5 +1,5 @@
 #summary The document provides information about tools being used in the project and information about build process
-#labels Featured,Project-About
+#labels Project-About
 
 = Accessing project sources =
 
