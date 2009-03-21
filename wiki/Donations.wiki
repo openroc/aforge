@@ -19,12 +19,4 @@ There are no obligations to do this, so you don't need to do it if you don't bel
 People who work on this project are great enthusiasts, who provide a lot of effort and their own time to make the project exist and grow. If you like the project, appreciate our work and value our effort, you are more then welcome to support it as well.
 
 Thank you.
-
-
-==Thank to people who made donation to the project==
-
-  * Cristian Rotundu,
-  * Karl Barber,
-  * Luke Poortinga,
-  * Tibor Dudjik.
  
