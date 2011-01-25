@@ -1,5 +1,4 @@
 #summary The page lists features of AForge.NET 1.6.x versions
-#labels Deprecated
 
 
 
