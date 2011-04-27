@@ -1,5 +1,5 @@
 #summary The page lists features of AForge.NET 1.5.1 version and some previous releases
-#labels Project-Features,Release-Info
+#labels Project-Features,Release-Info,Deprecated
 
 
 
