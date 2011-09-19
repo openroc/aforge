@@ -1,9 +1,8 @@
 ﻿// AForge Core Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge
@@ -20,8 +19,11 @@ namespace AForge
     /// implementation is different on different platform, like .NET and Mono.</para>
     /// </remarks>
     /// 
-    public static class SystemTools
+    public class SystemTools
     {
+        // Private constructor to avoid class instantiation
+        private SystemTools( ) { }
+
         /// <summary>
         /// Copy block of unmanaged memory.
         /// </summary>
@@ -148,13 +150,13 @@ namespace AForge
 
 #if !MONO
         // Win32 memory copy function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
+        [DllImport( "ntdll.dll" )]
         private static unsafe extern byte* memcpy(
             byte* dst,
             byte* src,
             int count );
         // Win32 memory set function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
+        [DllImport( "ntdll.dll" )]
         private static unsafe extern byte* memset(
             byte* dst,
             int filler,

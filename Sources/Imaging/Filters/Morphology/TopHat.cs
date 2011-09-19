@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -18,7 +17,7 @@ namespace AForge.Imaging.Filters
     /// </summary>
     /// 
     /// <remarks><para>Top-hat morphological operator <see cref="Subtract">subtracts</see>
-    /// result of <see cref="Opening">morphological opening</see> on the input image
+    /// result of <see cref="Opening">morphological opening</see> on the the input image
     /// from the input image itself.</para>
     /// 
     ///  <para>Applied to binary image, the filter allows to get all those object (their parts)
@@ -49,14 +48,14 @@ namespace AForge.Imaging.Filters
         private Subtract subtract = new Subtract( );
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -66,10 +65,10 @@ namespace AForge.Imaging.Filters
         public TopHat( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
         }
 
         /// <summary>

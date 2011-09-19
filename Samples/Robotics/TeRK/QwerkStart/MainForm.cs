@@ -1,9 +1,8 @@
-﻿// Qwerk robotics board start application
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
+﻿// AForge.NET Framework
+// Qwerk robotics board start application
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -135,41 +134,22 @@ namespace QwerkStart
             return result;
         }
 
-        // Handle lost connection
-        private void HandleLostConnection( )
-        {
-            Disconnect( );
-            statusLabel.Text  = "Disconnected";
-            fpsLabel.Text     = string.Empty;
-            voltageLabel.Text = string.Empty;
-
-            MessageBox.Show( "Connection to Qwerk was lost.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-        }
-
         // Disconnect from Qwerk
         private void Disconnect( )
         {
             if ( qwerk.IsConnected )
             {
-                timer.Stop( );
+                // stop Qwerk's camera
+                Qwerk.Video qwerkVideo = qwerk.GetVideoService( );
+                qwerkVideo.SignalToStop( );
+                qwerkVideo.WaitForStop( );
 
-                try
-                {
-                    // stop Qwerk's camera
-                    Qwerk.Video qwerkVideo = qwerk.GetVideoService( );
-                    qwerkVideo.SignalToStop( );
-                    qwerkVideo.WaitForStop( );
-
-                    // turn of all LEDs and disconnect
-                    qwerk.GetLedsService( ).SetLedsState( Qwerk.LedState.Off );
-                }
-                catch
-                {
-                }
-
+                // turn of all LEDs and disconnect
+                qwerk.GetLedsService( ).SetLedsState( Qwerk.LedState.Off );
                 qwerk.Disconnect( );
 
                 EnableContols( false );
+                timer.Stop( );
             }
         }
 
@@ -184,7 +164,6 @@ namespace QwerkStart
             }
             catch
             {
-                HandleLostConnection( );
             }
 
             // 2 - update FPS
@@ -230,9 +209,9 @@ namespace QwerkStart
                 // update LED button's color
                 ( (Button) sender ).BackColor = ( ledStates[ledIndex] ) ? Color.Green : Color.Black;
             }
-            catch
+            catch ( Exception ex )
             {
-                HandleLostConnection( );
+                MessageBox.Show( ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
             }
         }
     }

@@ -1,9 +1,8 @@
 // AForge Video Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video
@@ -41,15 +40,6 @@ namespace AForge.Video
         event VideoSourceErrorEventHandler VideoSourceError;
 
         /// <summary>
-        /// Video playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>This event is used to notify clients that the video playing has finished.</para>
-        /// </remarks>
-        /// 
-        event PlayingFinishedEventHandler PlayingFinished;
-
-        /// <summary>
         /// Video source.
         /// </summary>
         /// 
@@ -57,7 +47,7 @@ namespace AForge.Video
         /// Depending on video source it may be a file name, URL or any other string
         /// describing the video source.</remarks>
         /// 
-        string Source { get; }
+        string Source { get; set; }
 
         /// <summary>
         /// Received frames count.
@@ -78,6 +68,14 @@ namespace AForge.Video
         /// </remarks>
         /// 
         int BytesReceived { get; }
+
+        /// <summary>
+        /// User data.
+        /// </summary>
+        /// 
+        /// <remarks>The property allows to associate user data with video source object.</remarks>
+        /// 
+        object UserData { get; set; }
 
         /// <summary>
         /// State of the video source.

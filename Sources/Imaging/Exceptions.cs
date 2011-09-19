@@ -1,9 +1,8 @@
 ﻿// AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging
@@ -16,8 +15,7 @@ namespace AForge.Imaging
     /// 
     /// <remarks><para>The unsupported image format exception is thrown in the case when
     /// user passes an image of certain format to an image processing routine, which does
-    /// not support the format. Check documentation of image the image processing routine
-    /// to discover which formats are supported by the routine.</para>
+    /// not support the format.</para>
     /// </remarks>
     /// 
     public class UnsupportedImageFormatException : ArgumentException
@@ -53,9 +51,7 @@ namespace AForge.Imaging
     /// 
     /// <remarks><para>The invalid image properties exception is thrown in the case when
     /// user provides an image with certain properties, which are treated as invalid by
-    /// particular image processing routine. Another case when this exception is
-    /// thrown is the case when user tries to access some properties of an image (or
-    /// of a recently processed image by some routine), which are not valid for that image.</para>
+    /// particular image processing routine.</para>
     /// </remarks>
     /// 
     public class InvalidImagePropertiesException : ArgumentException
@@ -83,12 +79,5 @@ namespace AForge.Imaging
         /// 
         public InvalidImagePropertiesException( string message, string paramName ) :
             base( message, paramName ) { }
-    }
-
-    // Some common exception messages
-    internal static class ExceptionMessage
-    {
-        public const string ColorHistogramException = "Cannot access color histogram since the last processed image was grayscale.";
-        public const string GrayHistogramException = "Cannot access gray histogram since the last processed image was color.";
     }
 }

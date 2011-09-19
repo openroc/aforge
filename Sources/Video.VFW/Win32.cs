@@ -2,9 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
-
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 namespace AForge.Video.VFW
 {
@@ -17,7 +16,7 @@ namespace AForge.Video.VFW
     /// 
     /// <remarks>The class provides Video for Windows and some other Win32 functions and structurs.</remarks>
     /// 
-    internal static class Win32
+    internal class Win32
     {
         /// <summary>
         /// Copy a block of memory.
@@ -29,7 +28,7 @@ namespace AForge.Video.VFW
         /// 
         /// <returns>Return's the value of <b>dst</b> - pointer to destination.</returns>
         /// 
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
+        [DllImport( "ntdll.dll" )]
         public static extern int memcpy(
             int dst,
             int src,
@@ -391,7 +390,7 @@ namespace AForge.Video.VFW
             /// </summary>
             /// 
             [MarshalAs( UnmanagedType.I4 )]
-            public int Capabilities;
+            public int ñapabilities;
 
             /// <summary>
             /// Priority of the stream.

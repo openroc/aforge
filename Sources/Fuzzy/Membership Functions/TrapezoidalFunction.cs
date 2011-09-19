@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -60,7 +63,7 @@ namespace AForge.Fuzzy
         /// 
         private TrapezoidalFunction( int size )
         {
-            points = new Point[size];
+            points = new DoublePoint[size];
         }
 
         /// <summary>
@@ -76,13 +79,13 @@ namespace AForge.Fuzzy
         /// <param name="max">The maximum value that the membership will reach, [0, 1].</param>
         /// <param name="min">The minimum value that the membership will reach, [0, 1].</param>
         /// 
-        public TrapezoidalFunction( float m1, float m2, float m3, float m4, float max, float min )
+        public TrapezoidalFunction( double m1, double m2, double m3, double m4, double max, double min )
             : this( 4 )
         {
-            points[0] = new Point( m1, min );
-            points[1] = new Point( m2, max );
-            points[2] = new Point( m3, max );
-            points[3] = new Point( m4, min );
+            points[0] = new DoublePoint( m1, min );
+            points[1] = new DoublePoint( m2, max );
+            points[2] = new DoublePoint( m3, max );
+            points[3] = new DoublePoint( m4, min );
         }
 
         /// <summary>
@@ -100,8 +103,8 @@ namespace AForge.Fuzzy
         /// <para>Maximum membership value is set to <b>1.0</b> and the minimum is set to <b>0.0</b>.</para>
         /// </remarks>
         /// 
-        public TrapezoidalFunction( float m1, float m2, float m3, float m4 )
-            : this( m1, m2, m3, m4, 1.0f, 0.0f )
+        public TrapezoidalFunction( double m1, double m2, double m3, double m4 )
+            : this( m1, m2, m3, m4, 1.0, 0.0 )
         {
         }
 
@@ -117,12 +120,12 @@ namespace AForge.Fuzzy
         /// <param name="max">The maximum value that the membership will reach, [0, 1].</param>
         /// <param name="min">The minimum value that the membership will reach, [0, 1].</param>
         /// 
-        public TrapezoidalFunction( float m1, float m2, float m3, float max, float min )
+        public TrapezoidalFunction( double m1, double m2, double m3, double max, double min )
             : this( 3 )
         {
-            points[0] = new Point( m1, min );
-            points[1] = new Point( m2, max );
-            points[2] = new Point( m3, min );
+            points[0] = new DoublePoint( m1, min );
+            points[1] = new DoublePoint( m2, max );
+            points[2] = new DoublePoint( m3, min );
         }
 
         /// <summary>
@@ -139,8 +142,8 @@ namespace AForge.Fuzzy
         /// <para>Maximum membership value is set to <b>1.0</b> and the minimum is set to <b>0.0</b>.</para>
         /// </remarks>
         /// 
-        public TrapezoidalFunction( float m1, float m2, float m3 )
-            : this( m1, m2, m3, 1.0f, 0.0f )
+        public TrapezoidalFunction( double m1, double m2, double m3 )
+            : this( m1, m2, m3, 1.0, 0.0 )
         {
         }
 
@@ -158,18 +161,18 @@ namespace AForge.Fuzzy
         /// <param name="min">The minimum value that the membership will reach, [0, 1].</param>
         /// <param name="edge">Trapezoid's <see cref="EdgeType"/>.</param>
         /// 
-        public TrapezoidalFunction( float m1, float m2, float max, float min, EdgeType edge )
+        public TrapezoidalFunction( double m1, double m2, double max, double min, EdgeType edge )
             : this( 2 )
         {
             if ( edge == EdgeType.Left )
             {
-                points[0] = new Point( m1, min );
-                points[1] = new Point( m2, max );
+                points[0] = new DoublePoint( m1, min );
+                points[1] = new DoublePoint( m2, max );
             }
             else
             {
-                points[0] = new Point( m1, max );
-                points[1] = new Point( m2, min );
+                points[0] = new DoublePoint( m1, max );
+                points[1] = new DoublePoint( m2, min );
             }
         }
 
@@ -189,8 +192,8 @@ namespace AForge.Fuzzy
         /// <para>Maximum membership value is set to <b>1.0</b> and the minimum is set to <b>0.0</b>.</para>
         /// </remarks>
         /// 
-        public TrapezoidalFunction( float m1, float m2, EdgeType edge )
-            : this( m1, m2, 1.0f, 0.0f, edge )
+        public TrapezoidalFunction( double m1, double m2, EdgeType edge )
+            : this( m1, m2, 1.0, 0.0, edge )
         {
         }
     }

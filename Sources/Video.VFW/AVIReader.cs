@@ -2,10 +2,9 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
-
 namespace AForge.Video.VFW
 {
     using System;
@@ -60,9 +59,6 @@ namespace AForge.Video.VFW
         private float rate;
         // codec used for video compression
         private string codec;
-
-        // dummy object to lock for synchronization
-        private object sync = new object( );
 
         /// <summary>
         /// Width of video frames.
@@ -203,68 +199,53 @@ namespace AForge.Video.VFW
         /// reading video frames with the help of <see cref="GetNextFrame"/> method.</para>
         /// </remarks>
         /// 
-        /// <exception cref="System.IO.IOException">Failed opening the specified file.</exception>
-        /// <exception cref="VideoException">A error occurred while opening the video file. See exception message.</exception>
-        ///
+        /// <exception cref="ApplicationException">Failure of opening video files (the exception message
+        /// specifies the issues).</exception>
         /// 
         public void Open( string fileName )
         {
             // close previous file
             Close( );
 
-            bool success = false;
-
-            try
+            lock ( this )
             {
-                lock ( sync )
+                // open AVI file
+                if ( Win32.AVIFileOpen( out file, fileName, Win32.OpenFileMode.ShareDenyWrite, IntPtr.Zero ) != 0 )
+                    throw new ApplicationException( "Failed opening AVI file" );
+
+                // get first video stream
+                if ( Win32.AVIFileGetStream( file, out stream, Win32.mmioFOURCC( "vids" ), 0 ) != 0 )
+                    throw new ApplicationException( "Failed getting video stream" );
+
+                // get stream info
+                Win32.AVISTREAMINFO info = new Win32.AVISTREAMINFO( );
+                Win32.AVIStreamInfo( stream, ref info, Marshal.SizeOf( info ) );
+
+                width    = info.rectFrame.right;
+                height   = info.rectFrame.bottom;
+                position = info.start;
+                start    = info.start;
+                length   = info.length;
+                rate     = (float) info.rate / (float) info.scale;
+                codec    = Win32.decode_mmioFOURCC( info.handler );
+
+                // prepare decompressor
+                Win32.BITMAPINFOHEADER bitmapInfoHeader = new Win32.BITMAPINFOHEADER( );
+
+                bitmapInfoHeader.size        = Marshal.SizeOf( bitmapInfoHeader.GetType( ) );
+                bitmapInfoHeader.width       = width;
+                bitmapInfoHeader.height      = height;
+                bitmapInfoHeader.planes      = 1;
+                bitmapInfoHeader.bitCount    = 24;
+                bitmapInfoHeader.compression = 0; // BI_RGB
+
+                // get frame object
+                if ( ( getFrame = Win32.AVIStreamGetFrameOpen( stream, ref bitmapInfoHeader ) ) == IntPtr.Zero )
                 {
-                    // open AVI file
-                    if ( Win32.AVIFileOpen( out file, fileName, Win32.OpenFileMode.ShareDenyWrite, IntPtr.Zero ) != 0 )
-                        throw new System.IO.IOException( "Failed opening the specified AVI file." );
+                    bitmapInfoHeader.height = -height;
 
-                    // get first video stream
-                    if ( Win32.AVIFileGetStream( file, out stream, Win32.mmioFOURCC( "vids" ), 0 ) != 0 )
-                        throw new VideoException( "Failed getting video stream." );
-
-                    // get stream info
-                    Win32.AVISTREAMINFO info = new Win32.AVISTREAMINFO( );
-                    Win32.AVIStreamInfo( stream, ref info, Marshal.SizeOf( info ) );
-
-                    width    = info.rectFrame.right;
-                    height   = info.rectFrame.bottom;
-                    position = info.start;
-                    start    = info.start;
-                    length   = info.length;
-                    rate     = (float) info.rate / (float) info.scale;
-                    codec    = Win32.decode_mmioFOURCC( info.handler );
-
-                    // prepare decompressor
-                    Win32.BITMAPINFOHEADER bitmapInfoHeader = new Win32.BITMAPINFOHEADER( );
-
-                    bitmapInfoHeader.size        = Marshal.SizeOf( bitmapInfoHeader.GetType( ) );
-                    bitmapInfoHeader.width       = width;
-                    bitmapInfoHeader.height      = height;
-                    bitmapInfoHeader.planes      = 1;
-                    bitmapInfoHeader.bitCount    = 24;
-                    bitmapInfoHeader.compression = 0; // BI_RGB
-
-                    // get frame object
                     if ( ( getFrame = Win32.AVIStreamGetFrameOpen( stream, ref bitmapInfoHeader ) ) == IntPtr.Zero )
-                    {
-                        bitmapInfoHeader.height = -height;
-
-                        if ( ( getFrame = Win32.AVIStreamGetFrameOpen( stream, ref bitmapInfoHeader ) ) == IntPtr.Zero )
-                            throw new VideoException( "Failed initializing decompressor." );
-                    }
-
-                    success = true;
-                }
-            }
-            finally
-            {
-                if ( !success )
-                {
-                    Close( );
+                        throw new ApplicationException( "Failed initializing decompressor" );
                 }
             }
         }
@@ -275,7 +256,7 @@ namespace AForge.Video.VFW
         /// 
         public void Close( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 // release get frame object
                 if ( getFrame != IntPtr.Zero )
@@ -309,22 +290,17 @@ namespace AForge.Video.VFW
         /// <remarks><para>The method reads and returns the next video frame in the opened video stream
         /// at the position, which is set in <see cref="Position"/> property.</para></remarks>
         /// 
-        /// <exception cref="System.IO.IOException">Thrown if no video file was open.</exception>
-        /// <exception cref="VideoException">A error occurred while reading next video frame. See exception message.</exception>
+        /// <exception cref="ApplicationException">Failure of opening video files (the exception message
+        /// specifies the issues).</exception>
         /// 
         public Bitmap GetNextFrame( )
         {
-            lock ( sync )
+            lock ( this )
             {
-                if ( file == IntPtr.Zero )
-                {
-                    throw new System.IO.IOException( "Cannot read video frames since video file is not open." );
-                }
-
                 // get frame at specified position
                 IntPtr DIB = Win32.AVIStreamGetFrame( getFrame, position );
                 if ( DIB == IntPtr.Zero )
-                    throw new VideoException( "Failed getting frame." );
+                    throw new ApplicationException( "Failed getting frame" );
 
                 Win32.BITMAPINFOHEADER bitmapInfoHeader;
 

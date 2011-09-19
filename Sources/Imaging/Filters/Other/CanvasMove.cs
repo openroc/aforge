@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Volodymyr Goncharov, 2007
+// volodymyr.goncharov@gmail.com
+//
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -19,13 +22,10 @@ namespace AForge.Imaging.Filters
     /// <remarks>
     /// <para>The filter moves canvas to the specified area filling unused empty areas with specified color.</para>
     /// 
-    /// <para>The filter accepts 8/16 bpp grayscale images and 24/32/48/64 bpp color image
-    /// for processing.</para>
-    /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
-    /// CanvasMove filter = new CanvasMove( new IntPoint( -50, -50 ), Color.Green );
+    /// CanvasMove filter = new CanvasMove( new Point( -50, -50 ), Color.Green );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
@@ -42,25 +42,24 @@ namespace AForge.Imaging.Filters
         private byte fillRed   = 255;
         private byte fillGreen = 255;
         private byte fillBlue  = 255;
-        private byte fillAlpha = 255;
         // gray fill color
         private byte fillGray = 255;
         // point to move to
-        private IntPoint movePoint;
+        private Point movePoint;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
         /// 
-        /// <remarks><para>See <see cref="IFilterInformation.FormatTranslations"/>
+        /// <remarks><para>See <see cref="IFilterInformation.FormatTransalations"/>
         /// documentation for additional information.</para></remarks>
         /// 
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -69,17 +68,16 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks><para>The color is used to fill empty areas in color images.</para>
         /// 
-        /// <para>Default value is set to white - ARGB(255, 255, 255, 255).</para></remarks>
+        /// <para>Default value is set to white - RGB(255, 255, 255).</para></remarks>
         /// 
         public Color FillColorRGB
         {
-            get { return Color.FromArgb( fillAlpha, fillRed, fillGreen, fillBlue ); }
+            get { return Color.FromArgb( fillRed, fillGreen, fillBlue ); }
             set
             {
-                fillRed   = value.R;
+                fillRed = value.R;
                 fillGreen = value.G;
-                fillBlue  = value.B;
-                fillAlpha = value.A;
+                fillBlue = value.B;
             }
         }
 
@@ -101,7 +99,7 @@ namespace AForge.Imaging.Filters
         /// Point to move the canvas to.
         /// </summary>
         /// 
-        public IntPoint MovePoint
+        public Point MovePoint
         {
             get { return movePoint; }
             set { movePoint = value; }
@@ -110,13 +108,10 @@ namespace AForge.Imaging.Filters
         // Private constructor to do common initialization
         private CanvasMove( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-            formatTranslations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
         }
 
         /// <summary>
@@ -125,8 +120,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <param name="movePoint">Point to move the canvas to.</param>
         /// 
-        public CanvasMove( IntPoint movePoint )
-            : this( )
+        public CanvasMove( Point movePoint ) : this( )
         {
             this.movePoint = movePoint;
         }
@@ -138,14 +132,13 @@ namespace AForge.Imaging.Filters
         /// <param name="movePoint">Point to move the canvas.</param>
         /// <param name="fillColorRGB">RGB color to use for filling areas empty areas in color images.</param>
         /// 
-        public CanvasMove( IntPoint movePoint, Color fillColorRGB )
+        public CanvasMove( Point movePoint, Color fillColorRGB )
             : this( )
         {
-            this.movePoint = movePoint;
-            this.fillRed   = fillColorRGB.R;
-            this.fillGreen = fillColorRGB.G;
-            this.fillBlue  = fillColorRGB.B;
-            this.fillAlpha = fillColorRGB.A;
+            this.movePoint  = movePoint;
+            this.fillRed    = fillColorRGB.R;
+            this.fillGreen  = fillColorRGB.G;
+            this.fillBlue   = fillColorRGB.B;
         }
 
         /// <summary>
@@ -155,11 +148,11 @@ namespace AForge.Imaging.Filters
         /// <param name="movePoint">Point to move the canvas.</param>
         /// <param name="fillColorGray">Gray color to use for filling empty areas in grayscale images.</param>
         /// 
-        public CanvasMove( IntPoint movePoint, byte fillColorGray )
+        public CanvasMove( Point movePoint, byte fillColorGray )
             : this( )
         {
             this.movePoint = movePoint;
-            this.fillGray  = fillColorGray;
+            this.fillGray = fillColorGray;
         }
 
         /// <summary>
@@ -170,15 +163,14 @@ namespace AForge.Imaging.Filters
         /// <param name="fillColorRGB">RGB color to use for filling areas empty areas in color images.</param>
         /// <param name="fillColorGray">Gray color to use for filling empty areas in grayscale images.</param>
         /// 
-        public CanvasMove( IntPoint movePoint, Color fillColorRGB, byte fillColorGray )
+        public CanvasMove( Point movePoint, Color fillColorRGB, byte fillColorGray )
             : this( )
         {
-            this.movePoint = movePoint;
-            this.fillRed   = fillColorRGB.R;
-            this.fillGreen = fillColorRGB.G;
-            this.fillBlue  = fillColorRGB.B;
-            this.fillAlpha = fillColorRGB.A;
-            this.fillGray  = fillColorGray;
+            this.movePoint  = movePoint;
+            this.fillRed    = fillColorRGB.R;
+            this.fillGreen  = fillColorRGB.G;
+            this.fillBlue   = fillColorRGB.B;
+            this.fillGray   = fillColorGray;
         }
 
         /// <summary>
@@ -187,30 +179,9 @@ namespace AForge.Imaging.Filters
         /// 
         /// <param name="image">Source image data.</param>
         ///
-        protected override void ProcessFilter( UnmanagedImage image )
+        protected override unsafe void ProcessFilter( UnmanagedImage image )
         {
             int pixelSize = Image.GetPixelFormatSize( image.PixelFormat ) / 8;
-
-            switch ( pixelSize )
-            {
-                case 1:
-                case 3:
-                case 4:
-                    ProcessFilter8bpc( image );
-                    break;
-                case 2:
-                case 6:
-                case 8:
-                    ProcessFilter16bpc( image );
-                    break;
-            }
-        }
-
-        // Process the filter on the image with 8 bits per color channel
-        private unsafe void ProcessFilter8bpc( UnmanagedImage image )
-        {
-            int pixelSize = Image.GetPixelFormatSize( image.PixelFormat ) / 8;
-            bool is32bpp = ( pixelSize == 4 );
 
             // get image width and height
             int width  = image.Width;
@@ -235,15 +206,15 @@ namespace AForge.Imaging.Filters
 
             if ( movePointY > 0 )
             {
-                yStart = height - 1;
-                yStop  = -1;
-                yStep  = -1;
+                yStart  = height - 1;
+                yStop   = -1;
+                yStep   = -1;
             }
             if ( movePointX > 0 )
             {
                 xStart = width - 1;
-                xStop  = -1;
-                xStep  = -1;
+                xStop = -1;
+                xStep = -1;
             }
 
             // do the job
@@ -290,133 +261,12 @@ namespace AForge.Imaging.Filters
                             pixel[RGB.R] = moved[RGB.R];
                             pixel[RGB.G] = moved[RGB.G];
                             pixel[RGB.B] = moved[RGB.B];
-
-                            if ( is32bpp )
-                            {
-                                pixel[RGB.A] = moved[RGB.A];
-                            }
                         }
                         else
                         {
                             pixel[RGB.R] = fillRed;
                             pixel[RGB.G] = fillGreen;
                             pixel[RGB.B] = fillBlue;
-
-                            if ( is32bpp )
-                            {
-                                pixel[RGB.A] = fillAlpha;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Process the filter on the image with 16 bits per color channel
-        private unsafe void ProcessFilter16bpc( UnmanagedImage image )
-        {
-            int pixelSize = Image.GetPixelFormatSize( image.PixelFormat ) / 8;
-            bool is64bpp = ( pixelSize == 8 );
-
-            // pad fill colours to 16-bits
-            ushort fillRed   = (ushort) ( this.fillRed   << 8 );
-            ushort fillGreen = (ushort) ( this.fillGreen << 8 );
-            ushort fillBlue  = (ushort) ( this.fillBlue  << 8 );
-            ushort fillAlpha = (ushort) ( this.fillAlpha << 8 );
-
-            // get image width and height
-            int width  = image.Width;
-            int height = image.Height;
-            int stride = image.Stride;
-
-            int movePointX = movePoint.X;
-            int movePointY = movePoint.Y;
-
-            // intersection rectangle
-            Rectangle intersect = Rectangle.Intersect(
-                new Rectangle( 0, 0, width, height ),
-                new Rectangle( movePointX, movePointY, width, height ) );
-
-            // start, stop and step for X and Y
-            int yStart = 0;
-            int yStop = height;
-            int yStep = 1;
-            int xStart = 0;
-            int xStop = width;
-            int xStep = 1;
-
-            if ( movePointY > 0 )
-            {
-                yStart = height - 1;
-                yStop = -1;
-                yStep = -1;
-            }
-            if ( movePointX > 0 )
-            {
-                xStart = width - 1;
-                xStop = -1;
-                xStep = -1;
-            }
-
-            // do the job
-            byte* src = (byte*) image.ImageData.ToPointer( );
-            ushort* pixel, moved;
-
-            if ( image.PixelFormat == PixelFormat.Format16bppGrayScale )
-            {
-                // grayscale image
-                for ( int y = yStart; y != yStop; y += yStep )
-                {
-                    for ( int x = xStart; x != xStop; x += xStep )
-                    {
-                        // current pixel
-                        pixel = (ushort*) ( src + y * stride + x * 2 );
-
-                        if ( intersect.Contains( x, y ) )
-                        {
-                            moved = (ushort*) ( src + ( y - movePointY ) * stride + ( x - movePointX ) * 2 );
-                            *pixel = *moved;
-                        }
-                        else
-                        {
-                            *pixel = fillGray;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                // color image
-                for ( int y = yStart; y != yStop; y += yStep )
-                {
-                    for ( int x = xStart; x != xStop; x += xStep )
-                    {
-                        // current pixel
-                        pixel = (ushort*) ( src + y * stride + x * pixelSize );
-
-                        if ( intersect.Contains( x, y ) )
-                        {
-                            moved = (ushort*) ( src + ( y - movePointY ) * stride + ( x - movePointX ) * pixelSize );
-
-                            pixel[RGB.R] = moved[RGB.R];
-                            pixel[RGB.G] = moved[RGB.G];
-                            pixel[RGB.B] = moved[RGB.B];
-
-                            if ( is64bpp )
-                            {
-                                pixel[RGB.A] = moved[RGB.A];
-                            }
-                        }
-                        else
-                        {
-                            pixel[RGB.R] = fillRed;
-                            pixel[RGB.G] = fillGreen;
-                            pixel[RGB.B] = fillBlue;
-
-                            if ( is64bpp )
-                            {
-                                pixel[RGB.A] = fillAlpha;
-                            }
                         }
                     }
                 }

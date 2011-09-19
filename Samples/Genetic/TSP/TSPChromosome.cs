@@ -1,9 +1,8 @@
+// AForge Framework
 // Traveling Salesman Problem using Genetic Algorithms
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006-2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -37,7 +36,7 @@ namespace TSP
 		/// <summary>
 		/// Create new random chromosome (factory method)
 		/// </summary>
-		public override IChromosome CreateNew( )
+		public override IChromosome CreateOffspring( )
 		{
 			return new TSPChromosome( map );
 		}

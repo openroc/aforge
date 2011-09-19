@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -35,7 +34,7 @@ namespace AForge.Imaging.Filters
         /// <returns>Returns filter's result obtained by applying the filter to
         /// the source image.</returns>
         /// 
-        /// <remarks>The method keeps the source image unchanged and returns
+        /// <remarks>The method keeps the source image unchanged and returns the
         /// the result of image processing filter as new image.</remarks> 
         ///
         Bitmap Apply( Bitmap image );
@@ -64,7 +63,7 @@ namespace AForge.Imaging.Filters
         /// <returns>Returns filter's result obtained by applying the filter to
         /// the source image.</returns>
         /// 
-        /// <remarks>The method keeps the source image unchanged and returns
+        /// <remarks>The method keeps the source image unchanged and returns the
         /// the result of image processing filter as new image.</remarks> 
         /// 
         UnmanagedImage Apply( UnmanagedImage image );

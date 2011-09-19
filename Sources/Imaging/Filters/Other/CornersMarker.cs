@@ -21,7 +21,7 @@ namespace AForge.Imaging.Filters
     /// <para>The filter highlights corners of objects on the image using provided corners
     /// detection algorithm.</para>
     /// 
-    /// <para>The filter accepts 8 bpp grayscale and 24/32 color images for processing.</para>
+    /// <para>The filter accepts 8 bpp grayscale and 24 color images for processing.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -47,14 +47,14 @@ namespace AForge.Imaging.Filters
         private ICornersDetector detector = null;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -97,10 +97,8 @@ namespace AForge.Imaging.Filters
             this.detector    = detector;
             this.markerColor = markerColor;
 
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>
@@ -112,9 +110,9 @@ namespace AForge.Imaging.Filters
         protected override unsafe void ProcessFilter( UnmanagedImage image )
         {
             // get collection of corners
-            List<IntPoint> corners = detector.ProcessImage( image );
+            Point[] corners = detector.ProcessImage( image );
             // mark all corners
-            foreach ( IntPoint corner in corners )
+            foreach ( Point corner in corners )
             {
                 Drawing.FillRectangle( image, new Rectangle( corner.X - 1, corner.Y - 1, 3, 3 ), markerColor );
             }

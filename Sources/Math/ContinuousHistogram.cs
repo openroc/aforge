@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math
@@ -34,24 +34,23 @@ namespace AForge.Math
     /// <code>
     /// // create histogram
     /// ContinuousHistogram histogram = new ContinuousHistogram(
-    ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+    ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
     /// // get mean and standard deviation values
-    /// Console.WriteLine( "mean = " + histogram.Mean + ", std.dev = " + histogram.StdDev );
+    /// System.Diagnostics.Debug.WriteLine( "mean = " + histogram.Mean + ", std.dev = " + histogram.StdDev );
     /// </code>
     /// </remarks>
     /// 
-    [Serializable]
     public class ContinuousHistogram
     {
         private int[] values;
-        private Range range;
+        private DoubleRange range;
 
-        private float mean;
-        private float stdDev;
-        private float median;
-        private float min;
-        private float max;
-        private int   total;
+        private double  mean;
+        private double  stdDev;
+        private double  median;
+        private double  min;
+        private double  max;
+        private int     total;
 
         /// <summary>
         /// Values of the histogram.
@@ -66,7 +65,7 @@ namespace AForge.Math
         /// Range of random values.
         /// </summary>
         /// 
-        public Range Range
+        public DoubleRange Range
         {
             get { return range; }
         }
@@ -81,13 +80,13 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get mean value (= 0.505 )
-        /// Console.WriteLine( "mean = " + histogram.Mean.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "mean = " + histogram.Mean.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
-        public float Mean
+        public double Mean
         {
             get { return mean; }
         }
@@ -102,13 +101,13 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get std.dev. value (= 0.215)
-        /// Console.WriteLine( "std.dev. = " + histogram.StdDev.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "std.dev. = " + histogram.StdDev.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
-        public float StdDev
+        public double StdDev
         {
             get { return stdDev; }
         }
@@ -123,13 +122,13 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get median value (= 0.500)
-        /// Console.WriteLine( "median = " + histogram.Median.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "median = " + histogram.Median.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
-        public float Median
+        public double Median
         {
             get { return median; }
         }
@@ -145,12 +144,12 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get min value (= 0.250)
-        /// Console.WriteLine( "min = " + histogram.Min.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "min = " + histogram.Min.ToString( "F3" ) );
         /// </code>
         /// </remarks>
-        public float Min
+        public double Min
         {
             get { return min; }
         }
@@ -166,13 +165,13 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get max value (= 0.875)
-        /// Console.WriteLine( "max = " + histogram.Max.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "max = " + histogram.Max.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
-        public float Max
+        public double Max
         {
             get { return max; }
         }
@@ -190,7 +189,7 @@ namespace AForge.Math
         /// description for more information).
         /// </remarks>
         /// 
-        public ContinuousHistogram( int[] values, Range range )
+        public ContinuousHistogram( int[] values, DoubleRange range )
         {
             this.values = values;
             this.range  = range;
@@ -213,15 +212,15 @@ namespace AForge.Math
         /// <code>
         /// // create histogram
         /// ContinuousHistogram histogram = new ContinuousHistogram(
-        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new Range( 0.0f, 1.0f ) );
+        ///     new int[] { 0, 0, 8, 4, 2, 4, 7, 1, 0 }, new DoubleRange( 0.0, 1.0 ) );
         /// // get 50% range
-        /// Range range = histogram.GetRange( 0.5f );
+        /// DoubleRange range = histogram.GetRange( 0.5 );
         /// // show the range ([0.25, 0.75])
-        /// Console.WriteLine( "50% range = [" + range.Min + ", " + range.Max + "]" );
+        /// System.Diagnostics.Debug.WriteLine( "50% range = [" + range.Min + ", " + range.Max + "]" );
         /// </code>
         /// </remarks>
         /// 
-        public Range GetRange( float percent )
+        public DoubleRange GetRange( double percent )
         {
             int min, max, hits;
             int h = (int) ( total * ( percent + ( 1 - percent ) / 2 ) );
@@ -243,9 +242,9 @@ namespace AForge.Math
                     break;
             }
             // return range between left and right boundaries
-            return new Range(
-                ( (float) min / nM1 ) * range.Length + range.Min,
-                ( (float) max / nM1 ) * range.Length + range.Min );
+            return new DoubleRange(
+                ( (double) min / nM1 ) * range.Length + range.Min,
+                ( (double) max / nM1 ) * range.Length + range.Min );
         }
 
         /// <summary>
@@ -263,16 +262,11 @@ namespace AForge.Math
             int i, n = values.Length;
             int nM1 = n - 1;
 
-            float rangeLength = range.Length;
-            float rangeMin = range.Min;
+            double rangeLength = range.Length;
+            double rangeMin = range.Min;
 
-            max    = 0;
-            min    = n;
-            mean   = 0;
-            stdDev = 0;
-            total  = 0;
-
-            double sum = 0;
+            max = 0;
+            min = n;
 
             // calculate mean, min, max
             for ( i = 0; i < n; i++ )
@@ -292,32 +286,20 @@ namespace AForge.Math
                 // accumulate total value
                 total += hits;
                 // accumulate mean value
-                sum += ( ( (double) i / nM1 ) * rangeLength + rangeMin ) * hits;
+                mean += ( ( (double) i / nM1 ) * rangeLength + rangeMin ) * hits;
             }
-
-            if ( total != 0 )
-            {
-                mean = (float) ( sum / total );
-            }
+            mean /= total;
 
             min = ( min / nM1 ) * rangeLength + rangeMin;
             max = ( max / nM1 ) * rangeLength + rangeMin;
 
             // calculate stadard deviation
-            sum = 0;
-            double diff;
-
             for ( i = 0; i < n; i++ )
             {
                 hits = values[i];
-                diff = ( ( (double) i / nM1 ) * rangeLength + rangeMin ) - mean;
-                sum += diff * diff * hits;
+                stdDev += Math.Pow( ( ( (double) i / nM1 ) * rangeLength + rangeMin ) - mean, 2 ) * hits;
             }
-
-            if ( total != 0 )
-            {
-                stdDev = (float) Math.Sqrt( sum / total );
-            }
+            stdDev = Math.Sqrt( stdDev / total );
 
             // calculate median
             int m, halfTotal = total / 2;
@@ -328,7 +310,7 @@ namespace AForge.Math
                 if ( hits >= halfTotal )
                     break;
             }
-            median = ( (float) m / nM1 ) * rangeLength + rangeMin;
+            median = ( (double) m / nM1 ) * rangeLength + rangeMin;
         }
     }
 }

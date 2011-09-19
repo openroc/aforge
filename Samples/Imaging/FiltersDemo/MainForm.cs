@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -511,25 +511,16 @@ namespace FiltersDemo
                 {
                     // load image
                     sourceImage = (Bitmap) Bitmap.FromFile( openFileDialog.FileName );
+                    // format image
+                    AForge.Imaging.Image.FormatImage( ref sourceImage );
 
-                    // check pixel format
-                    if ( ( sourceImage.PixelFormat == PixelFormat.Format16bppGrayScale ) ||
-                         ( Bitmap.GetPixelFormatSize( sourceImage.PixelFormat ) > 32 ) )
+                    // image type
+                    if ( sourceImage.PixelFormat != PixelFormat.Format24bppRgb )
                     {
-                        MessageBox.Show( "The demo application supports only color images.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+                        MessageBox.Show( "The demo application support only color images.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
                         // free image
                         sourceImage.Dispose( );
                         sourceImage = null;
-                    }
-                    else
-                    {
-                        // make sure the image has 24 bpp format
-                        if ( sourceImage.PixelFormat != PixelFormat.Format24bppRgb )
-                        {
-                            Bitmap temp = AForge.Imaging.Image.Clone( sourceImage, PixelFormat.Format24bppRgb );
-                            sourceImage.Dispose( );
-                            sourceImage = temp;
-                        }
                     }
 
                     ClearCurrentImage( );
@@ -612,7 +603,7 @@ namespace FiltersDemo
         // On Filters->Grayscale item
         private void grayscaleFiltersItem_Click( object sender, System.EventArgs e )
         {
-            ApplyFilter( Grayscale.CommonAlgorithms.BT709 );
+            ApplyFilter( new GrayscaleBT709( ) );
             grayscaleFiltersItem.Checked = true;
         }
 
@@ -654,7 +645,7 @@ namespace FiltersDemo
         // On Filters->Saturation adjusting
         private void saturationAdjustingFiltersItem_Click( object sender, System.EventArgs e )
         {
-            ApplyFilter( new SaturationCorrection( 0.15f ) );
+            ApplyFilter( new SaturationCorrection( 0.15 ) );
             saturationAdjustingFiltersItem.Checked = true;
         }
 
@@ -675,7 +666,7 @@ namespace FiltersDemo
         // On Filters->HSL filtering
         private void hslFiltersItem_Click( object sender, System.EventArgs e )
         {
-            ApplyFilter( new HSLFiltering( new IntRange( 330, 30 ), new Range( 0, 1 ), new Range( 0, 1 ) ) );
+            ApplyFilter( new HSLFiltering( new IntRange( 330, 30 ), new DoubleRange( 0, 1 ), new DoubleRange( 0, 1 ) ) );
             hslFiltersItem.Checked = true;
         }
 
@@ -684,7 +675,7 @@ namespace FiltersDemo
         {
             YCbCrLinear filter = new YCbCrLinear( );
 
-            filter.InCb = new Range( -0.3f, 0.3f );
+            filter.InCb = new DoubleRange( -0.3, 0.3 );
 
             ApplyFilter( filter );
             yCbCrLinearFiltersItem.Checked = true;
@@ -693,7 +684,7 @@ namespace FiltersDemo
         // On Filters->YCbCr filtering
         private void yCbCrFiltersItem_Click( object sender, System.EventArgs e )
         {
-            ApplyFilter( new YCbCrFiltering( new Range( 0.2f, 0.9f ), new Range( -0.3f, 0.3f ), new Range( -0.3f, 0.3f ) ) );
+            ApplyFilter( new YCbCrFiltering( new DoubleRange( 0.2, 0.9 ), new DoubleRange( -0.3, 0.3 ), new DoubleRange( -0.3, 0.3 ) ) );
             yCbCrFiltersItem.Checked = true;
         }
 
@@ -703,7 +694,8 @@ namespace FiltersDemo
             // save original image
             Bitmap originalImage = sourceImage;
             // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
+            IFilter grayscaleFilter = new GrayscaleRMY( );
+            sourceImage = grayscaleFilter.Apply( sourceImage );
             // apply threshold filter
             ApplyFilter( new Threshold( ) );
             // delete grayscale image and restore original
@@ -719,7 +711,8 @@ namespace FiltersDemo
             // save original image
             Bitmap originalImage = sourceImage;
             // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
+            IFilter grayscaleFilter = new GrayscaleRMY( );
+            sourceImage = grayscaleFilter.Apply( sourceImage );
             // apply threshold filter
             ApplyFilter( new FloydSteinbergDithering( ) );
             // delete grayscale image and restore original
@@ -735,7 +728,8 @@ namespace FiltersDemo
             // save original image
             Bitmap originalImage = sourceImage;
             // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
+            IFilter grayscaleFilter = new GrayscaleRMY( );
+            sourceImage = grayscaleFilter.Apply( sourceImage );
             // apply threshold filter
             ApplyFilter( new OrderedDithering( ) );
             // delete grayscale image and restore original
@@ -767,48 +761,21 @@ namespace FiltersDemo
         // On Filters->Difference edge detector
         private void differenceEdgesFiltersItem_Click( object sender, System.EventArgs e )
         {
-            // save original image
-            Bitmap originalImage = sourceImage;
-            // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
-            // apply edge filter
             ApplyFilter( new DifferenceEdgeDetector( ) );
-            // delete grayscale image and restore original
-            sourceImage.Dispose( );
-            sourceImage = originalImage;
-
             differenceEdgesFiltersItem.Checked = true;
         }
 
         // On Filters->Homogenity edge detector
         private void homogenityEdgesFiltersItem_Click( object sender, System.EventArgs e )
         {
-            // save original image
-            Bitmap originalImage = sourceImage;
-            // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
-            // apply edge filter
             ApplyFilter( new HomogenityEdgeDetector( ) );
-            // delete grayscale image and restore original
-            sourceImage.Dispose( );
-            sourceImage = originalImage;
-
             homogenityEdgesFiltersItem.Checked = true;
         }
 
         // On Filters->Sobel edge detector
         private void sobelEdgesFiltersItem_Click( object sender, System.EventArgs e )
         {
-            // save original image
-            Bitmap originalImage = sourceImage;
-            // get grayscale image
-            sourceImage = Grayscale.CommonAlgorithms.RMY.Apply( sourceImage );
-            // apply edge filter
             ApplyFilter( new SobelEdgeDetector( ) );
-            // delete grayscale image and restore original
-            sourceImage.Dispose( );
-            sourceImage = originalImage;
-
             sobelEdgesFiltersItem.Checked = true;
         }
 

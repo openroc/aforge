@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Vision.Motion
@@ -84,13 +84,12 @@ namespace AForge.Vision.Motion
         private int differenceThreshold    =  15;
         private int differenceThresholdNeg = -15;
 
+        // grayscale filter
+        private GrayscaleBT709 grayFilter = new GrayscaleBT709( );
         // binary erosion filter
         private BinaryErosion3x3 erosionFilter = new BinaryErosion3x3( );
         // binary dilatation filter
         private BinaryDilatation3x3 dilatationFilter = new BinaryDilatation3x3( );
-
-        // dummy object to lock for synchronization
-        private object sync = new object( );
 
         /// <summary>
         /// Difference threshold value, [1, 255].
@@ -107,7 +106,7 @@ namespace AForge.Vision.Motion
             get { return differenceThreshold; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     differenceThreshold = Math.Max( 1, Math.Min( 255, value ) );
                     differenceThresholdNeg = -differenceThreshold;
@@ -128,7 +127,7 @@ namespace AForge.Vision.Motion
         {
             get
             {
-                lock ( sync )
+                lock ( this )
                 {
                     return (float) pixelsChanged / ( width * height );
                 }
@@ -155,7 +154,7 @@ namespace AForge.Vision.Motion
         {
             get
             {
-                lock ( sync )
+                lock ( this )
                 {
                     return motionFrame;
                 }
@@ -181,7 +180,7 @@ namespace AForge.Vision.Motion
             get { return suppressNoise; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     suppressNoise = value;
 
@@ -219,7 +218,7 @@ namespace AForge.Vision.Motion
             get { return keepObjectEdges; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     keepObjectEdges = value;
                 }
@@ -269,7 +268,7 @@ namespace AForge.Vision.Motion
         /// 
         public unsafe void ProcessFrame( UnmanagedImage videoFrame )
         {
-            lock ( sync )
+            lock ( this )
             {
                 // check background frame
                 if ( backgroundFrame == null )
@@ -283,7 +282,7 @@ namespace AForge.Vision.Motion
                     frameSize = backgroundFrame.Stride * height;
 
                     // convert source frame to grayscale
-                    Tools.ConvertToGrayscale( videoFrame, backgroundFrame );
+                    grayFilter.Apply( videoFrame, backgroundFrame );
 
                     return;
                 }
@@ -305,7 +304,7 @@ namespace AForge.Vision.Motion
                 }
 
                 // convert current image to grayscale
-                Tools.ConvertToGrayscale( videoFrame, motionFrame );
+                grayFilter.Apply( videoFrame, motionFrame );
 
                 // pointers to background and current frames
                 byte* backFrame;
@@ -372,7 +371,7 @@ namespace AForge.Vision.Motion
         // Reset motion detector to initial state
         private  void Reset( bool force )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if (
                     ( backgroundFrame != null ) &&
@@ -450,7 +449,7 @@ namespace AForge.Vision.Motion
             // reset motion detection algorithm
             Reset( true );
 
-            lock ( sync )
+            lock ( this )
             {
                 // save image dimension
                 width  = backgroundFrame.Width;
@@ -461,7 +460,7 @@ namespace AForge.Vision.Motion
                 frameSize = this.backgroundFrame.Stride * height;
 
                 // convert source frame to grayscale
-                Tools.ConvertToGrayscale( backgroundFrame, this.backgroundFrame );
+                grayFilter.Apply( backgroundFrame, this.backgroundFrame );
 
                 manuallySetBackgroundFrame = true;
             }
