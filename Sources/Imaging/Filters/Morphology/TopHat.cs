@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -18,7 +17,7 @@ namespace AForge.Imaging.Filters
     /// </summary>
     /// 
     /// <remarks><para>Top-hat morphological operator <see cref="Subtract">subtracts</see>
-    /// result of <see cref="Opening">morphological opening</see> on the input image
+    /// result of <see cref="Opening">morphological opening</see> on the the input image
     /// from the input image itself.</para>
     /// 
     ///  <para>Applied to binary image, the filter allows to get all those object (their parts)

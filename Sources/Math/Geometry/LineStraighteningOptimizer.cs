@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2010
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Geometry
@@ -38,7 +38,7 @@ namespace AForge.Math.Geometry
     /// 
     public class LineStraighteningOptimizer : IShapeOptimizer
     {
-        private float maxDistanceToRemove = 5;
+        private double maxDistanceToRemove = 5;
 
         /// <summary>
         /// Maximum allowed distance between removed points and optimized shape, [0, ∞).
@@ -51,7 +51,7 @@ namespace AForge.Math.Geometry
         /// 
         /// <para>Default value is set to <b>5</b>.</para></remarks>
         /// 
-        public float MaxDistanceToRemove
+        public double MaxDistanceToRemove
         {
             get { return maxDistanceToRemove; }
             set { maxDistanceToRemove = Math.Max( 0, value ); }
@@ -70,7 +70,7 @@ namespace AForge.Math.Geometry
         /// <param name="maxDistanceToRemove">Maximum allowed distance between removed points
         /// and optimized shape (see <see cref="MaxDistanceToRemove"/>).</param>
         /// 
-        public LineStraighteningOptimizer( float maxDistanceToRemove )
+        public LineStraighteningOptimizer( double maxDistanceToRemove )
         {
             this.maxDistanceToRemove = maxDistanceToRemove;
         }
@@ -97,7 +97,7 @@ namespace AForge.Math.Geometry
             }
             else
             {
-                float distance = 0;
+                double distance = 0;
 
                 // add first 2 points to the new shape
                 optimizedShape.Add( shape[0] );

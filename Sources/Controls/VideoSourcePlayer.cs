@@ -1,16 +1,14 @@
 ﻿// AForge Controls Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Data;
 using System.Text;
 using System.Threading;
@@ -20,8 +18,6 @@ using AForge.Video;
 
 namespace AForge.Controls
 {
-    using Point = System.Drawing.Point;
-
     /// <summary>
     /// Video source player control.
     /// </summary>
@@ -62,15 +58,11 @@ namespace AForge.Controls
         private IVideoSource videoSource = null;
         // last received frame from the video source
         private Bitmap currentFrame = null;
-        // converted version of the current frame (in the case if current frame is a 16 bpp 
-        // per color plane image, then the converted image is its 8 bpp version for rendering)
-        private Bitmap convertedFrame = null;
         // last error message provided by video source
         private string lastMessage = null;
         // controls border color
         private Color borderColor = Color.Black;
 
-        private Size frameSize = new Size( 320, 240 );
         private bool autosize = false;
         private bool needSizeUpdate = false;
         private bool firstFrameNotProcessed = true;
@@ -78,9 +70,6 @@ namespace AForge.Controls
 
         // parent of the control
         private Control parent = null;
-
-        // dummy object to lock for synchronization
-        private object sync = new object( );
 
         /// <summary>
         /// Auto size control or not.
@@ -112,7 +101,7 @@ namespace AForge.Controls
         /// 
         /// <remarks><para>Specifies color of the border drawn around video frame.</para></remarks>
         /// 
-        [DefaultValue( typeof( Color ), "Black" )]
+        [DefaultValue( typeof(Color), "Black" )]
         public Color BorderColor
         {
             get { return borderColor; }
@@ -144,44 +133,38 @@ namespace AForge.Controls
             get { return videoSource; }
             set
             {
-                CheckForCrossThreadAccess( );
-
-                // detach events
-                if ( videoSource != null )
+                lock ( this )
                 {
-                    videoSource.NewFrame -= new NewFrameEventHandler( videoSource_NewFrame );
-                    videoSource.VideoSourceError -= new VideoSourceErrorEventHandler( videoSource_VideoSourceError );
-                    videoSource.PlayingFinished -= new PlayingFinishedEventHandler( videoSource_PlayingFinished );
-                }
+                    // detach events
+                    if ( videoSource != null )
+                    {
+                        videoSource.NewFrame -= new NewFrameEventHandler( videoSource_NewFrame );
+                        videoSource.VideoSourceError -= new VideoSourceErrorEventHandler( videoSource_VideoSourceError );
+                        videoSource.PlayingFinished -= new PlayingFinishedEventHandler( videoSource_PlayingFinished );
+                    }
 
-                lock ( sync )
-                {
                     if ( currentFrame != null )
                     {
                         currentFrame.Dispose( );
                         currentFrame = null;
                     }
-                }
 
-                videoSource = value;
+                    videoSource = value;
 
-                // atach events
-                if ( videoSource != null )
-                {
-                    videoSource.NewFrame += new NewFrameEventHandler( videoSource_NewFrame );
-                    videoSource.VideoSourceError += new VideoSourceErrorEventHandler( videoSource_VideoSourceError );
-                    videoSource.PlayingFinished += new PlayingFinishedEventHandler( videoSource_PlayingFinished );
-                }
-                else
-                {
-                    frameSize = new Size( 320, 240 );
-                }
+                    // atach events
+                    if ( videoSource != null )
+                    {
+                        videoSource.NewFrame += new NewFrameEventHandler( videoSource_NewFrame );
+                        videoSource.VideoSourceError += new VideoSourceErrorEventHandler( videoSource_VideoSourceError );
+                        videoSource.PlayingFinished += new PlayingFinishedEventHandler( videoSource_PlayingFinished );
+                    }
 
-                lastMessage = null;
-                needSizeUpdate = true;
-                firstFrameNotProcessed = true;
-                // update the control
-                Invalidate( );
+                    lastMessage = null;
+                    needSizeUpdate = true;
+                    firstFrameNotProcessed = true;
+                    // update the control
+                    Invalidate( );
+                }
             }
         }
 
@@ -196,9 +179,10 @@ namespace AForge.Controls
         {
             get
             {
-                CheckForCrossThreadAccess( );
-
-                return ( videoSource != null ) ? videoSource.IsRunning : false;
+                lock ( this )
+                {
+                    return ( videoSource != null ) ? videoSource.IsRunning : false;
+                }
             }
         }
 
@@ -227,15 +211,6 @@ namespace AForge.Controls
         public event NewFrameHandler NewFrame;
 
         /// <summary>
-        /// Playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>The event is fired when/if video playing finishes. The reason of video
-        /// stopping is provided as an argument to the event handler.</para></remarks>
-        /// 
-        public event PlayingFinishedEventHandler PlayingFinished;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="VideoSourcePlayer"/> class.
         /// </summary>
         public VideoSourcePlayer( )
@@ -246,43 +221,23 @@ namespace AForge.Controls
             SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw |
                 ControlStyles.DoubleBuffer | ControlStyles.UserPaint, true );
         }
-
-        // Check if the control is accessed from a none UI thread
-        private void CheckForCrossThreadAccess( )
-        {
-            // force handle creation, so InvokeRequired() will use it instead of searching through parent's chain
-            if ( !IsHandleCreated )
-            {
-                CreateControl( );
-
-                // if the control is not Visible, then CreateControl() will not be enough
-                if ( !IsHandleCreated )
-                {
-                    CreateHandle( );
-                }
-            }
-
-            if ( InvokeRequired )
-            {
-                throw new InvalidOperationException( "Cross thread access to the control is not allowed." );
-            }
-        }
-
+        
         /// <summary>
         /// Start video source and displaying its frames.
         /// </summary>
         public void Start( )
         {
-            CheckForCrossThreadAccess( );
-
             requestedToStop = false;
 
-            if ( videoSource != null )
+            lock ( this )
             {
-                firstFrameNotProcessed = true;
+                if ( videoSource != null )
+                {
+                    firstFrameNotProcessed = true;
 
-                videoSource.Start( );
-                Invalidate( );
+                    videoSource.Start( );
+                    Invalidate( );
+                }
             }
         }
 
@@ -298,21 +253,21 @@ namespace AForge.Controls
         /// 
         public void Stop( )
         {
-            CheckForCrossThreadAccess( );
-
             requestedToStop = true;
 
-            if ( videoSource != null )
+            lock ( this )
             {
-                videoSource.Stop( );
-
-                if ( currentFrame != null )
+                if ( videoSource != null )
                 {
-                    currentFrame.Dispose( );
-                    currentFrame = null;
-                }
+                    videoSource.Stop( );
 
-                Invalidate( );
+                    if ( currentFrame != null )
+                    {
+                        currentFrame.Dispose( );
+                        currentFrame = null;
+                    }
+                    Invalidate( );
+                }
             }
         }
 
@@ -325,13 +280,14 @@ namespace AForge.Controls
         /// 
         public void SignalToStop( )
         {
-            CheckForCrossThreadAccess( );
-
             requestedToStop = true;
 
-            if ( videoSource != null )
+            lock ( this )
             {
-                videoSource.SignalToStop( );
+                if ( videoSource != null )
+                {
+                    videoSource.SignalToStop( );
+                }
             }
         }
 
@@ -339,30 +295,26 @@ namespace AForge.Controls
         /// Wait for video source has stopped. 
         /// </summary>
         /// 
-        /// <remarks><para>Waits for video source stopping after it was signaled to stop using
-        /// <see cref="SignalToStop"/> method. If <see cref="SignalToStop"/> was not called, then
-        /// it will be called automatically.</para></remarks>
+        /// <remarks><para>Waits for video source stopping after it was signalled to stop using
+        /// <see cref="SignalToStop"/> method.</para></remarks>
         /// 
         public void WaitForStop( )
         {
-            CheckForCrossThreadAccess( );
+            requestedToStop = true;
 
-            if ( !requestedToStop )
+            lock ( this )
             {
-                SignalToStop( );
-            }
-
-            if ( videoSource != null )
-            {
-                videoSource.WaitForStop( );
-
-                if ( currentFrame != null )
+                if ( videoSource != null )
                 {
-                    currentFrame.Dispose( );
-                    currentFrame = null;
-                }
+                    videoSource.WaitForStop( );
 
-                Invalidate( );
+                    if ( currentFrame != null )
+                    {
+                        currentFrame.Dispose( );
+                        currentFrame = null;
+                    }
+                    Invalidate( );
+                }
             }
         }
 
@@ -377,7 +329,7 @@ namespace AForge.Controls
         /// 
         public Bitmap GetCurrentVideoFrame( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 return ( currentFrame == null ) ? null : (Bitmap) currentFrame.Clone( );
             }
@@ -393,7 +345,7 @@ namespace AForge.Controls
                 needSizeUpdate = false;
             }
 
-            lock ( sync )
+            lock ( this )
             {
                 Graphics  g = e.Graphics;
                 Rectangle rect = this.ClientRectangle;
@@ -407,8 +359,7 @@ namespace AForge.Controls
                     if ( ( currentFrame != null ) && ( lastMessage == null ) )
                     {
                         // draw current frame
-                        g.DrawImage( ( convertedFrame != null ) ? convertedFrame : currentFrame,
-                            rect.X + 1, rect.Y + 1, rect.Width - 2, rect.Height - 2 );
+                        g.DrawImage( currentFrame, rect.X + 1, rect.Y + 1, rect.Width - 2, rect.Height - 2 );
                         firstFrameNotProcessed = false;
                     }
                     else
@@ -430,17 +381,27 @@ namespace AForge.Controls
         // Update controls size and position
         private void UpdatePosition( )
         {
-            if ( ( autosize ) && ( this.Dock != DockStyle.Fill ) && ( this.Parent != null ) )
+            lock ( this )
             {
-                Rectangle rc = this.Parent.ClientRectangle;
-                int width  = frameSize.Width;
-                int height = frameSize.Height;
+                if ( ( autosize ) && ( this.Dock != DockStyle.Fill ) && ( this.Parent != null ) )
+                {
+                    Rectangle rc = this.Parent.ClientRectangle;
+                    int width = 320;
+                    int height = 240;
 
-                // update controls size and location
-                this.SuspendLayout( );
-                this.Location = new Point( ( rc.Width - width - 2 ) / 2, ( rc.Height - height - 2 ) / 2 );
-                this.Size = new Size( width + 2, height + 2 );
-                this.ResumeLayout( );
+                    if ( currentFrame != null )
+                    {
+                        // get frame size
+                        width  = currentFrame.Width;
+                        height = currentFrame.Height;
+                    }
+
+                    // update controls size and location
+                    this.SuspendLayout( );
+                    this.Location = new Point( ( rc.Width - width - 2 ) / 2, ( rc.Height - height - 2 ) / 2 );
+                    this.Size = new Size( width + 2, height + 2 );
+                    this.ResumeLayout( );
+                }
             }
         }
 
@@ -449,49 +410,27 @@ namespace AForge.Controls
         {
             if ( !requestedToStop )
             {
-                Bitmap newFrame = (Bitmap) eventArgs.Frame.Clone( );
-
-                // let user process the frame first
-                if ( NewFrame != null )
-                {
-                    NewFrame( this, ref newFrame );
-                }
-
-                // now update current frame of the control
-                lock ( sync )
+                lock ( this )
                 {
                     // dispose previous frame
                     if ( currentFrame != null )
                     {
-                        if ( currentFrame.Size != eventArgs.Frame.Size )
-                        {
-                            needSizeUpdate = true;
-                        }
-
                         currentFrame.Dispose( );
                         currentFrame = null;
                     }
-                    if ( convertedFrame != null )
+
+                    currentFrame = (Bitmap) eventArgs.Frame.Clone( );
+                    lastMessage = null;
+
+                    // notify about the new frame
+                    if ( NewFrame != null )
                     {
-                        convertedFrame.Dispose( );
-                        convertedFrame = null;
+                        NewFrame( this, ref currentFrame );
                     }
 
-                    currentFrame = newFrame;
-                    frameSize    = currentFrame.Size;
-                    lastMessage  = null;
-
-                    // check if conversion is required to lower bpp rate
-                    if ( ( currentFrame.PixelFormat == PixelFormat.Format16bppGrayScale ) ||
-                         ( currentFrame.PixelFormat == PixelFormat.Format48bppRgb ) ||
-                         ( currentFrame.PixelFormat == PixelFormat.Format64bppArgb ) )
-                    {
-                        convertedFrame = AForge.Imaging.Image.Convert16bppTo8bpp( currentFrame );
-                    }
+                    // update control
+                    Invalidate( );
                 }
-
-                // update control
-                Invalidate( );
             }
         }
 
@@ -515,25 +454,11 @@ namespace AForge.Controls
                     lastMessage = "Video was stopped";
                     break;
 
-                case ReasonToFinishPlaying.DeviceLost:
-                    lastMessage = "Video device was unplugged";
-                    break;
-
-                case ReasonToFinishPlaying.VideoSourceError:
-                    lastMessage = "Video has finished because of error in video source";
-                    break;
-
                 default:
                     lastMessage = "Video has finished for unknown reason";
                     break;
             }
             Invalidate( );
-
-            // notify users
-            if ( PlayingFinished != null )
-            {
-                PlayingFinished( this, reason );
-            }
         }
 
         // Parent Changed event handler

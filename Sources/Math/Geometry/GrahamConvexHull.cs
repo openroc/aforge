@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Geometry
@@ -88,7 +88,7 @@ namespace AForge.Math.Geometry
                 // don't need square root, since it is not important in our case
                 pointsToProcess[i].Distance = dx * dx + dy * dy;
                 // tangent of lines angle
-                pointsToProcess[i].K = ( dx == 0 ) ? float.PositiveInfinity : (float) dy / dx;
+                pointsToProcess[i].K = ( dx == 0 ) ? double.PositiveInfinity : (double) dy / dx;
             }
 
             // sort points by angle and distance
@@ -100,7 +100,7 @@ namespace AForge.Math.Geometry
             convexHullTemp.Add( firstCorner );
             // add another point, which forms a line with lowest slope
             convexHullTemp.Add( pointsToProcess[0] );
-            pointsToProcess.RemoveAt( 0 );
+            points.RemoveAt( 0 );
 
             PointToProcess lastPoint = convexHullTemp[1];
             PointToProcess prevPoint = convexHullTemp[0];
@@ -154,8 +154,8 @@ namespace AForge.Math.Geometry
         {
             public int X;
             public int Y;
-            public float K;
-            public float Distance;
+            public double K;
+            public double Distance;
 
             public PointToProcess( IntPoint point )
             {

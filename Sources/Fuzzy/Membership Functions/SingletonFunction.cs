@@ -2,10 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
 //
-
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
+//
 namespace AForge.Fuzzy
 {
     using System;
@@ -37,13 +39,13 @@ namespace AForge.Fuzzy
         /// <summary>
         /// The unique point where the membership value is 1.
         /// </summary>
-        protected float support;
+        protected double support;
 
         /// <summary>
         /// The leftmost x value of the membership function, the same value of the support.
         /// </summary>
         /// 
-        public float LeftLimit
+        public double LeftLimit
         {
             get
             {
@@ -55,7 +57,7 @@ namespace AForge.Fuzzy
         /// The rightmost x value of the membership function, the same value of the support.
         /// </summary>
         /// 
-        public float RightLimit
+        public double RightLimit
         {
             get
             {
@@ -69,7 +71,7 @@ namespace AForge.Fuzzy
         /// 
         /// <param name="support">Support is the only value of x where the membership function is 1.</param>
         /// 
-        public SingletonFunction( float support )
+        public SingletonFunction( double support )
         {
             this.support = support;
         }
@@ -82,7 +84,7 @@ namespace AForge.Fuzzy
         /// 
         /// <returns>Degree of membership {0,1} since singletons do not admit memberships different from 0 and 1. </returns>
         /// 
-        public float GetMembership( float x )
+        public double GetMembership( double x )
         {
             // if x is the support, returns 1, otherwise, returns 0
             return ( support == x ) ? 1 : 0;

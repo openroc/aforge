@@ -2,8 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2010
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Frank Nagl, 2009
+// (adding the code for extracting blobs in original image's size)
+// admin@franknagl.de
 //
 
 namespace AForge.Imaging
@@ -94,9 +98,8 @@ namespace AForge.Imaging
         // objects' sort order
         private ObjectsOrder objectsOrder = ObjectsOrder.None;
 
-        // filtering by size is required or not
+        // filtering by size is required or nor
         private bool filterBlobs = false;
-        private IBlobsFilter filter = null;
 
         // coupled size filtering or not
         private bool coupledSizeFiltering = false;
@@ -172,10 +175,9 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>If the property is equal to <b>false</b>, then there is no any additional
         /// post processing after image was processed. If the property is set to <b>true</b>, then
-        /// blobs filtering is done right after image processing routine. If <see cref="BlobsFilter"/>
-        /// is set, then custom blobs' filtering is done, which is implemented by user. Otherwise
-        /// blobs are filtered according to dimensions specified in <see cref="MinWidth"/>,
-        /// <see cref="MinHeight"/>, <see cref="MaxWidth"/> and <see cref="MaxHeight"/> properties.</para>
+        /// blobs filtering is done right after image processing routine. Blobs are filtered according
+        /// to dimensions specified in <see cref="MinWidth"/>, <see cref="MinHeight"/>, <see cref="MaxWidth"/>
+        /// and <see cref="MaxHeight"/> properties.</para>
         /// 
         /// <para>Default value is set to <see langword="false"/>.</para></remarks>
         /// 
@@ -190,7 +192,7 @@ namespace AForge.Imaging
         /// </summary>
         /// 
         /// <remarks><para>In uncoupled filtering mode, objects are filtered out in the case if
-        /// their width is smaller than <see cref="MinWidth"/> <b>or</b> height is smaller than 
+        /// their width is smaller than <see cref="MinWidth"/> or height is smaller than 
         /// <see cref="MinHeight"/>. But in coupled filtering mode, objects are filtered out in
         /// the case if their width is smaller than <see cref="MinWidth"/> <b>and</b> height is
         /// smaller than <see cref="MinHeight"/>. In both modes the idea with filtering by objects'
@@ -211,8 +213,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>The property specifies minimum object's width acceptable by blob counting
         /// routine and has power only when <see cref="FilterBlobs"/> property is set to
-        /// <see langword="true"/> and <see cref="BlobsFilter">custom blobs' filter</see> is
-        /// set to <see langword="null"/>.</para>
+        /// <see langword="true"/>.</para>
         /// 
         /// <para>See documentation to <see cref="CoupledSizeFiltering"/> for additional information.</para>
         /// </remarks>
@@ -229,8 +230,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>The property specifies minimum object's height acceptable by blob counting
         /// routine and has power only when <see cref="FilterBlobs"/> property is set to
-        /// <see langword="true"/> and <see cref="BlobsFilter">custom blobs' filter</see> is
-        /// set to <see langword="null"/>.</para>
+        /// <see langword="true"/>.</para>
         /// 
         /// <para>See documentation to <see cref="CoupledSizeFiltering"/> for additional information.</para>
         /// </remarks>
@@ -247,8 +247,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>The property specifies maximum object's width acceptable by blob counting
         /// routine and has power only when <see cref="FilterBlobs"/> property is set to
-        /// <see langword="true"/> and <see cref="BlobsFilter">custom blobs' filter</see> is
-        /// set to <see langword="null"/>.</para>
+        /// <see langword="true"/>.</para>
         /// 
         /// <para>See documentation to <see cref="CoupledSizeFiltering"/> for additional information.</para>
         /// </remarks>
@@ -265,8 +264,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>The property specifies maximum object's height acceptable by blob counting
         /// routine and has power only when <see cref="FilterBlobs"/> property is set to
-        /// <see langword="true"/> and <see cref="BlobsFilter">custom blobs' filter</see> is
-        /// set to <see langword="null"/>.</para>
+        /// <see langword="true"/>.</para>
         /// 
         /// <para>See documentation to <see cref="CoupledSizeFiltering"/> for additional information.</para>
         /// </remarks>
@@ -275,23 +273,6 @@ namespace AForge.Imaging
         {
             get { return maxHeight; }
             set { maxHeight = value; }
-        }
-
-        /// <summary>
-        /// Custom blobs' filter to use.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property specifies custom blobs' filtering routine to use. It has
-        /// effect only in the case if <see cref="FilterBlobs"/> property is set to <see langword="true"/>.</para>
-        /// 
-        /// <para><note>When custom blobs' filtering routine is set, it has priority over default filtering done
-        /// with <see cref="MinWidth"/>, <see cref="MinHeight"/>, <see cref="MaxWidth"/> and <see cref="MaxHeight"/>.</note></para>
-        /// </remarks>
-        /// 
-        public IBlobsFilter BlobsFilter
-        {
-            get { return filter; }
-            set { filter = value; }
         }
 
         /// <summary>
@@ -402,8 +383,6 @@ namespace AForge.Imaging
         /// <remarks><para>Processes the image and builds objects map, which is used later to extracts blobs.</para></remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Thrown by some inherited classes if some image property other
-        /// than the pixel format is not supported. See that class's documentation or the exception message for details.</exception>
         /// 
         public void ProcessImage( UnmanagedImage image )
         {
@@ -429,44 +408,29 @@ namespace AForge.Imaging
                 // check dimension of all objects and filter them
                 int objectsToRemove = 0;
 
-                if ( filter == null )
+                for ( int i = objectsCount - 1; i >= 0; i-- )
                 {
-                    for ( int i = objectsCount - 1; i >= 0; i-- )
-                    {
-                        int blobWidth  = blobs[i].Rectangle.Width;
-                        int blobHeight = blobs[i].Rectangle.Height;
+                    int blobWidth  = blobs[i].Rectangle.Width;
+                    int blobHeight = blobs[i].Rectangle.Height;
 
-                        if ( coupledSizeFiltering == false )
+                    if ( coupledSizeFiltering == false )
+                    {
+                        // uncoupled filtering
+                        if (
+                            ( blobWidth < minWidth ) || ( blobHeight < minHeight ) ||
+                            ( blobWidth > maxWidth ) || ( blobHeight > maxHeight ) )
                         {
-                            // uncoupled filtering
-                            if (
-                                ( blobWidth < minWidth ) || ( blobHeight < minHeight ) ||
-                                ( blobWidth > maxWidth ) || ( blobHeight > maxHeight ) )
-                            {
-                                labelsMap[i + 1] = 0;
-                                objectsToRemove++;
-                                blobs.RemoveAt( i );
-                            }
-                        }
-                        else
-                        {
-                            // coupled filtering
-                            if (
-                                ( ( blobWidth < minWidth ) && ( blobHeight < minHeight ) ) ||
-                                ( ( blobWidth > maxWidth ) && ( blobHeight > maxHeight ) ) )
-                            {
-                                labelsMap[i + 1] = 0;
-                                objectsToRemove++;
-                                blobs.RemoveAt( i );
-                            }
+                            labelsMap[i + 1] = 0;
+                            objectsToRemove++;
+                            blobs.RemoveAt( i );
                         }
                     }
-                }
-                else
-                {
-                    for ( int i = objectsCount - 1; i >= 0; i-- )
+                    else
                     {
-                        if ( !filter.Check( blobs[i] ) )
+                        // coupled filtering
+                        if (
+                            ( ( blobWidth < minWidth ) && ( blobHeight < minHeight ) ) ||
+                            ( ( blobWidth > maxWidth ) && ( blobHeight > maxHeight ) ) )
                         {
                             labelsMap[i + 1] = 0;
                             objectsToRemove++;
@@ -546,9 +510,9 @@ namespace AForge.Imaging
         /// <returns>Returns array of partially initialized blobs (without <see cref="Blob.Image"/> property initialized).</returns>
         /// 
         /// <remarks><para>By the amount of provided information, the method is between <see cref="GetObjectsRectangles"/> and
-        /// <see cref="GetObjects( UnmanagedImage, bool )"/> methods. The method provides array of blobs without initialized their image.
-        /// Blob's image may be extracted later using <see cref="ExtractBlobsImage( Bitmap, Blob, bool )"/>
-        /// or <see cref="ExtractBlobsImage( UnmanagedImage, Blob, bool )"/> method.
+        /// <see cref="GetObjects( BitmapData, bool )"/> methods. The method provides array of blobs without initialized their image.
+        /// Blob's image may be extracted later using <see cref="ExtractBlobsImage( Bitmap, Blob, bool )"/>,
+        /// <see cref="ExtractBlobsImage( BitmapData, Blob, bool )"/> or <see cref="ExtractBlobsImage( UnmanagedImage, Blob, bool )"/> method.
         /// </para></remarks>
         /// 
         /// <example>
@@ -609,7 +573,7 @@ namespace AForge.Imaging
         /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
         /// objects map.</para>
         /// 
-        /// <para>The method supports 24/32 bpp color and 8 bpp indexed grayscale images.</para>
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
         /// </remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
@@ -627,7 +591,7 @@ namespace AForge.Imaging
             try
             {
                 // process image
-                blobs = GetObjects( new UnmanagedImage( imageData ), extractInOriginalSize );
+                blobs = GetObjects( imageData, extractInOriginalSize );
             }
             finally
             {
@@ -635,6 +599,35 @@ namespace AForge.Imaging
                 image.UnlockBits( imageData );
             }
             return blobs;
+        }
+
+        /// <summary>
+        /// Get blobs.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Source image data to extract objects from.</param>
+        /// <param name="extractInOriginalSize">Specifies size of blobs' image to extract.
+        /// If set to <see langword="true"/> each blobs' image will have the same size as
+        /// the specified image. If set to <see langword="false"/> each blobs' image will
+        /// have the size of its blob.</param>
+        ///
+        /// <returns>Returns array of blobs.</returns>
+        /// 
+        /// <remarks><para>The method returns array of blobs. Before calling the
+        /// method, the <see cref="ProcessImage(Bitmap)"/>, <see cref="ProcessImage(BitmapData)"/>
+        /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
+        /// objects map.</para>
+        /// 
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
+        /// </remarks>
+        /// 
+        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
+        /// <exception cref="ApplicationException">No image was processed before, so objects
+        /// can not be collected.</exception>
+        /// 
+        public Blob[] GetObjects( BitmapData imageData, bool extractInOriginalSize )
+        {
+            return GetObjects( new UnmanagedImage( imageData ), extractInOriginalSize );
         }
 
         /// <summary>
@@ -654,7 +647,7 @@ namespace AForge.Imaging
         /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
         /// objects map.</para>
         /// 
-        /// <para>The method supports 24/32 bpp color and 8 bpp indexed grayscale images.</para>
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
         /// </remarks>
         ///
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
@@ -671,7 +664,6 @@ namespace AForge.Imaging
                 ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
                 ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
                 ( image.PixelFormat != PixelFormat.Format32bppArgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
                 ( image.PixelFormat != PixelFormat.Format32bppPArgb )
                 )
                 throw new UnsupportedImageFormatException( "Unsupported pixel format of the provided image." );
@@ -701,23 +693,30 @@ namespace AForge.Imaging
                 int label = blobs[k].ID;
 
                 // create new image
-                UnmanagedImage dstImage = UnmanagedImage.Create( blobImageWidth, blobImageHeight, image.PixelFormat );
+                Bitmap dstImg = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ?
+                    AForge.Imaging.Image.CreateGrayscaleImage( blobImageWidth, blobImageHeight ) :
+                    new Bitmap( blobImageWidth, blobImageHeight, image.PixelFormat );
+
+                // lock destination bitmap data
+                BitmapData dstData = dstImg.LockBits(
+                    new Rectangle( 0, 0, blobImageWidth, blobImageHeight ),
+                    ImageLockMode.ReadWrite, image.PixelFormat );
 
                 // copy image
                 unsafe
                 {
                     byte* src = (byte*) image.ImageData.ToPointer( ) + ymin * srcStride + xmin * pixelSize;
-                    byte* dst = (byte*) dstImage.ImageData.ToPointer( );
+                    byte* dst = (byte*) dstData.Scan0.ToPointer( );
                     int p = ymin * width + xmin;
 
                     if ( extractInOriginalSize )
                     {
                         // allign destination pointer also
-                        dst += ymin * dstImage.Stride + xmin * pixelSize;
+                        dst += ymin * dstData.Stride + xmin * pixelSize;
                     }
 
                     int srcOffset = srcStride - objectWidth * pixelSize;
-                    int dstOffset = dstImage.Stride - objectWidth * pixelSize;
+                    int dstOffset = dstData.Stride - objectWidth * pixelSize;
                     int labelsOffset = width - objectWidth;
 
                     // for each line
@@ -748,9 +747,11 @@ namespace AForge.Imaging
                         p += labelsOffset;
                     }
                 }
+                // unlock destination image
+                dstImg.UnlockBits( dstData );
 
                 objects[k] = new Blob( blobs[k] );
-                objects[k].Image = dstImage;
+                objects[k].Image = dstImg;
                 objects[k].OriginalSize = extractInOriginalSize;
             }
 
@@ -774,7 +775,7 @@ namespace AForge.Imaging
         /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
         /// objects map.</para>
         /// 
-        /// <para>The method supports 24/32 bpp color and 8 bpp indexed grayscale images.</para>
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
         /// </remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
@@ -791,13 +792,42 @@ namespace AForge.Imaging
             try
             {
                 // process image
-                ExtractBlobsImage( new UnmanagedImage( imageData ), blob, extractInOriginalSize );
+                ExtractBlobsImage( imageData, blob, extractInOriginalSize );
             }
             finally
             {
                 // unlock source images
                 image.UnlockBits( imageData );
             }
+        }
+
+        /// <summary>
+        /// Extract blob's image.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Source image data to extract blob's image from.</param>
+        /// <param name="blob">Blob which is required to be extracted.</param>
+        /// <param name="extractInOriginalSize">Specifies size of blobs' image to extract.
+        /// If set to <see langword="true"/> each blobs' image will have the same size as
+        /// the specified image. If set to <see langword="false"/> each blobs' image will
+        /// have the size of its blob.</param>
+        ///
+        /// <remarks><para>The method is used to extract image of partially initialized blob, which
+        /// was provided by <see cref="GetObjectsInformation"/> method. Before calling the
+        /// method, the <see cref="ProcessImage(Bitmap)"/>, <see cref="ProcessImage(BitmapData)"/>
+        /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
+        /// objects map.</para>
+        /// 
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
+        /// </remarks>
+        /// 
+        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
+        /// <exception cref="ApplicationException">No image was processed before, so blob
+        /// can not be extracted.</exception>
+        /// 
+        public void ExtractBlobsImage( BitmapData imageData, Blob blob, bool extractInOriginalSize )
+        {
+            ExtractBlobsImage( new UnmanagedImage( imageData ), blob, extractInOriginalSize );
         }
 
         /// <summary>
@@ -817,7 +847,7 @@ namespace AForge.Imaging
         /// or <see cref="ProcessImage(UnmanagedImage)"/> method should be called, which will build
         /// objects map.</para>
         /// 
-        /// <para>The method supports 24/32 bpp color and 8 bpp indexed grayscale images.</para>
+        /// <para>The method supports 24 bpp color and 8 bpp indexed grayscale images.</para>
         /// </remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the provided image.</exception>
@@ -834,7 +864,6 @@ namespace AForge.Imaging
                 ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
                 ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
                 ( image.PixelFormat != PixelFormat.Format32bppArgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
                 ( image.PixelFormat != PixelFormat.Format32bppPArgb )
                 )
                 throw new UnsupportedImageFormatException( "Unsupported pixel format of the provided image." );
@@ -859,24 +888,31 @@ namespace AForge.Imaging
             int label = blob.ID;
 
             // create new image
-            blob.Image = UnmanagedImage.Create( blobImageWidth, blobImageHeight, image.PixelFormat );
+            blob.Image = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ?
+                AForge.Imaging.Image.CreateGrayscaleImage( blobImageWidth, blobImageHeight ) :
+                new Bitmap( blobImageWidth, blobImageHeight, image.PixelFormat );
             blob.OriginalSize = extractInOriginalSize;
+
+            // lock destination bitmap data
+            BitmapData dstData = blob.Image.LockBits(
+                new Rectangle( 0, 0, blobImageWidth, blobImageHeight ),
+                ImageLockMode.ReadWrite, image.PixelFormat );
 
             // copy image
             unsafe
             {
                 byte* src = (byte*) image.ImageData.ToPointer( ) + ymin * srcStride + xmin * pixelSize;
-                byte* dst = (byte*) blob.Image.ImageData.ToPointer( );
+                byte* dst = (byte*) dstData.Scan0.ToPointer( );
                 int p = ymin * width + xmin;
 
                 if ( extractInOriginalSize )
                 {
                     // allign destination pointer also
-                    dst += ymin * blob.Image.Stride + xmin * pixelSize;
+                    dst += ymin * dstData.Stride + xmin * pixelSize;
                 }
 
                 int srcOffset = srcStride - objectWidth * pixelSize;
-                int dstOffset = blob.Image.Stride - objectWidth * pixelSize;
+                int dstOffset = dstData.Stride - objectWidth * pixelSize;
                 int labelsOffset = width - objectWidth;
 
                 // for each line
@@ -907,6 +943,8 @@ namespace AForge.Imaging
                     p += labelsOffset;
                 }
             }
+            // unlock destination image
+            blob.Image.UnlockBits( dstData );
         }
 
         /// <summary>

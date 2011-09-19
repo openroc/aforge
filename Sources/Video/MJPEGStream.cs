@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2010
+// andrew.kirillov@aforgenet.com
+//
+// Updated by Ivan.Farkas@FL4SaleLive.com, 02/01/2010
+// Fix related to AirLink cameras, which are not accurate with HTTP standard
 //
 
 namespace AForge.Video
@@ -14,7 +17,6 @@ namespace AForge.Video
 	using System.Text;
 	using System.Threading;
 	using System.Net;
-    using System.Security;
 
     /// <summary>
     /// MJPEG video source.
@@ -32,6 +34,8 @@ namespace AForge.Video
     /// // start the video source
     /// stream.Start( );
     /// // ...
+    /// // signal to stop
+    /// stream.SignalToStop( );
     /// </code>
     /// 
     /// <para><note>Some cameras produce HTTP header, which does not conform strictly to
@@ -56,8 +60,6 @@ namespace AForge.Video
         // login and password for HTTP authentication
         private string login = null;
 		private string password = null;
-        // proxy information
-        private IWebProxy proxy = null;
         // received frames count
         private int framesReceived;
         // recieved byte count
@@ -162,25 +164,6 @@ namespace AForge.Video
 			get { return password; }
 			set { password = value; }
 		}
-        
-        /// <summary>
-        /// Gets or sets proxy information for the request.
-        /// </summary>
-        /// 
-        /// <remarks><para>The local computer or application config file may specify that a default
-        /// proxy to be used. If the Proxy property is specified, then the proxy settings from the Proxy
-        /// property overridea the local computer or application config file and the instance will use
-        /// the proxy settings specified. If no proxy is specified in a config file
-        /// and the Proxy property is unspecified, the request uses the proxy settings
-        /// inherited from Internet Explorer on the local computer. If there are no proxy settings
-        /// in Internet Explorer, the request is sent directly to the server.
-        /// </para></remarks>
-        /// 
-        public IWebProxy Proxy
-        {
-            get { return proxy; }
-            set { proxy = value; }
-         }
 
         /// <summary>
         /// User agent to specify in HTTP request header.
@@ -403,9 +386,7 @@ namespace AForge.Video
             byte[] jpegMagic = new byte[] { 0xFF, 0xD8, 0xFF };
             int jpegMagicLength = 3;
 
-            ASCIIEncoding encoding = new ASCIIEncoding( );
-
-            while ( !stopEvent.WaitOne( 0, false ) )
+			while ( true )
 			{
 				// reset reload event
 				reloadEvent.Reset( );
@@ -416,13 +397,10 @@ namespace AForge.Video
 				WebResponse response = null;
                 // stream for MJPEG downloading
                 Stream stream = null;
-                // boundary betweeen images (string and binary versions)
+                // boundary betweeen images
 				byte[] boundary = null;
-                string boudaryStr = null;
                 // length of boundary
 				int boundaryLen;
-                // flag signaling if boundary was checked or not
-                bool boundaryIsChecked = false;
                 // read amounts and positions
 				int read, todo = 0, total = 0, pos = 0, align = 1;
 				int start = 0, stop = 0;
@@ -440,13 +418,6 @@ namespace AForge.Video
                     {
                         request.UserAgent = userAgent;
                     }
-
-                    // set proxy
-                    if ( proxy != null )
-                    {
-                        request.Proxy = proxy;
-                    }
-
                     // set timeout value for the request
                     request.Timeout = requestTimeout;
                     // set login and password
@@ -461,50 +432,37 @@ namespace AForge.Video
 					// check content type
                     string contentType = response.ContentType;
                     string[] contentTypeArray = contentType.Split( '/' );
-
-                    // "application/octet-stream"
-                    if ( ( contentTypeArray[0] == "application" ) && ( contentTypeArray[1] == "octet-stream" ) )
+                    if ( ! ( ( contentTypeArray[0] == "multipart" ) && ( contentType.Contains( "mixed" ) ) ) )
                     {
-                        boundaryLen = 0;
-                        boundary = new byte[0];
-                    }
-                    else if ( ( contentTypeArray[0] == "multipart" ) && ( contentType.Contains( "mixed" ) ) )
-                    {
-                        // get boundary
-                        int boundaryIndex = contentType.IndexOf( "boundary", 0 );
-                        if ( boundaryIndex != -1 )
+                        // provide information to clients
+                        if ( VideoSourceError != null )
                         {
-                            boundaryIndex = contentType.IndexOf( "=", boundaryIndex + 8 );
+                            VideoSourceError( this, new VideoSourceErrorEventArgs( "Invalid content type" ) );
                         }
 
-                        if ( boundaryIndex == -1 )
-                        {
-                            // try same scenario as with octet-stream, i.e. without boundaries
-                            boundaryLen = 0;
-                            boundary = new byte[0];
-                        }
-                        else
-                        {
-                            boudaryStr = contentType.Substring( boundaryIndex + 1 );
-                            // remove spaces and double quotes, which may be added by some IP cameras
-                            boudaryStr = boudaryStr.Trim( ' ', '"' );
+                        request.Abort( );
+                        request = null;
+                        response.Close( );
+                        response = null;
 
-                            boundary = encoding.GetBytes( boudaryStr );
-                            boundaryLen = boundary.Length;
-                            boundaryIsChecked = false;
-                        }
+                        // need to stop ?
+                        if ( stopEvent.WaitOne( 0, true ) )
+                            break;
+                        continue;
                     }
-                    else
-                    {
-                        throw new Exception( "Invalid content type." );
-                    }
+
+					// get boundary
+					ASCIIEncoding encoding = new ASCIIEncoding( );
+                    string boudaryStr = contentType.Substring( contentType.IndexOf( "boundary=", 0 ) + 9 );
+                    boundary = encoding.GetBytes( boudaryStr );
+					boundaryLen = boundary.Length;
+                    bool boundaryIsChecked = false;
 
 					// get response stream
                     stream = response.GetResponseStream( );
-                    stream.ReadTimeout = requestTimeout;
 
 					// loop
-					while ( ( !stopEvent.WaitOne( 0, false ) ) && ( !reloadEvent.WaitOne( 0, false ) ) )
+					while ( ( !stopEvent.WaitOne( 0, true ) ) && ( !reloadEvent.WaitOne( 0, true ) ) )
 					{
 						// check total read
 						if ( total > bufSize - readSize )
@@ -523,7 +481,7 @@ namespace AForge.Video
 						bytesReceived += read;
 
                         // do we need to check boundary ?
-                        if ( ( boundaryLen != 0 ) && ( !boundaryIsChecked ) )
+                        if ( !boundaryIsChecked )
                         {
                             // some IP cameras, like AirLink, claim that boundary is "myboundary",
                             // when it is really "--myboundary". this needs to be corrected.
@@ -551,13 +509,13 @@ namespace AForge.Video
                         }
 				
 						// search for image start
-						if ( ( align == 1 ) && ( todo >= jpegMagicLength ) )
+						if ( align == 1 )
 						{
 							start = ByteArrayUtils.Find( buffer, jpegMagic, pos, todo );
 							if ( start != -1 )
 							{
 								// found JPEG start
-								pos		= start + jpegMagicLength;
+								pos		= start;
 								todo	= total - pos;
 								align	= 2;
 							}
@@ -569,13 +527,10 @@ namespace AForge.Video
 							}
 						}
 
-                        // search for image end ( boundaryLen can be 0, so need extra check )
-						while ( ( align == 2 ) && ( todo != 0 ) && ( todo >= boundaryLen ) )
+						// search for image end
+						while ( ( align == 2 ) && ( todo >= boundaryLen ) )
 						{
-							stop = ByteArrayUtils.Find( buffer,
-                                ( boundaryLen != 0 ) ? boundary : jpegMagic,
-                                pos, todo );
-
+							stop = ByteArrayUtils.Find( buffer, boundary, pos, todo );
 							if ( stop != -1 )
 							{
 								pos		= stop;
@@ -585,7 +540,7 @@ namespace AForge.Video
 								framesReceived ++;
 
 								// image at stop
-								if ( ( NewFrame != null ) && ( !stopEvent.WaitOne( 0, false ) ) )
+								if ( ( NewFrame != null ) && ( !stopEvent.WaitOne( 0, true ) ) )
 								{
 									Bitmap bitmap = (Bitmap) Bitmap.FromStream ( new MemoryStream( buffer, start, stop - start ) );
 									// notify client
@@ -607,40 +562,30 @@ namespace AForge.Video
 							else
 							{
 								// boundary not found
-                                if ( boundaryLen != 0 )
-                                {
-                                    todo = boundaryLen - 1;
-                                    pos = total - todo;
-                                }
-                                else
-                                {
-                                    todo = 0;
-                                    pos = total;
-                                }
+								todo	= boundaryLen - 1;
+								pos		= total - todo;
 							}
 						}
 					}
 				}
-				catch ( ApplicationException )
+				catch ( WebException exception )
 				{
-                    // do nothing for Application Exception, which we raised on our own
-                    // wait for a while before the next try
-                    Thread.Sleep( 250 );
-                }
-                catch ( ThreadAbortException )
-                {
-                    break;
-                }
-                catch ( Exception exception )
-                {
                     // provide information to clients
                     if ( VideoSourceError != null )
                     {
                         VideoSourceError( this, new VideoSourceErrorEventArgs( exception.Message ) );
                     }
                     // wait for a while before the next try
-                    Thread.Sleep( 250 );
-                }
+					Thread.Sleep( 250 );
+				}
+				catch ( ApplicationException )
+				{
+					// wait for a while before the next try
+					Thread.Sleep( 250 );
+				}
+				catch ( Exception )
+				{
+				}
 				finally
 				{
 					// abort request
@@ -664,7 +609,7 @@ namespace AForge.Video
 				}
 
 				// need to stop ?
-				if ( stopEvent.WaitOne( 0, false ) )
+				if ( stopEvent.WaitOne( 0, true ) )
 					break;
 			}
 

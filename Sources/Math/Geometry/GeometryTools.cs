@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2010
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Geometry
@@ -26,38 +26,84 @@ namespace AForge.Math.Geometry
         /// 
         /// <returns>Returns angle between specified vectors measured in degrees.</returns>
         /// 
-        public static float GetAngleBetweenVectors( Point startPoint, Point vector1end, Point vector2end )
+        public static double GetAngleBetweenVectors( IntPoint startPoint, IntPoint vector1end, IntPoint vector2end )
         {
-            float x1 = vector1end.X - startPoint.X;
-            float y1 = vector1end.Y - startPoint.Y;
+            int x1 = vector1end.X - startPoint.X;
+            int y1 = vector1end.Y - startPoint.Y;
 
-            float x2 = vector2end.X - startPoint.X;
-            float y2 = vector2end.Y - startPoint.Y;
+            int x2 = vector2end.X - startPoint.X;
+            int y2 = vector2end.Y - startPoint.Y;
 
-            return (float) ( Math.Acos( ( x1 * x2 + y1 * y2 ) / ( Math.Sqrt( x1 * x1 + y1 * y1 ) * Math.Sqrt( x2 * x2 + y2 * y2 ) ) ) * 180.0 / Math.PI );
+            return Math.Acos( ( x1 * x2 + y1 * y2 ) / ( Math.Sqrt( x1 * x1 + y1 * y1 ) * Math.Sqrt( x2 * x2 + y2 * y2 ) ) ) * 180.0 / Math.PI;
         }
 
         /// <summary>
         /// Calculate minimum angle between two lines measured in [0, 90] degrees range.
         /// </summary>
         /// 
-        /// <param name="a1">A point on the first line.</param>
-        /// <param name="a2">Another point on the first line.</param>
-        /// <param name="b1">A point on the second line.</param>
-        /// <param name="b2">Another point on the second line.</param>
+        /// <param name="line1start">Starting point of the first line.</param>
+        /// <param name="line1end">Ending point of the first line.</param>
+        /// <param name="line2start">Starting point of the second line.</param>
+        /// <param name="line2end">Ending point of the second line.</param>
         /// 
         /// <returns>Returns minimum angle between two lines.</returns>
         /// 
-        /// <remarks><para><note>It is preferred to use <see cref="Line.GetAngleBetweenLines"/> if it is required to calculate angle
-        /// multiple times for one of the lines.</note></para></remarks>
-        /// 
-        /// <exception cref="ArgumentException"><paramref name="a1"/> and <paramref name="a2"/> are the same,
-        /// -OR- <paramref name="b1"/> and <paramref name="b2"/> are the same.</exception>
-        /// 
-        public static float GetAngleBetweenLines( Point a1, Point a2, Point b1, Point b2 )
+        public static double GetAngleBetweenLines( IntPoint line1start, IntPoint line1end, IntPoint line2start, IntPoint line2end )
         {
-            Line line1 = Line.FromPoints( a1, a2 );
-            return line1.GetAngleBetweenLines( Line.FromPoints( b1, b2 ) );
+            double k1, k2;
+
+            if ( line1start.X != line1end.X )
+            {
+                k1 = (double) ( line1end.Y - line1start.Y ) / ( line1end.X - line1start.X );
+            }
+            else
+            {
+                k1 = double.PositiveInfinity;
+            }
+
+            if ( line2start.X != line2end.X )
+            {
+                k2 = (double) ( line2end.Y - line2start.Y ) / ( line2end.X - line2start.X );
+            }
+            else
+            {
+                k2 = double.PositiveInfinity;
+            }
+
+            // check if lines are parallel
+            if ( k1 == k2 )
+                return 0;
+
+            double angle = 0;
+
+            if ( ( k1 != double.PositiveInfinity ) && ( k2 != double.PositiveInfinity ) )
+            {
+                double tanPhi = ( ( k2 > k1 ) ? ( k2 - k1 ) : ( k1 - k2 ) ) / ( 1 + k1 * k2 );
+                angle = Math.Atan( tanPhi );
+            }
+            else
+            {
+                // one of the lines is parallel to Y axis
+
+                if ( k1 == double.PositiveInfinity )
+                {
+                    angle = Math.PI / 2 - Math.Atan( k2 ) * Math.Sign( k2 );
+                }
+                else
+                {
+                    angle = Math.PI / 2 - Math.Atan( k1 ) * Math.Sign( k1 );
+                }
+            }
+
+            // convert radians to degrees
+            angle *= ( 180.0 / Math.PI );
+
+            if ( angle < 0 )
+            {
+                angle = -angle;
+            }
+
+            return angle;
         }
     }
 }

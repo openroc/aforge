@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -47,14 +47,14 @@ namespace AForge.Imaging.Filters
     /// 
     /// <seealso cref="PointedMeanFloodFill"/>
     /// 
-    public unsafe class PointedColorFloodFill : BaseInPlacePartialFilter
+    public class PointedColorFloodFill : BaseInPlacePartialFilter
     {
         // map of pixels, which are already checked by the flood fill algorithm
         private bool[,] checkedPixels;
 
         // set of variables (which describe image property and min/max color) to avoid passing them
         // recursively as parameters
-        byte* scan0;      // pointer to first image line
+        int scan0;      // pointer to first image line
         int stride;     // size of image's line
         int startX;     // X1 of bounding rectangle
         int stopX;      // Y1 of bounding rectangle
@@ -190,7 +190,7 @@ namespace AForge.Imaging.Filters
             stopY  = rect.Bottom - 1;
 
             // save image properties
-            scan0 = (byte*) image.ImageData.ToPointer( );
+            scan0 = image.ImageData.ToInt32( );
             stride = image.Stride;
 
             // create map visited pixels
@@ -198,15 +198,15 @@ namespace AForge.Imaging.Filters
 
             if ( image.PixelFormat == PixelFormat.Format8bppIndexed )
             {
-                byte startColor = *( (byte*) CoordsToPointerGray( startingPoint.X, startingPoint.Y ) );
+                byte startColor= *( (byte*) CoordsToPointerGray( startingPoint.X, startingPoint.Y ) );
                 minG = (byte) ( Math.Max(   0, startColor - tolerance.G ) );
                 maxG = (byte) ( Math.Min( 255, startColor + tolerance.G ) );
 
-                LinearFloodFill4Gray( startingPoint );
+                LinearFloodFill4Gray( startingPoint.X, startingPoint.Y );
             }
             else
             {
-                byte* startColor = (byte*) CoordsToPointerRGB( startingPoint.X, startingPoint.Y );
+                byte* startColor= (byte*) CoordsToPointerRGB( startingPoint.X, startingPoint.Y );
 
                 minR = (byte) ( Math.Max(   0, startColor[RGB.R] - tolerance.R ) );
                 maxR = (byte) ( Math.Min( 255, startColor[RGB.R] + tolerance.R ) );
@@ -215,208 +215,133 @@ namespace AForge.Imaging.Filters
                 minB = (byte) ( Math.Max(   0, startColor[RGB.B] - tolerance.B ) );
                 maxB = (byte) ( Math.Min( 255, startColor[RGB.B] + tolerance.B ) );
 
-                LinearFloodFill4RGB( startingPoint );
+                LinearFloodFill4RGB( startingPoint.X, startingPoint.Y );
             }
         }
 
         // Liner flood fill in 4 directions for grayscale images
-        private unsafe void LinearFloodFill4Gray( IntPoint startingPoint )
+        private unsafe void LinearFloodFill4Gray( int x, int y )
         {
-            Queue<IntPoint> points = new Queue<IntPoint>( );
-            points.Enqueue( startingPoint );
+            // get image pointer for current (X, Y)
+            byte* p = (byte*) CoordsToPointerGray( x, y );
 
-            while ( points.Count > 0 )
+            // find left end of line to fill
+            int leftLineEdge = x;
+            byte* ptr = p;
+
+            while ( true )
             {
-                IntPoint point = points.Dequeue( );
+                // fill current pixel
+                *ptr = fillG; 
+                // mark the pixel as checked
+                checkedPixels[y, leftLineEdge] = true;
 
-                int x = point.X;
-                int y = point.Y;
+                leftLineEdge--;
+                ptr -= 1;
 
-                // get image pointer for current (X, Y)
-                byte* p = (byte*) CoordsToPointerGray( x, y );
+                // check if we need to stop on the edge of image or color area
+                if ( ( leftLineEdge < startX ) || ( checkedPixels[y, leftLineEdge] ) || ( !CheckGrayPixel( *ptr ) ) )
+                    break;
 
-                // find left end of line to fill
-                int leftLineEdge = x;
-                byte* ptr = p;
+            }
+            leftLineEdge++;
 
-                while ( true )
-                {
-                    // fill current pixel
-                    *ptr = fillG;
-                    // mark the pixel as checked
-                    checkedPixels[y, leftLineEdge] = true;
+            // find right end of line to fill
+            int rightLineEdge =x  ;
+            ptr = p;
 
-                    leftLineEdge--;
-                    ptr -= 1;
+            while ( true )
+            {
+                // fill current pixel
+                *ptr = fillG;
+                // mark the pixel as checked
+                checkedPixels[y, rightLineEdge] = true;
 
-                    // check if we need to stop on the edge of image or color area
-                    if ( ( leftLineEdge < startX ) || ( checkedPixels[y, leftLineEdge] ) || ( !CheckGrayPixel( *ptr ) ) )
-                        break;
+                rightLineEdge++;
+                ptr += 1;
 
-                }
-                leftLineEdge++;
-
-                // find right end of line to fill
-                int rightLineEdge = x;
-                ptr = p;
-
-                while ( true )
-                {
-                    // fill current pixel
-                    *ptr = fillG;
-                    // mark the pixel as checked
-                    checkedPixels[y, rightLineEdge] = true;
-
-                    rightLineEdge++;
-                    ptr += 1;
-
-                    // check if we need to stop on the edge of image or color area
-                    if ( rightLineEdge > stopX || ( checkedPixels[y, rightLineEdge] ) || ( !CheckGrayPixel( *ptr ) ) )
-                        break;
-                }
-                rightLineEdge--;
+                // check if we need to stop on the edge of image or color area
+                if ( rightLineEdge > stopX || ( checkedPixels[y, rightLineEdge] ) || (!CheckGrayPixel( *ptr ) ) )
+                    break;
+            }
+            rightLineEdge--;
 
 
-                // loop to go up and down
-                ptr = (byte*) CoordsToPointerGray( leftLineEdge, y );
-
-                bool upperPointIsQueued = false;
-                bool lowerPointIsQueued = false;
-                int upperY = y - 1;
-                int lowerY = y + 1;
-
-                for ( int i = leftLineEdge; i <= rightLineEdge; i++, ptr++ )
-                {
-                    // go up
-                    if ( ( y > startY ) && ( !checkedPixels[y - 1, i] ) && ( CheckGrayPixel( *( ptr - stride ) ) ) )
-                    {
-                        if ( !upperPointIsQueued )
-                        {
-                            points.Enqueue( new IntPoint( i, upperY ) );
-                            upperPointIsQueued = true;
-                        }
-                    }
-                    else
-                    {
-                        upperPointIsQueued = false;
-                    }
-
-                    // go down
-                    if ( ( y < stopY ) && ( !checkedPixels[y + 1, i] ) && ( CheckGrayPixel( *( ptr + stride ) ) ) )
-                    {
-                        if ( !lowerPointIsQueued )
-                        {
-                            points.Enqueue( new IntPoint( i, lowerY ) );
-                            lowerPointIsQueued = true;
-                        }
-                    }
-                    else
-                    {
-                        lowerPointIsQueued = false;
-                    }
-                }
+            // loop to go up and down
+            ptr = (byte*) CoordsToPointerGray( leftLineEdge, y );
+            for ( int i = leftLineEdge; i <= rightLineEdge; i++, ptr++ )
+            {
+                // go up
+                if ( ( y > startY ) && ( !checkedPixels[y - 1, i] ) && ( CheckGrayPixel( *( ptr - stride ) ) ) )
+                    LinearFloodFill4Gray( i, y - 1 );
+                // go down
+                if ( ( y < stopY ) && ( !checkedPixels[y + 1, i] ) && ( CheckGrayPixel( *( ptr + stride ) ) ) )
+                    LinearFloodFill4Gray( i, y + 1 );
             }
         }
 
         // Liner flood fill in 4 directions for RGB
-        private unsafe void LinearFloodFill4RGB( IntPoint startPoint )
+        private unsafe void LinearFloodFill4RGB( int x, int y )
         {
-            Queue<IntPoint> points = new Queue<IntPoint>( );
-            points.Enqueue( startingPoint );
+            // get image pointer for current (X, Y)
+            byte* p = (byte*) CoordsToPointerRGB( x, y );
 
-            while ( points.Count > 0 )
+            // find left end of line to fill
+            int leftLineEdge = x;
+            byte* ptr = p;
+
+            while ( true )
             {
-                IntPoint point = points.Dequeue( );
+                // fill current pixel
+                ptr[RGB.R] = fillR;
+                ptr[RGB.G] = fillG;
+                ptr[RGB.B] = fillB;
+                // mark the pixel as checked
+                checkedPixels[y, leftLineEdge] = true;
 
-                int x = point.X;
-                int y = point.Y;
+                leftLineEdge--;
+                ptr -= 3;
 
-                // get image pointer for current (X, Y)
-                byte* p = (byte*) CoordsToPointerRGB( x, y );
+                // check if we need to stop on the edge of image or color area
+                if ( ( leftLineEdge < startX ) || ( checkedPixels[y, leftLineEdge] ) || ( !CheckRGBPixel( ptr ) ) )
+                    break;
 
-                // find left end of line to fill
-                int leftLineEdge = x;
-                byte* ptr = p;
+            }
+            leftLineEdge++;
 
-                while ( true )
-                {
-                    // fill current pixel
-                    ptr[RGB.R] = fillR;
-                    ptr[RGB.G] = fillG;
-                    ptr[RGB.B] = fillB;
-                    // mark the pixel as checked
-                    checkedPixels[y, leftLineEdge] = true;
+            // find right end of line to fill
+            int rightLineEdge = x;
+            ptr = p;
 
-                    leftLineEdge--;
-                    ptr -= 3;
+            while ( true )
+            {
+                // fill current pixel
+                ptr[RGB.R] = fillR;
+                ptr[RGB.G] = fillG;
+                ptr[RGB.B] = fillB;
+                // mark the pixel as checked
+                checkedPixels[y, rightLineEdge] = true;
 
-                    // check if we need to stop on the edge of image or color area
-                    if ( ( leftLineEdge < startX ) || ( checkedPixels[y, leftLineEdge] ) || ( !CheckRGBPixel( ptr ) ) )
-                        break;
+                rightLineEdge++;
+                ptr += 3;
 
-                }
-                leftLineEdge++;
+                // check if we need to stop on the edge of image or color area
+                if ( rightLineEdge > stopX || ( checkedPixels[y, rightLineEdge] ) || ( !CheckRGBPixel( ptr ) ) )
+                    break;
+            }
+            rightLineEdge--;
 
-                // find right end of line to fill
-                int rightLineEdge = x;
-                ptr = p;
 
-                while ( true )
-                {
-                    // fill current pixel
-                    ptr[RGB.R] = fillR;
-                    ptr[RGB.G] = fillG;
-                    ptr[RGB.B] = fillB;
-                    // mark the pixel as checked
-                    checkedPixels[y, rightLineEdge] = true;
-
-                    rightLineEdge++;
-                    ptr += 3;
-
-                    // check if we need to stop on the edge of image or color area
-                    if ( rightLineEdge > stopX || ( checkedPixels[y, rightLineEdge] ) || ( !CheckRGBPixel( ptr ) ) )
-                        break;
-                }
-                rightLineEdge--;
-
-                // loop to go up and down
-                ptr = (byte*) CoordsToPointerRGB( leftLineEdge, y );
-
-                bool upperPointIsQueued = false;
-                bool lowerPointIsQueued = false;
-                int upperY = y - 1;
-                int lowerY = y + 1;
-
-                for ( int i = leftLineEdge; i <= rightLineEdge; i++, ptr += 3 )
-                {
-                    // go up
-                    if ( ( y > startY ) && ( !checkedPixels[upperY, i] ) && ( CheckRGBPixel( ptr - stride ) ) )
-                    {
-                        if ( !upperPointIsQueued )
-                        {
-                            points.Enqueue( new IntPoint( i, upperY ) );
-                            upperPointIsQueued = true;
-                        }
-                    }
-                    else
-                    {
-                        upperPointIsQueued = false;
-                    }
-
-                    // go down
-                    if ( ( y < stopY ) && ( !checkedPixels[lowerY, i] ) && ( CheckRGBPixel( ptr + stride ) ) )
-                    {
-                        if ( !lowerPointIsQueued )
-                        {
-                            points.Enqueue( new IntPoint( i, lowerY ) );
-                            lowerPointIsQueued = true;
-                        }
-                    }
-                    else
-                    {
-                        lowerPointIsQueued = false;
-                    }
-                }
+            // loop to go up and down
+            ptr = (byte*) CoordsToPointerRGB( leftLineEdge, y );
+            for ( int i = leftLineEdge; i <= rightLineEdge; i++, ptr += 3 )
+            {
+                // go up
+                if ( ( y > startY ) && ( !checkedPixels[y - 1, i] ) && ( CheckRGBPixel( ptr - stride ) ) )
+                    LinearFloodFill4RGB( i, y - 1 );
+                // go down
+                if ( ( y < stopY ) && ( !checkedPixels[y + 1, i] ) && ( CheckRGBPixel( ptr + stride ) ) )
+                    LinearFloodFill4RGB( i, y + 1 );
             }
         }
 
@@ -435,13 +360,13 @@ namespace AForge.Imaging.Filters
         }
 
         // Convert image coordinate to pointer for Grayscale images
-        private byte* CoordsToPointerGray( int x, int y )
+        private int CoordsToPointerGray( int x, int y )
         {
             return scan0 + ( stride * y ) + x;
         }
 
         // Convert image coordinate to pointer for RGB images
-        private byte* CoordsToPointerRGB( int x, int y )
+        private int CoordsToPointerRGB( int x, int y )
         {
             return scan0 + ( stride * y ) + x * 3;
         }

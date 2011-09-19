@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -205,8 +204,8 @@ namespace AForge.Imaging.Filters
             else
             {
                 int pixelSize = ( srcPixelFormat == PixelFormat.Format48bppRgb ) ? 3 : 4;
-                byte* srcBase = (byte*) sourceData.ImageData.ToPointer( );
-                byte* dstBase = (byte*) destinationData.ImageData.ToPointer( );
+                int srcBase   = (int) sourceData.ImageData.ToPointer( );
+                int dstBase   = (int) destinationData.ImageData.ToPointer( );
                 int srcStride = sourceData.Stride;
                 int dstStride = destinationData.Stride;
 

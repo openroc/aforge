@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Video
@@ -53,16 +53,7 @@ namespace AForge.Video
         /// <summary>
         /// Video playing has finished because it was stopped by user.
         /// </summary>
-        StoppedByUser,
-        /// <summary>
-        /// Video playing has finished because the device was lost (unplugged).
-        /// </summary>
-        DeviceLost,
-        /// <summary>
-        /// Video playing has finished because of some error happened the video source (camera, stream, file, etc.).
-        /// A error reporting event usually is fired to provide error information.
-        /// </summary>
-        VideoSourceError
+        StoppedByUser
     }
 
     /// <summary>

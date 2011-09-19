@@ -1,9 +1,8 @@
 // AForge Direct Show Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video.DirectShow.Internals
@@ -117,10 +116,10 @@ namespace AForge.Video.DirectShow.Internals
         /// 
         protected virtual void Dispose( bool disposing )
         {
-            if ( ( FormatSize != 0 ) && ( FormatPtr != IntPtr.Zero ) )
+            if ( FormatPtr != IntPtr.Zero )
             {
                 Marshal.FreeCoTaskMem( FormatPtr );
-                FormatSize = 0;
+                FormatPtr = IntPtr.Zero;
             }
 
             if ( unkPtr != IntPtr.Zero )
@@ -360,8 +359,7 @@ namespace AForge.Video.DirectShow.Internals
     internal enum DsEvCode
     {
         None,
-        Complete   = 0x01,      // EC_COMPLETE
-        DeviceLost = 0x1F,      // EC_DEVICE_LOST
+        Complete = 0x01,      // EC_COMPLETE
         //(...) not yet interested in other events
     }
 
@@ -389,15 +387,6 @@ namespace AForge.Video.DirectShow.Internals
         SECAM_L     = 0x00040000,
         SECAM_L1    = 0x00080000,
         PAL_N_COMBO = 0x00100000    // Argentina
-    }
-
-    [Flags, ComVisible( false )]
-    internal enum VideoControlFlags
-    {
-        FlipHorizontal        = 0x0001,
-        FlipVertical          = 0x0002,
-        ExternalTriggerEnable = 0x0004,
-        Trigger               = 0x0008
     }
 
     [StructLayout( LayoutKind.Sequential ), ComVisible( false )]

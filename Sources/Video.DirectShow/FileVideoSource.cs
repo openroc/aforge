@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2010
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Video.DirectShow
@@ -23,7 +23,6 @@ namespace AForge.Video.DirectShow
     /// 
     /// <remarks><para>The video source provides access to video files. DirectShow is used to access video
     /// files.</para>
-    /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create video source
@@ -459,13 +458,13 @@ namespace AForge.Video.DirectShow
 
                 // get media events' interface
                 mediaEvent = (IMediaEventEx) graphObject;
-                IntPtr p1, p2;
+                int p1, p2;
                 DsEvCode code;
 
                 // run
                 mediaControl.Run( );
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+                while ( !stopEvent.WaitOne( 0, true ) )
                 {
                     Thread.Sleep( 100 );
 
@@ -534,7 +533,7 @@ namespace AForge.Video.DirectShow
         protected void OnNewFrame( Bitmap image )
         {
             framesReceived++;
-            if ( ( !stopEvent.WaitOne( 0, false ) ) && ( NewFrame != null ) )
+            if ( ( !stopEvent.WaitOne( 0, true ) ) && ( NewFrame != null ) )
                 NewFrame( this, new NewFrameEventArgs( image ) );
         }
 
@@ -589,17 +588,14 @@ namespace AForge.Video.DirectShow
                     int srcStride = imageData.Stride;
                     int dstStride = imageData.Stride;
 
-                    unsafe
-                    {
-                        byte* dst = (byte*) imageData.Scan0.ToPointer( ) + dstStride * ( height - 1 );
-                        byte* src = (byte*) buffer.ToPointer( );
+                    int dst = imageData.Scan0.ToInt32( ) + dstStride * ( height - 1 );
+                    int src = buffer.ToInt32( );
 
-                        for ( int y = 0; y < height; y++ )
-                        {
-                            Win32.memcpy( dst, src, srcStride );
-                            dst -= dstStride;
-                            src += srcStride;
-                        }
+                    for ( int y = 0; y < height; y++ )
+                    {
+                        Win32.memcpy( dst, src, srcStride );
+                        dst -= dstStride;
+                        src += srcStride;
                     }
 
                     // unlock bitmap data

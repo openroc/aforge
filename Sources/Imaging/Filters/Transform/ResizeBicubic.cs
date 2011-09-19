@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -18,9 +17,7 @@ namespace AForge.Imaging.Filters
     /// </summary>
     /// 
     /// <remarks><para>The class implements image resizing filter using bicubic
-    /// interpolation algorithm. It uses bicubic kernel W(x) as described on
-    /// <a href="http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm">Wikipedia</a>
-    /// (coefficient <b>a</b> is set to <b>-0.5</b>).</para>
+    /// interpolation algorithm.</para>
     /// 
     /// <para>The filter accepts 8 grayscale images and 24 bpp
     /// color images for processing.</para>
@@ -149,7 +146,7 @@ namespace AForge.Imaging.Filters
                                 g += k2 * src[oy2 * srcStride + ox2];
                             }
                         }
-                        *dst = (byte) Math.Max( 0, Math.Min( 255, g ) );
+                        *dst = (byte) g;
                     }
                     dst += dstOffset;
                 }
@@ -205,9 +202,9 @@ namespace AForge.Imaging.Filters
                             }
                         }
 
-                        dst[RGB.R] = (byte) Math.Max( 0, Math.Min( 255, r ) );
-                        dst[RGB.G] = (byte) Math.Max( 0, Math.Min( 255, g ) );
-                        dst[RGB.B] = (byte) Math.Max( 0, Math.Min( 255, b ) );
+                        dst[RGB.R] = (byte) r;
+                        dst[RGB.G] = (byte) g;
+                        dst[RGB.B] = (byte) b;
                     }
                     dst += dstOffset;
                 }

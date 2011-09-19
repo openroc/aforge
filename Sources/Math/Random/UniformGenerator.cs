@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Random
@@ -26,9 +26,9 @@ namespace AForge.Math.Random
     /// <para>Sample usage:</para>
     /// <code>
     /// // create instance of random generator
-    /// IRandomNumberGenerator generator = new UniformGenerator( new Range( 50, 100 ) );
+    /// IRandomNumberGenerator generator = new UniformGenerator( new DoubleRange( 50, 100 ) );
     /// // generate random number
-    /// float randomNumber = generator.Next( );
+    /// double randomNumber = generator.Next( );
     /// </code>
     /// </remarks>
     /// 
@@ -37,14 +37,14 @@ namespace AForge.Math.Random
         private UniformOneGenerator rand = null;
 
         // generator's range
-        private float min;
-        private float length;
+        private double min;
+        private double length;
 
         /// <summary>
         /// Mean value of the generator.
         /// </summary>
         ///
-        public float Mean
+        public double Mean
         {
             get { return ( min + min + length ) / 2; }
         }
@@ -53,7 +53,7 @@ namespace AForge.Math.Random
         /// Variance value of the generator.
         /// </summary>
         ///
-        public float Variance
+        public double Variance
         {
             get { return length * length / 12; }
         }
@@ -67,9 +67,9 @@ namespace AForge.Math.Random
         /// value.</para>
         /// </remarks>
         /// 
-        public Range Range
+        public DoubleRange Range
         {
-            get { return new Range( min, min + length ); }
+            get { return new DoubleRange( min, min + length ); }
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace AForge.Math.Random
         /// 
         /// <remarks>Initializes random numbers generator with zero seed.</remarks>
         /// 
-        public UniformGenerator( Range range ) :
+        public UniformGenerator( DoubleRange range ) :
             this( range, 0 )
         {
         }
@@ -92,7 +92,7 @@ namespace AForge.Math.Random
         /// <param name="range">Random numbers range.</param>
         /// <param name="seed">Seed value to initialize random numbers generator.</param>
         /// 
-        public UniformGenerator( Range range, int seed )
+        public UniformGenerator( DoubleRange range, int seed )
         {
             rand = new UniformOneGenerator( seed );
 
@@ -106,9 +106,9 @@ namespace AForge.Math.Random
         /// 
         /// <returns>Returns next random number.</returns>
         /// 
-        public float Next( )
+        public double Next( )
         {
-            return (float) rand.Next( ) * length + min;
+            return rand.Next( ) * length + min;
         }
 
         /// <summary>
