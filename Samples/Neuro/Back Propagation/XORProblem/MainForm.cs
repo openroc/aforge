@@ -1,9 +1,8 @@
+// AForge Framework
 // XOR Problem solution using Multi-Layer Neural Network
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -23,7 +22,7 @@ using AForge.Controls;
 namespace XORProblem
 {
 	/// <summary>
-    /// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -61,8 +60,8 @@ namespace XORProblem
 		private int			sigmoidType = 0;
 		private bool		saveStatisticsToFiles = false;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 
 		// Constructor
@@ -528,7 +527,7 @@ namespace XORProblem
 										 };
 			}
 
-			// create neural network
+			// create perceptron
 			ActivationNetwork	network = new ActivationNetwork(
 				( sigmoidType == 0 ) ? 
 					(IActivationFunction) new SigmoidFunction( sigmoidAlphaValue ) :
@@ -590,7 +589,7 @@ namespace XORProblem
 					errors[i, 1] = (double) errorsList[i];
 				}
 
-				errorChart.RangeX = new Range( 0, errorsList.Count - 1 );
+				errorChart.RangeX = new DoubleRange( 0, errorsList.Count - 1 );
 				errorChart.UpdateDataSeries( "error", errors );
 			}
 			catch ( IOException )

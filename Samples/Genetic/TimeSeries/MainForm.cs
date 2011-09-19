@@ -1,9 +1,8 @@
+// AForge Framework
 // Time Series Prediction using Genetic Programming and Gene Expression Programming
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -70,8 +69,8 @@ namespace TimeSeries
 		private double[]	data = null;
 		private double[,]	dataToShow = null;
 
-		private int populationSize = 100;
-		private int iterations = 1000;
+		private int populationSize = 40;
+		private int iterations = 100;
 		private int windowSize = 5;
 		private int predictionSize = 1;
 		private int selectionMethod = 0;
@@ -80,8 +79,8 @@ namespace TimeSeries
 
 		private int headLength = 20;
 
-		private Thread workerThread = null;
-		private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		private double[,]	windowDelimiter = new double[2, 2] { { 0, 0 }, { 0, 0 } };
 		private double[,]	predictionDelimiter = new double[2, 2] { { 0, 0 }, { 0, 0 } };
@@ -668,7 +667,7 @@ namespace TimeSeries
 
 				// update list and chart
 				UpdateDataListView( );
-				chart.RangeX = new Range( 0, data.Length - 1 );
+				chart.RangeX = new DoubleRange( 0, data.Length - 1 );
 				chart.UpdateDataSeries( "data", dataToShow );
 				chart.UpdateDataSeries( "solution", null );
 				// set delimiters

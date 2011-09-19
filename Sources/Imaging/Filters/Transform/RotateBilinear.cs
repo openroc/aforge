@@ -1,96 +1,54 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2007
 // andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Rotate image using bilinear interpolation.
+    /// Rotate image using bilinear interpolation
     /// </summary>
     /// 
-    /// <para><note>Rotation is performed in counterclockwise direction.</note></para>
+    /// <remarks></remarks>
     /// 
-    /// <remarks><para>The class implements image rotation filter using bilinear
-    /// interpolation algorithm.</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24 bpp
-    /// color images for processing.</para>
-    ///
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter - rotate for 30 degrees keeping original image size
-    /// RotateBilinear filter = new RotateBilinear( 30, true );
-    /// // apply the filter
-    /// Bitmap newImage = filter.Apply( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample9.png" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/rotate_bilinear.png" width="320" height="240" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="RotateNearestNeighbor"/>
-    /// <seealso cref="RotateBicubic"/>
-    /// 
-    public class RotateBilinear : BaseRotateFilter
+    public class RotateBilinear : FilterRotate
     {
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RotateBilinear"/> class.
+        /// Initializes a new instance of the <see cref="RotateNearestNeighbor"/> class
         /// </summary>
         /// 
-        /// <param name="angle">Rotation angle.</param>
-        /// 
-        /// <remarks><para>This constructor sets <see cref="BaseRotateFilter.KeepSize"/> property
-        /// to <see langword="false"/>.</para>
-        /// </remarks>
+        /// <param name="angle">Rotation angle</param>
         /// 
 		public RotateBilinear( double  angle ) :
-            this( angle, false )
+            base( angle )
 		{
 		}
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RotateBilinear"/> class.
+        /// Initializes a new instance of the <see cref="RotateNearestNeighbor"/> class
         /// </summary>
         /// 
-        /// <param name="angle">Rotation angle.</param>
-        /// <param name="keepSize">Keep image size or not.</param>
+        /// <param name="angle">Rotation angle</param>
+        /// <param name="keepSize">Keep image size or not</param>
         /// 
         public RotateBilinear( double angle, bool keepSize ) :
             base( angle, keepSize )
 		{
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-        }
+		}
 
         /// <summary>
-        /// Process the filter on the specified image.
+        /// Process the filter on the specified image
         /// </summary>
         /// 
-        /// <param name="sourceData">Source image data.</param>
-        /// <param name="destinationData">Destination image data.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
+        /// <param name="sourceData">Source image data</param>
+        /// <param name="destinationData">Destination image data</param>
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData sourceData, BitmapData destinationData )
         {
             // get source image size
             int     width       = sourceData.Width;
@@ -119,13 +77,13 @@ namespace AForge.Imaging.Filters
             byte fillB = fillColor.B;
 
             // do the job
-            byte* src = (byte*) sourceData.ImageData.ToPointer( );
-            byte* dst = (byte*) destinationData.ImageData.ToPointer( );
+            byte* src = (byte*) sourceData.Scan0.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
 
             // destination pixel's coordinate relative to image center
             double cx, cy;
             // coordinates of source points
-            double  ox, oy, tx, ty, dx1, dy1, dx2, dy2;
+            double  ox, oy, dx1, dy1, dx2, dy2;
             int     ox1, oy1, ox2, oy2;
             // width and height decreased by 1
             int ymax = height - 1;
@@ -140,18 +98,12 @@ namespace AForge.Imaging.Filters
                 cy = -halfNewHeight;
                 for ( int y = 0; y < newHeight; y++ )
                 {
-                    // do some pre-calculations of source points' coordinates
-                    // (calculate the part which depends on y-loop, but does not
-                    // depend on x-loop)
-                    tx = angleSin * cy + halfWidth;
-                    ty = angleCos * cy + halfHeight;
-
                     cx = -halfNewWidth;
                     for ( int x = 0; x < newWidth; x++, dst++ )
                     {
                         // coordinates of source point
-                        ox = tx + angleCos * cx;
-                        oy = ty - angleSin * cx;
+                        ox =  angleCos * cx + angleSin * cy + halfWidth;
+                        oy = -angleSin * cx + angleCos * cy + halfHeight;
 
                         // top-left coordinate
                         ox1 = (int) ox;
@@ -197,18 +149,12 @@ namespace AForge.Imaging.Filters
                 cy = -halfNewHeight;
                 for ( int y = 0; y < newHeight; y++ )
                 {
-                    // do some pre-calculations of source points' coordinates
-                    // (calculate the part which depends on y-loop, but does not
-                    // depend on x-loop)
-                    tx = angleSin * cy + halfWidth;
-                    ty = angleCos * cy + halfHeight;
-
                     cx = -halfNewWidth;
                     for ( int x = 0; x < newWidth; x++, dst += 3 )
                     {
                         // coordinates of source point
-                        ox = tx + angleCos * cx;
-                        oy = ty - angleSin * cx;
+                        ox =  angleCos * cx + angleSin * cy + halfWidth;
+                        oy = -angleSin * cx + angleCos * cy + halfHeight;
 
                         // top-left coordinate
                         ox1 = (int) ox;

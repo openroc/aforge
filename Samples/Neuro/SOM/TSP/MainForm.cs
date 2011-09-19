@@ -1,9 +1,8 @@
+// AForge Framework
 // Traveling Salesman Problem using Elastic Net
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -22,7 +21,7 @@ using AForge.Controls;
 namespace TSP
 {
 	/// <summary>
-    /// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -60,8 +59,8 @@ namespace TSP
 		private double[,]	map = null;
 		private Random		rand = new Random();
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -74,8 +73,8 @@ namespace TSP
 			// initialize chart
 			chart.AddDataSeries( "cities", Color.Red, Chart.SeriesType.Dots, 5, false );
 			chart.AddDataSeries( "path", Color.Blue, Chart.SeriesType.Line, 1, false );
-			chart.RangeX = new Range( 0, 1000 );
-			chart.RangeY = new Range( 0, 1000 );
+			chart.RangeX = new DoubleRange( 0, 1000 );
+			chart.RangeY = new DoubleRange( 0, 1000 );
 
 			//
 			UpdateSettings( );
@@ -503,7 +502,7 @@ namespace TSP
 		void SearchSolution( )
 		{
 			// set random generators range
-			Neuron.RandRange = new Range( 0, 1000 );
+			Neuron.RandRange = new DoubleRange( 0, 1000 );
 
 			// create network
 			DistanceNetwork network = new DistanceNetwork( 2, neurons );

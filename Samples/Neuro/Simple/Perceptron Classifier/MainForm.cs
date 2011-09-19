@@ -1,9 +1,8 @@
+// AForge Framework
 // Perceptron Classifier
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -61,8 +60,8 @@ namespace Classifier
 		private double		learningRate = 0.1;
 		private bool		saveStatisticsToFiles = false;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -441,12 +440,12 @@ namespace Classifier
 				StreamReader reader = null;
 
 				// temp buffers (for 50 samples only)
-                float[,]	tempData = null;
+				double[,]	tempData = null;
 				int[]		tempClasses = new int[50];
 
 				// min and max X values
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
+				double minX = double.MaxValue;
+				double maxX = double.MinValue;
 
 				// samples count
 				samples = 0;
@@ -470,13 +469,13 @@ namespace Classifier
 						if ( samples == 0 )
 						{
 							variables = strs.Length - 1;
-                            tempData = new float[50, variables];
+							tempData = new double[50, variables];
 						}
 
 						// parse data
 						for ( int j = 0; j < variables; j++ )
 						{
-                            tempData[samples, j] = float.Parse( strs[j] );
+							tempData[samples, j] = double.Parse( strs[j] );
 						}
 						tempClasses[samples] = int.Parse( strs[variables] );
 
@@ -519,7 +518,7 @@ namespace Classifier
 
 				if ( showChart )
 				{
-					chart.RangeX = new Range( minX, maxX );
+					chart.RangeX = new DoubleRange( minX, maxX );
 					ShowTrainingData( );
 				}
 
@@ -788,8 +787,8 @@ namespace Classifier
 					errors[i, 1] = (double) errorsList[i];
 				}
 
-				errorChart.RangeX = new Range( 0, errorsList.Count - 1 );
-				errorChart.RangeY = new Range( 0, samples );
+				errorChart.RangeX = new DoubleRange( 0, errorsList.Count - 1 );
+				errorChart.RangeY = new DoubleRange( 0, samples );
 				errorChart.UpdateDataSeries( "error", errors );
 			}
 			catch ( IOException )

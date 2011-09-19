@@ -1,7 +1,7 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectType>Local</ProjectType>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{63E2EBC4-E9F5-4D8D-8329-DE7D541EA0C9}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -25,10 +25,6 @@
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFrameworkSubset>
-    </TargetFrameworkSubset>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -77,16 +73,16 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AForge, Version=1.2.0.0, Culture=neutral, PublicKeyToken=9a0d19ffd4e7fe67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="AForge">
+      <Name>AForge</Name>
       <HintPath>..\..\..\Release\AForge.dll</HintPath>
     </Reference>
-    <Reference Include="AForge.Controls, Version=1.2.0.0, Culture=neutral, PublicKeyToken=60f302c78385b07a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="AForge.Controls">
+      <Name>AForge.Controls</Name>
       <HintPath>..\..\..\Release\AForge.Controls.dll</HintPath>
     </Reference>
-    <Reference Include="AForge.Genetic, Version=1.2.0.0, Culture=neutral, PublicKeyToken=a7761c267ba77011, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="AForge.Genetic">
+      <Name>AForge.Genetic</Name>
       <HintPath>..\..\..\Release\AForge.Genetic.dll</HintPath>
     </Reference>
     <Reference Include="System">
