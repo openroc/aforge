@@ -1,9 +1,7 @@
 // AForge Math Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 // FFT idea from Exocortex.DSP library
 // http://www.exocortex.org/dsp/
@@ -14,36 +12,36 @@ namespace AForge.Math
 	using System;
 
 	/// <summary>
-	/// Fourier transformation.
+	/// Fourier transformation
 	/// </summary>
 	/// 
 	/// <remarks>The class implements one dimensional and two dimensional
 	/// Discrete and Fast Fourier Transformation.</remarks>
 	/// 
-	public static class FourierTransform
+	public class FourierTransform
 	{
 		/// <summary>
-		/// Fourier transformation direction.
+		/// Fourier transformation direction
 		/// </summary>
 		public enum Direction
 		{
 			/// <summary>
-			/// Forward direction of Fourier transformation.
+			/// Forward direction of Fourier transformation
 			/// </summary>
 			Forward = 1,
 
 			/// <summary>
-			/// Backward direction of Fourier transformation.
+			/// Backward direction of Fourier transformation
 			/// </summary>
 			Backward = -1
 		};		
 
 		/// <summary>
-		/// One dimensional Discrete Fourier Transform.
+		/// One dimensional Discrete Fourier Transform
 		/// </summary>
 		/// 
-		/// <param name="data">Data to transform.</param>
-		/// <param name="direction">Transformation direction.</param>
+		/// <param name="data">Data to transform</param>
+		/// <param name="direction">Transformation direction</param>
 		/// 
         public static void DFT( Complex[] data, Direction direction )
 		{
@@ -90,11 +88,11 @@ namespace AForge.Math
 		}
 
 		/// <summary>
-		/// Two dimensional Discrete Fourier Transform.
+		/// Two dimensional Discrete Fourier Transform
 		/// </summary>
 		/// 
-		/// <param name="data">Data to transform.</param>
-		/// <param name="direction">Transformation direction.</param>
+		/// <param name="data">Data to transform</param>
+		/// <param name="direction">Transformation direction</param>
 		/// 
         public static void DFT2( Complex[,] data, Direction direction )
 		{
@@ -186,17 +184,12 @@ namespace AForge.Math
 
 
 		/// <summary>
-		/// One dimensional Fast Fourier Transform.
+		/// One dimensional Fast Fourier Transform
 		/// </summary>
 		/// 
-		/// <param name="data">Data to transform.</param>
-		/// <param name="direction">Transformation direction.</param>
-        /// 
-        /// <remarks><para><note>The method accepts <paramref name="data"/> array of 2<sup>n</sup> size
-        /// only, where <b>n</b> may vary in the [1, 14] range.</note></para></remarks>
-        /// 
-        /// <exception cref="ArgumentException">Incorrect data length.</exception>
-        /// 
+		/// <param name="data">Data to transform</param>
+		/// <param name="direction">Transformation direction</param>
+		/// 
         public static void FFT( Complex[] data, Direction direction )
 		{
 			int		n = data.Length;
@@ -248,18 +241,12 @@ namespace AForge.Math
 		}
 
 		/// <summary>
-		/// Two dimensional Fast Fourier Transform.
+		/// Two dimensional Fast Fourier Transform
 		/// </summary>
 		/// 
-		/// <param name="data">Data to transform.</param>
-		/// <param name="direction">Transformation direction.</param>
+		/// <param name="data">Data to transform</param>
+		/// <param name="direction">Transformation direction</param>
 		/// 
-        /// <remarks><para><note>The method accepts <paramref name="data"/> array of 2<sup>n</sup> size
-        /// only in each dimension, where <b>n</b> may vary in the [1, 14] range. For example, 16x16 array
-        /// is valid, but 15x15 is not.</note></para></remarks>
-        /// 
-        /// <exception cref="ArgumentException">Incorrect data length.</exception>
-        /// 
         public static void FFT2( Complex[,] data, Direction direction )
 		{
 			int k = data.GetLength( 0 );
@@ -273,7 +260,7 @@ namespace AForge.Math
 				( n < minLength ) || ( n > maxLength )
 				)
 			{
-				throw new ArgumentException( "Incorrect data length." );
+				throw new ArgumentException( );
 			}
 
 			// process rows
@@ -383,7 +370,7 @@ namespace AForge.Math
 
 			// check data length
 			if ( ( len < minLength ) || ( len > maxLength ) || ( !Tools.IsPowerOf2( len ) ) )
-				throw new ArgumentException( "Incorrect data length." );
+				throw new ArgumentException( );
 
 			int[] rBits = GetReversedBits( Tools.Log2( len ) );
 

@@ -35,7 +35,7 @@ namespace AForge.Video.DirectShow.Internals
             [Out] out int pinsFetched );
 
         /// <summary>
-        /// Skips a specified number of pins in the enumeration sequence.
+        /// Skips over a specified number of pins.
         /// </summary>
         /// 
         /// <param name="cPins">Number of pins to skip.</param>
@@ -58,7 +58,8 @@ namespace AForge.Video.DirectShow.Internals
         /// Makes a copy of the enumerator with the same enumeration state. 
         /// </summary>
         /// 
-        /// <param name="enumPins">Duplicate of the enumerator.</param>
+        /// <param name="enumPins">Address of a variable that receives a pointer to the
+        /// <b>IEnumPins</b> interface of the new enumerator.</param>
         /// 
         /// <returns>Return's <b>HRESULT</b> error code.</returns>
         /// 

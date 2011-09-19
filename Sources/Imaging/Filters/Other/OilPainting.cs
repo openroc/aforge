@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 // Original idea found in Paint.NET project
 // http://www.eecs.wsu.edu/paint.net/
@@ -11,64 +10,22 @@
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Oil painting filter.
+    /// Oil Painting filter.
     /// </summary>
     /// 
-    /// <remarks><para>Processing source image the filter changes each pixels' value
-    /// to the value of pixel with the most frequent intensity within window of the
-    /// <see cref="BrushSize">specified size</see>. Going through the window the filters
-    /// finds which intensity of pixels is the most frequent. Then it updates value
-    /// of the pixel in the center of the window to the value with the most frequent
-    /// intensity. The update procedure creates the effect of oil painting.</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24/32
-    /// color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// OilPainting filter = new OilPainting( 15 );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/oil_painting.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    public class OilPainting : BaseUsingCopyPartialFilter
+    public class OilPainting : FilterAnyToAnyUsingCopyPartial
     {
         private int brushSize = 5;
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
+        /// Brush size.
         /// </summary>
         /// 
-        /// <remarks><para>See <see cref="IFilterInformation.FormatTranslations"/>
-        /// documentation for additional information.</para></remarks>
-        /// 
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
-        /// <summary>
-        /// Brush size, [3, 21].
-        /// </summary>
-        /// 
-        /// <remarks><para>Window size to search for most frequent pixels' intensity.</para>
-        /// 
-        /// <para>Default value is set to <b>5</b>.</para></remarks>
+        /// <remarks>Default value is 5. Minimum value is 3. Maximum value 21.</remarks>
         /// 
         public int BrushSize
         {
@@ -79,13 +36,7 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="OilPainting"/> class.
         /// </summary>
-        public OilPainting( )
-        {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
-        }
+        public OilPainting( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OilPainting"/> class.
@@ -93,7 +44,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <param name="brushSize">Brush size.</param>
         /// 
-        public OilPainting( int brushSize ) : this( )
+        public OilPainting( int brushSize )
         {
             BrushSize = brushSize;
         }
@@ -102,13 +53,13 @@ namespace AForge.Imaging.Filters
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="source">Source image data.</param>
-        /// <param name="destination">Destination image data.</param>
+        /// <param name="sourceData">Pointer to source image data (first scan line).</param>
+        /// <param name="destinationData">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage source, UnmanagedImage destination, Rectangle rect )
+        protected override unsafe void ProcessFilter( IntPtr sourceData, BitmapData destinationData, Rectangle rect )
         {
-            int pixelSize = Image.GetPixelFormatSize( source.PixelFormat ) / 8;
+            int pixelSize = ( destinationData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
 
             // processing start and stop X,Y positions
             int startX = rect.Left;
@@ -116,10 +67,8 @@ namespace AForge.Imaging.Filters
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
 
-            int srcStride = source.Stride;
-            int dstStride = destination.Stride;
-            int srcOffset = srcStride - rect.Width * pixelSize;
-            int dstOffset = srcStride - rect.Width * pixelSize;
+            int stride = destinationData.Stride;
+            int offset = stride - rect.Width * pixelSize;
 
             // loop and array indexes
             int i, j, t;
@@ -130,15 +79,15 @@ namespace AForge.Imaging.Filters
             byte intensity, maxIntensity;
             int[] intensities = new int[256];
 
-            byte* src = (byte*) source.ImageData.ToPointer( );
-            byte* dst = (byte*) destination.ImageData.ToPointer( );
+            byte* src = (byte*) sourceData.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
             byte* p;
 
             // allign pointers to the first pixel to process
-            src += ( startY * srcStride + startX * pixelSize );
-            dst += ( startY * dstStride + startX * pixelSize );
+            src += ( startY * stride + startX * pixelSize );
+            dst += ( startY * stride + startX * pixelSize );
 
-            if ( destination.PixelFormat == PixelFormat.Format8bppIndexed )
+            if ( destinationData.PixelFormat == PixelFormat.Format8bppIndexed )
             {
                 // Grayscale image
 
@@ -174,7 +123,7 @@ namespace AForge.Imaging.Filters
 
                                 if ( t < stopX )
                                 {
-                                    intensity = src[i * srcStride + j];
+                                    intensity = src[i * stride + j];
                                     intensities[intensity]++;
                                 }
                             }
@@ -196,22 +145,22 @@ namespace AForge.Imaging.Filters
                         // set destination pixel
                         *dst = maxIntensity;
                     }
-                    src += srcOffset;
-                    dst += dstOffset;
+                    src += offset;
+                    dst += offset;
                 }
             }
             else
             {
                 // RGB image
-                int[] red   = new int[256];
+                int[] red = new int[256];
                 int[] green = new int[256];
-                int[] blue  = new int[256];
+                int[] blue = new int[256];
 
                 // for each line
                 for ( int y = startY; y < stopY; y++ )
                 {
                     // for each pixel
-                    for ( int x = startX; x < stopX; x++, src += pixelSize, dst += pixelSize )
+                    for ( int x = startX; x < stopX; x++, src += 3, dst += 3 )
                     {
                         // clear arrays
                         Array.Clear( intensities, 0, 256 );
@@ -242,7 +191,7 @@ namespace AForge.Imaging.Filters
 
                                 if ( t < stopX )
                                 {
-                                    p = &src[i * srcStride + j * pixelSize];
+                                    p = &src[i * stride + j * 3];
 
                                     // grayscale value using BT709
                                     intensity = (byte) ( 0.2125 * p[RGB.R] + 0.7154 * p[RGB.G] + 0.0721 * p[RGB.B] );
@@ -277,8 +226,8 @@ namespace AForge.Imaging.Filters
                         dst[RGB.G] = (byte) ( green[maxIntensity] / intensities[maxIntensity] );
                         dst[RGB.B] = (byte) ( blue[maxIntensity] / intensities[maxIntensity] );
                     }
-                    src += srcOffset;
-                    dst += dstOffset;
+                    src += offset;
+                    dst += offset;
                 }
             }
         }

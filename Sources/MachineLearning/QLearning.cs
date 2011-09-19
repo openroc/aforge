@@ -1,7 +1,7 @@
 // AForge Machine Learning Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2007-2008
+// Copyright © Andrew Kirillov, 2007
 // andrew.kirillov@gmail.com
 //
 
@@ -15,8 +15,6 @@ namespace AForge.MachineLearning
     /// 
     /// <remarks>The class provides implementation of Q-Learning algorithm, known as
     /// off-policy Temporal Difference control.</remarks>
-    /// 
-    /// <seealso cref="Sarsa"/>
     /// 
 	public class QLearning
 	{
@@ -65,7 +63,7 @@ namespace AForge.MachineLearning
 		}
 
         /// <summary>
-        /// Learning rate, [0, 1].
+        /// Learning rate.
         /// </summary>
         /// 
         /// <remarks>The value determines the amount of updates Q-function receives
@@ -75,23 +73,19 @@ namespace AForge.MachineLearning
 		public double LearningRate
 		{
             get { return learningRate; }
-            set { learningRate = Math.Max( 0.0, Math.Min( 1.0, value ) ); }
-        }
+			set { learningRate = value; }
+		}
 
         /// <summary>
-        /// Discount factor, [0, 1].
+        /// Discount factor.
         /// </summary>
         /// 
-        /// <remarks>Discount factor for the expected summary reward. The value serves as
-        /// multiplier for the expected reward. So if the value is set to 1,
-        /// then the expected summary reward is not discounted. If the value is getting
-        /// smaller, then smaller amount of the expected reward is used for actions'
-        /// estimates update.</remarks>
+        /// <remarks>Discount factor for the expected summary reward.</remarks>
         /// 
         public double DiscountFactor
         {
             get { return discountFactor; }
-            set { discountFactor = Math.Max( 0.0, Math.Min( 1.0, value ) ); }
+            set { discountFactor = value; }
         }
 
         /// <summary>
@@ -125,7 +119,7 @@ namespace AForge.MachineLearning
         /// 
         public QLearning( int states, int actions, IExplorationPolicy explorationPolicy, bool randomize )
         {
-            this.states  = states;
+            this.states = states;
             this.actions = actions;
             this.explorationPolicy = explorationPolicy;
 
@@ -139,7 +133,7 @@ namespace AForge.MachineLearning
             // do randomization
             if ( randomize )
             {
-                Random rand = new Random( );
+                Random rand = new Random( (int) DateTime.Now.Ticks );
 
                 for ( int i = 0; i < states; i++ )
                 {
@@ -171,8 +165,8 @@ namespace AForge.MachineLearning
         /// Update Q-function's value for the previous state-action pair.
         /// </summary>
         /// 
-        /// <param name="previousState">Previous state.</param>
-        /// <param name="action">Action, which leads from previous to the next state.</param>
+        /// <param name="previousState">Curren state.</param>
+        /// <param name="action">Action, which lead from previous to the next state.</param>
         /// <param name="reward">Reward value, received by taking specified action from previous state.</param>
         /// <param name="nextState">Next state.</param>
         /// 

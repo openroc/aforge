@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2007
 // andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using AForge;
@@ -17,43 +16,13 @@ namespace AForge.Imaging.Filters
     /// Channels filters.
     /// </summary>
     /// 
-    /// <remarks><para>The filter does color channels' filtering by clearing (filling with
-    /// specified values) values, which are inside/outside of the specified value's
-    /// range. The filter allows to fill certain ranges of RGB color channels with specified
-    /// value.</para>
+    /// <remarks></remarks>
     /// 
-    /// <para>The filter is similar to <see cref="ColorFiltering"/>, but operates with not
-    /// entire pixels, but with their RGB values individually. This means that pixel itself may
-    /// not be filtered (will be kept), but one of its RGB values may be filtered if they are
-    /// inside/outside of specified range.</para>
-    /// 
-    /// <para>The filter accepts 24 and 32 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// ChannelFiltering filter = new ChannelFiltering( );
-    /// // set channels' ranges to keep
-    /// filter.Red   = new IntRange(   0, 255 );
-    /// filter.Green = new IntRange( 100, 255 );
-    /// filter.Blue  = new IntRange( 100, 255 );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/channel_filtering.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="ColorFiltering"/>
-    /// 
-    public class ChannelFiltering : BaseInPlacePartialFilter
+    public class ChannelFiltering : FilterColorToColorPartial
     {
-        private IntRange red   = new IntRange( 0, 255 );
+        private IntRange red = new IntRange( 0, 255 );
         private IntRange green = new IntRange( 0, 255 );
-        private IntRange blue  = new IntRange( 0, 255 );
+        private IntRange blue = new IntRange( 0, 255 );
 
         private byte fillR = 0;
         private byte fillG = 0;
@@ -63,20 +32,9 @@ namespace AForge.Imaging.Filters
         private bool greenFillOutsideRange = true;
         private bool blueFillOutsideRange = true;
 
-        private byte[] mapRed   = new byte[256];
+        private byte[] mapRed = new byte[256];
         private byte[] mapGreen = new byte[256];
-        private byte[] mapBlue  = new byte[256];
-
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
+        private byte[] mapBlue = new byte[256];
 
         #region Public properties
 
@@ -162,7 +120,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if red channel should be filled inside or outside filtering range.
         /// </summary>
         /// 
-        /// <remarks>Default value is set to <see langword="true"/>.</remarks>
+        /// <remarks>Default value is <b>true</b>.</remarks>
         /// 
         public bool RedFillOutsideRange
         {
@@ -178,7 +136,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if green channel should be filled inside or outside filtering range.
         /// </summary>
         /// 
-        /// <remarks>Default value is set to <see langword="true"/>.</remarks>
+        /// <remarks>Default value is <b>true</b>.</remarks>
         /// 
         public bool GreenFillOutsideRange
         {
@@ -194,7 +152,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if blue channel should be filled inside or outside filtering range.
         /// </summary>
         /// 
-        /// <remarks>Default value is set to <see langword="true"/>.</remarks>
+        /// <remarks>Default value is <b>true</b>.</remarks>
         ///
         public bool BlueFillOutsideRange
         {
@@ -214,8 +172,10 @@ namespace AForge.Imaging.Filters
         /// </summary>
         /// 
         public ChannelFiltering( )
-            : this( new IntRange( 0, 255 ), new IntRange( 0, 255 ), new IntRange( 0, 255 ) )
         {
+            CalculateMap( red, fillR, redFillOutsideRange, mapRed );
+            CalculateMap( green, fillG, greenFillOutsideRange, mapGreen );
+            CalculateMap( blue, fillB, blueFillOutsideRange, mapBlue );
         }
 
         /// <summary>
@@ -228,44 +188,37 @@ namespace AForge.Imaging.Filters
         /// 
         public ChannelFiltering( IntRange red, IntRange green, IntRange blue )
         {
-            Red   = red;
+            Red = red;
             Green = green;
-            Blue  = blue;
-
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            Blue = blue;
         }
 
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            // get pixel size
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format24bppRgb ) ? 3 : 4;
-
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+            int offset  = imageData.Stride - rect.Width * 3;
 
             // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+            byte* ptr = (byte*) imageData.Scan0.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX * pixelSize );
+            ptr += ( startY * imageData.Stride + startX * 3 );
 
             // for each row
             for ( int y = startY; y < stopY; y++ )
             {
                 // for each pixel
-                for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                for ( int x = startX; x < stopX; x++, ptr += 3 )
                 {
                     // red
                     ptr[RGB.R] = mapRed[ptr[RGB.R]];

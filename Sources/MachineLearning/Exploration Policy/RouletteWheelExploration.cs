@@ -1,7 +1,7 @@
 // AForge Machine Learning Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2007-2008
+// Copyright © Andrew Kirillov, 2007
 // andrew.kirillov@gmail.com
 //
 
@@ -14,27 +14,21 @@ namespace AForge.MachineLearning
     /// </summary>
     /// 
     /// <remarks><para>The class implements roulette whell exploration policy. Acording to the policy,
-    /// action <b>a</b> at state <b>s</b> is selected with the next probability:</para>
-    /// <code lang="none">
+    /// action <i>a</i> at state <i>s</i> is selected with the next probability:</para>
+    /// <code>
     ///                   Q( s, a )
     /// p( s, a ) = ------------------
     ///              SUM( Q( s, b ) )
     ///               b
     /// </code>
-    /// <para>where <b>Q(s, a)</b> is action's <b>a</b> estimation (usefulness) at state <b>s</b>.</para>
-    /// 
-    /// <para><note>The exploration policy may be applied only in cases, when action estimates (usefulness)
-    /// are represented with positive value greater then 0.</note></para>
+    /// <para><b>Note:</b> the exploration policy may be applied only in cases, when action estimates (usefulness)
+    /// are represented with positive value greater then 0.</para>
     /// </remarks>
-    /// 
-    /// <seealso cref="BoltzmannExploration"/>
-    /// <seealso cref="EpsilonGreedyExploration"/>
-    /// <seealso cref="TabuSearchExploration"/>
     /// 
     public class RouletteWheelExploration : IExplorationPolicy
     {
         // random number generator
-        private Random rand = new Random( );
+        private Random rand = new Random( (int) DateTime.Now.Ticks );
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RouletteWheelExploration"/> class.
@@ -48,7 +42,7 @@ namespace AForge.MachineLearning
         /// 
         /// <param name="actionEstimates">Action estimates.</param>
         /// 
-        /// <returns>Returns selected action.</returns>
+        /// <returns>Returns the next action.</returns>
         /// 
         /// <remarks>The method chooses an action depending on the provided estimates. The
         /// estimates can be any sort of estimate, which values usefulness of the action
