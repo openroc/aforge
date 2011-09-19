@@ -1,8 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -27,7 +27,7 @@ namespace AForge.Imaging.Filters
     /// <para>Sample usage:</para>
     /// <code>
     /// // create random generator
-    /// IRandomNumberGenerator generator = new UniformGenerator( new Range( -50, 50 ) );
+    /// IRandomNumberGenerator generator = new UniformGenerator( new DoubleRange( -50, 50 ) );
     /// // create filter
     /// AdditiveNoise filter = new AdditiveNoise( generator );
     /// // apply the filter
@@ -43,17 +43,17 @@ namespace AForge.Imaging.Filters
     public class AdditiveNoise : BaseInPlacePartialFilter
     {
         // random number generator to add noise
-        IRandomNumberGenerator generator = new UniformGenerator( new Range( -10, 10 ) );
+        IRandomNumberGenerator generator = new UniformGenerator( new DoubleRange( -10, 10 ) );
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace AForge.Imaging.Filters
         /// 
         public AdditiveNoise( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>

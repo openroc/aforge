@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2010
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Geometry
@@ -33,7 +33,7 @@ namespace AForge.Math.Geometry
     /// 
     public class FlatAnglesOptimizer : IShapeOptimizer
     {
-        private float maxAngleToKeep = 160;
+        private double maxAngleToKeep = 160;
 
         /// <summary>
         /// Maximum angle between adjacent edges to keep in a shape, [140, 180].
@@ -45,7 +45,7 @@ namespace AForge.Math.Geometry
         /// 
         /// <para>Default value is set to <b>160</b>.</para></remarks>
         /// 
-        public float MaxAngleToKeep
+        public double MaxAngleToKeep
         {
             get { return maxAngleToKeep; }
             set { maxAngleToKeep = Math.Min( 180, Math.Max( 140, value ) ); }
@@ -63,7 +63,7 @@ namespace AForge.Math.Geometry
         /// 
         /// <param name="maxAngleToKeep">Maximum acceptable angle between two edges of a shape (see <see cref="MaxAngleToKeep"/>).</param>
         /// 
-        public FlatAnglesOptimizer( float maxAngleToKeep )
+        public FlatAnglesOptimizer( double maxAngleToKeep )
         {
             this.maxAngleToKeep = maxAngleToKeep;
         }
@@ -88,7 +88,7 @@ namespace AForge.Math.Geometry
             }
             else
             {
-                float angle = 0;
+                double angle = 0;
 
                 // add first 2 points to the new shape
                 optimizedShape.Add( shape[0] );
@@ -102,7 +102,7 @@ namespace AForge.Math.Geometry
                     pointsInOptimizedHull++;
 
                     // get angle between 2 vectors, which start from the next to last point
-                    angle = GeometryTools.GetAngleBetweenVectors( optimizedShape[pointsInOptimizedHull - 2],
+                    angle = Tools.GetAngleBetweenVectors( optimizedShape[pointsInOptimizedHull - 2],
                         optimizedShape[pointsInOptimizedHull - 3], optimizedShape[pointsInOptimizedHull - 1] );
 
                     if ( ( angle > maxAngleToKeep ) &&
@@ -117,7 +117,7 @@ namespace AForge.Math.Geometry
                 if ( pointsInOptimizedHull > 3 )
                 {
                     // check the last point
-                    angle = GeometryTools.GetAngleBetweenVectors( optimizedShape[pointsInOptimizedHull - 1],
+                    angle = Tools.GetAngleBetweenVectors( optimizedShape[pointsInOptimizedHull - 1],
                         optimizedShape[pointsInOptimizedHull - 2], optimizedShape[0] );
 
                     if ( angle > maxAngleToKeep )
@@ -129,7 +129,7 @@ namespace AForge.Math.Geometry
                     if ( pointsInOptimizedHull > 3 )
                     {
                         // check the first point
-                        angle = GeometryTools.GetAngleBetweenVectors( optimizedShape[0],
+                        angle = Tools.GetAngleBetweenVectors( optimizedShape[0],
                             optimizedShape[pointsInOptimizedHull - 1], optimizedShape[1] );
 
                         if ( angle > maxAngleToKeep )

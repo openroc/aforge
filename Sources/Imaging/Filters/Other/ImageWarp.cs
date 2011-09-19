@@ -66,7 +66,7 @@ namespace AForge.Imaging.Filters
     public class ImageWarp : BaseFilter
     {
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         private IntPoint[,] warpMap = null;
 
@@ -81,7 +81,7 @@ namespace AForge.Imaging.Filters
         /// are calculated as sum of destination coordinate and corresponding value from warp map).
         /// </para>
         /// 
-        /// <para><note>The map array is accessed using [y, x] indexing, i.e.
+        /// <para><note>The map array is access using [y, x] indexing, i.e.
         /// first dimension in the map array corresponds to Y axis of image.</note></para>
         /// 
         /// <para><note>If the map is smaller or bigger than the image to process, then only minimum
@@ -105,12 +105,12 @@ namespace AForge.Imaging.Filters
         /// Format translations dictionary.
         /// </summary>
         /// 
-        /// <remarks><para>See <see cref="IFilterInformation.FormatTranslations"/>
+        /// <remarks><para>See <see cref="IFilterInformation.FormatTransalations"/>
         /// documentation for additional information.</para></remarks>
         /// 
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -121,10 +121,10 @@ namespace AForge.Imaging.Filters
         /// 
         public ImageWarp( IntPoint[,] warpMap )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
 
             WarpMap = warpMap;
         }

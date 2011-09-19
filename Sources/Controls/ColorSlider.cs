@@ -1,9 +1,8 @@
 // AForge Controls Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -19,8 +18,6 @@ using System.Reflection;
 
 namespace AForge.Controls
 {
-    using Point = System.Drawing.Point;
-
     /// <summary>
     /// Color slider control.
     /// </summary>
@@ -50,10 +47,10 @@ namespace AForge.Controls
         private int dx;
 
         /// <summary>
-        /// An event, to notify about changes of <see cref="Min"/> or <see cref="Max"/> properties.
+        /// An event, to notify about changes of <see cref="Min"/> or <see cref="Max"/> property.
         /// </summary>
         /// 
-        /// <remarks><para>The event is fired after changes of <see cref="Min"/> or <see cref="Max"/> property,
+        /// <remarks><para>The event if fired after changes of <see cref="Min"/> or <see cref="Max"/> property,
         /// which is caused by user dragging the corresponding control’s arrow (slider).</para>
         /// </remarks>
         /// 
@@ -283,9 +280,6 @@ namespace AForge.Controls
         /// <summary>
         /// Dispose the object.
         /// </summary>
-        /// 
-        /// <param name="disposing">Specifies if disposing was invoked by user's code.</param>
-        /// 
         protected override void Dispose( bool disposing )
         {
             if ( disposing )

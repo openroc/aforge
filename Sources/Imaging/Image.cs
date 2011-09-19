@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2010
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging
@@ -234,7 +234,7 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Source image to format.</param>
         /// 
-        /// <remarks><para>Formats the image to one of the formats, which are supported
+        /// <remarks>Formats the image to one of the formats, which are supported
         /// by the <b>AForge.Imaging</b> library. The image is left untouched in the
         /// case if it is already of
         /// <see cref="System.Drawing.Imaging.PixelFormat">Format24bppRgb</see> or
@@ -244,13 +244,8 @@ namespace AForge.Imaging
         /// <see cref="System.Drawing.Imaging.PixelFormat">Format64bppArgb</see>
         /// format or it is <see cref="IsGrayscale">grayscale</see>, otherwise the image
         /// is converted to <see cref="System.Drawing.Imaging.PixelFormat">Format24bppRgb</see>
-        /// format.</para>
-        /// 
-        /// <para><note>The method is deprecated and <see cref="Clone(Bitmap, PixelFormat)"/> method should
-        /// be used instead with specifying desired pixel format.</note></para>
-        /// </remarks>
+        /// format.</remarks>
         ///
-        [Obsolete( "Use Clone(Bitmap, PixelFormat) method instead and specify desired pixel format" )]
         public static void FormatImage( ref Bitmap image )
         {
             if (
@@ -398,8 +393,8 @@ namespace AForge.Imaging
             unsafe
             {
                 // base pointers
-                byte* sourceBasePtr = (byte*) sourceData.Scan0.ToPointer( );
-                byte* newBasePtr    = (byte*) newData.Scan0.ToPointer( );
+                int sourceBasePtr = (int) sourceData.Scan0.ToPointer( );
+                int newBasePtr = (int) newData.Scan0.ToPointer( );
                 // image strides
                 int sourceStride = sourceData.Stride;
                 int newStride = newData.Stride;
@@ -495,8 +490,8 @@ namespace AForge.Imaging
             unsafe
             {
                 // base pointers
-                byte* sourceBasePtr = (byte*) sourceData.Scan0.ToPointer( );
-                byte* newBasePtr    = (byte*) newData.Scan0.ToPointer( );
+                int sourceBasePtr = (int) sourceData.Scan0.ToPointer( );
+                int newBasePtr = (int) newData.Scan0.ToPointer( );
                 // image strides
                 int sourceStride = sourceData.Stride;
                 int newStride = newData.Stride;

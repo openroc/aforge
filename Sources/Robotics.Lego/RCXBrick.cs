@@ -1,9 +1,8 @@
 // AForge Lego Robotics Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Robotics.Lego
@@ -244,9 +243,6 @@ namespace AForge.Robotics.Lego
         // Ghost communication stack
         private IntPtr stack;
 
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
         /// <summary>
         /// Check if connection to RCX brick is established.
         /// </summary>
@@ -255,7 +251,7 @@ namespace AForge.Robotics.Lego
         {
             get
             {
-                lock ( sync )
+                lock ( this )
                 {
                     return ( stack != IntPtr.Zero );
                 }
@@ -294,7 +290,7 @@ namespace AForge.Robotics.Lego
         /// 
         public bool Connect( IRTowerType towerType )
         {
-            lock ( sync )
+            lock ( this )
             {
                 // check if we are already connected
                 if ( stack != IntPtr.Zero )
@@ -344,7 +340,7 @@ namespace AForge.Robotics.Lego
         /// 
         public void Disconnect( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( stack != IntPtr.Zero )
                 {
@@ -625,7 +621,7 @@ namespace AForge.Robotics.Lego
             uint status;
             IntPtr queue;
 
-            lock ( sync )
+            lock ( this )
             {
                 // check if GhostAPI stack was created (if device is connected)
                 if ( stack == IntPtr.Zero )

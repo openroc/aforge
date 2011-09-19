@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -66,7 +69,7 @@ namespace AForge.Fuzzy
         /// The leftmost x value of the fuzzy set's membership function.
         /// </summary>
         /// 
-        public float LeftLimit
+        public double LeftLimit
         {
             get
             {
@@ -78,7 +81,7 @@ namespace AForge.Fuzzy
         /// The rightmost x value of the fuzzy set's membership function.
         /// </summary>
         /// 
-        public float RightLimit
+        public double RightLimit
         {
             get
             {
@@ -107,7 +110,7 @@ namespace AForge.Fuzzy
         /// 
         /// <returns>Degree of membership [0..1] of the value to the fuzzy set.</returns>
         /// 
-        public float GetMembership( float x )
+        public double GetMembership( double x )
         {
             return function.GetMembership( x );
         }

@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging
@@ -58,14 +58,7 @@ namespace AForge.Imaging
         /// 
         public Histogram Red
         {
-            get
-            {
-                if ( red == null )
-                {
-                    throw new InvalidImagePropertiesException( ExceptionMessage.ColorHistogramException );
-                }
-                return red;
-            }
+            get { return red; }
         }
 
         /// <summary>
@@ -74,14 +67,7 @@ namespace AForge.Imaging
         /// 
         public Histogram Green
         {
-            get
-            {
-                if ( green == null )
-                {
-                    throw new InvalidImagePropertiesException( ExceptionMessage.ColorHistogramException );
-                }
-                return green;
-            }
+            get { return green; }
         }
 
         /// <summary>
@@ -90,14 +76,7 @@ namespace AForge.Imaging
         /// 
         public Histogram Blue
         {
-            get
-            {
-                if ( blue == null )
-                {
-                    throw new InvalidImagePropertiesException( ExceptionMessage.ColorHistogramException );
-                }
-                return blue;
-            }
+            get { return blue; }
         }
 
         /// <summary>
@@ -106,14 +85,7 @@ namespace AForge.Imaging
         /// 
         public Histogram Gray
         {
-            get
-            {
-                if ( gray == null )
-                {
-                    throw new InvalidImagePropertiesException( ExceptionMessage.GrayHistogramException );
-                }
-                return gray;
-            }
+            get { return gray; }
         }
 
         /// <summary>
@@ -128,7 +100,7 @@ namespace AForge.Imaging
         /// 
         public bool IsGrayscale
         {
-            get { return ( gray != null ); }
+            get { return ( gray == null ); }
         }
 
         /// <summary>
@@ -226,8 +198,6 @@ namespace AForge.Imaging
             int width  = image.Width;
             int height = image.Height;
 
-            red = green = blue = gray = null;
-
             // do the job
             unsafe
             {
@@ -258,7 +228,7 @@ namespace AForge.Imaging
                 else if ( pixelFormat == PixelFormat.Format16bppGrayScale )
                 {
                     // 16 bpp grayscale image
-                    byte* basePtr = (byte*) image.ImageData.ToPointer( );
+                    int basePtr = (int) image.ImageData.ToPointer( );
                     int stride = image.Stride;
 
                     // histogram array
@@ -317,7 +287,7 @@ namespace AForge.Imaging
                     ( pixelFormat == PixelFormat.Format64bppArgb ) )
                 {
                     // 48/64 bpp color image
-                    byte* basePtr = (byte*) image.ImageData.ToPointer( );
+                    int basePtr = (int) image.ImageData.ToPointer( );
                     int stride = image.Stride;
                     int pixelSize = ( pixelFormat == PixelFormat.Format48bppRgb ) ? 3 : 4;
 

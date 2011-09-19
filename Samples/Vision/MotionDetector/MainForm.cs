@@ -2,8 +2,8 @@
 // AForge.NET Framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -51,13 +51,11 @@ namespace MotionDetectorSample
         private float motionAlarmLevel = 0.015f;
 
         private List<float> motionHistory = new List<float>( );
-        private int detectedObjectsCount = -1;
 
         // Constructor
         public MainForm( )
         {
             InitializeComponent( );
-            Application.Idle += new EventHandler( Application_Idle );
         }
 
         // Application's main form is closing
@@ -173,7 +171,7 @@ namespace MotionDetectorSample
             CloseVideoSource( );
 
             // start new video source
-            videoSourcePlayer.VideoSource = new AsyncVideoSource( source );
+            videoSourcePlayer.VideoSource = source;
             videoSourcePlayer.Start( );
 
             // reset statistics
@@ -238,11 +236,11 @@ namespace MotionDetectorSample
                     if ( detector.MotionProcessingAlgorithm is BlobCountingObjectsProcessing )
                     {
                         BlobCountingObjectsProcessing countingDetector = (BlobCountingObjectsProcessing) detector.MotionProcessingAlgorithm;
-                        detectedObjectsCount = countingDetector.ObjectsCount;
+                        objectsCountLabel.Text = "Objects: " + countingDetector.ObjectsCount.ToString( );
                     }
                     else
                     {
-                        detectedObjectsCount = -1;
+                        objectsCountLabel.Text = "";
                     }
 
                     // accumulate history
@@ -256,12 +254,6 @@ namespace MotionDetectorSample
                         DrawMotionHistory( image );
                 }
             }
-        }
-
-        // Update some UI elements
-        private void Application_Idle( object sender, EventArgs e )
-        {
-            objectsCountLabel.Text = ( detectedObjectsCount < 0 ) ? string.Empty : "Objects: " + detectedObjectsCount;
         }
 
         // Draw motion history
@@ -404,7 +396,7 @@ namespace MotionDetectorSample
         {
             lock ( this )
             {
-                detector.MotionDetectionAlgorithm = detectionAlgorithm;
+                detector.MotionDetectionAlgorthm = detectionAlgorithm;
                 motionHistory.Clear( );
 
                 if ( detectionAlgorithm is TwoFramesDifferenceDetector )

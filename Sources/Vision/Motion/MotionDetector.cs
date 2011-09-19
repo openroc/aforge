@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Vision.Motion
@@ -61,9 +61,6 @@ namespace AForge.Vision.Motion
         // size of video frame
         private int videoWidth, videoHeight;
 
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
         /// <summary>
         /// Motion detection algorithm to apply to each video frame.
         /// </summary>
@@ -74,12 +71,12 @@ namespace AForge.Vision.Motion
         /// <see cref="IMotionDetector.MotionFrame">motion frame</see>.
         /// </para></remarks>
         ///
-        public IMotionDetector MotionDetectionAlgorithm
+        public IMotionDetector MotionDetectionAlgorthm
         {
             get { return detector; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     detector = value;
                 }
@@ -103,7 +100,7 @@ namespace AForge.Vision.Motion
             get { return processor; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     processor = value;
                 }
@@ -161,7 +158,7 @@ namespace AForge.Vision.Motion
         /// <param name="videoFrame">Video frame to process (detect motion in).</param>
         /// 
         /// <returns>Returns amount of motion, which is provided <see cref="IMotionDetector.MotionLevel"/>
-        /// property of the <see cref="MotionDetectionAlgorithm">motion detection algorithm in use</see>.</returns>
+        /// property of the <see cref="MotionDetectionAlgorthm">motion detection algorithm in use</see>.</returns>
         /// 
         /// <remarks><para>See <see cref="ProcessFrame(UnmanagedImage)"/> for additional details.</para>
         /// </remarks>
@@ -193,7 +190,7 @@ namespace AForge.Vision.Motion
         /// <param name="videoFrame">Video frame to process (detect motion in).</param>
         /// 
         /// <returns>Returns amount of motion, which is provided <see cref="IMotionDetector.MotionLevel"/>
-        /// property of the <see cref="MotionDetectionAlgorithm">motion detection algorithm in use</see>.</returns>
+        /// property of the <see cref="MotionDetectionAlgorthm">motion detection algorithm in use</see>.</returns>
         /// 
         /// <remarks><para>See <see cref="ProcessFrame(UnmanagedImage)"/> for additional details.</para>
         /// </remarks>
@@ -210,7 +207,7 @@ namespace AForge.Vision.Motion
         /// <param name="videoFrame">Video frame to process (detect motion in).</param>
         /// 
         /// <returns>Returns amount of motion, which is provided <see cref="IMotionDetector.MotionLevel"/>
-        /// property of the <see cref="MotionDetectionAlgorithm">motion detection algorithm in use</see>.</returns>
+        /// property of the <see cref="MotionDetectionAlgorthm">motion detection algorithm in use</see>.</returns>
         /// 
         /// <remarks><para>The method first of all applies motion detection algorithm to the specified video
         /// frame to calculate <see cref="IMotionDetector.MotionLevel">motion level</see> and
@@ -229,7 +226,7 @@ namespace AForge.Vision.Motion
         /// 
         public float ProcessFrame( UnmanagedImage videoFrame )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( detector == null )
                     return 0;
@@ -290,7 +287,7 @@ namespace AForge.Vision.Motion
         /// 
         public void Reset( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( detector != null )
                 {
@@ -315,7 +312,7 @@ namespace AForge.Vision.Motion
         // Create motion zones' image
         private unsafe void CreateMotionZonesFrame( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 // free previous motion zones frame
                 if ( zonesFrame != null )

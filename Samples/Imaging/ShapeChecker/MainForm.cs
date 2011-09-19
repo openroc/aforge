@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2010
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -132,8 +132,8 @@ namespace ShapeChecker
             {
                 List<IntPoint> edgePoints = blobCounter.GetBlobsEdgePoints( blobs[i] );
 
-                AForge.Point center;
-                float radius;
+                DoublePoint center;
+                double radius;
 
                 // is circle ?
                 if ( shapeChecker.IsCircle( edgePoints, out center, out radius ) )
@@ -209,19 +209,19 @@ namespace ShapeChecker
             Rectangle rc = splitContainer.Panel2.ClientRectangle;
 
             pictureBox.SuspendLayout( );
-            pictureBox.Location = new System.Drawing.Point( ( rc.Width - imageWidth - 2 ) / 2, ( rc.Height - imageHeight - 2 ) / 2 );
+            pictureBox.Location = new Point( ( rc.Width - imageWidth - 2 ) / 2, ( rc.Height - imageHeight - 2 ) / 2 );
             pictureBox.Size = new Size( imageWidth + 2, imageHeight + 2 );
             pictureBox.ResumeLayout( );
         }
 
         // Conver list of AForge.NET's points to array of .NET points
-        private System.Drawing.Point[] ToPointsArray( List<IntPoint> points )
+        private Point[] ToPointsArray( List<IntPoint> points )
         {
-            System.Drawing.Point[] array = new System.Drawing.Point[points.Count];
+            Point[] array = new Point[points.Count];
 
             for ( int i = 0, n = points.Count; i < n; i++ )
             {
-                array[i] = new System.Drawing.Point( points[i].X, points[i].Y );
+                array[i] = new Point( points[i].X, points[i].Y );
             }
 
             return array;

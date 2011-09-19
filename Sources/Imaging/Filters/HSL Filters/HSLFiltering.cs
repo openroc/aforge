@@ -1,8 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -30,8 +30,8 @@ namespace AForge.Imaging.Filters
     /// HSLFiltering filter = new HSLFiltering( );
     /// // set color ranges to keep
     /// filter.Hue = new IntRange( 335, 0 );
-    /// filter.Saturation = new Range( 0.6f, 1 );
-    /// filter.Luminance = new Range( 0.1f, 1 );
+    /// filter.Saturation = new DoubleRange( 0.6, 1 );
+    /// filter.Luminance = new DoubleRange( 0.1, 1 );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
@@ -62,28 +62,28 @@ namespace AForge.Imaging.Filters
     /// 
     public class HSLFiltering : BaseInPlacePartialFilter
     {
-        private IntRange hue = new IntRange( 0, 359 );
-        private Range saturation = new Range( 0.0f, 1.0f );
-        private Range luminance = new Range( 0.0f, 1.0f );
+        private IntRange    hue = new IntRange( 0, 359 );
+        private DoubleRange saturation = new DoubleRange( 0.0, 1.0 );
+        private DoubleRange luminance = new DoubleRange( 0.0, 1.0 );
 
-        private int   fillH = 0;
-        private float fillS = 0.0f;
-        private float fillL = 0.0f;
-        private bool  fillOutsideRange = true;
+        private int     fillH = 0;
+        private double  fillS = 0.0;
+        private double  fillL = 0.0;
+        private bool    fillOutsideRange = true;
 
         private bool updateH = true;
         private bool updateS = true;
         private bool updateL = true;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         #region Public properties
@@ -104,7 +104,7 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Range of saturation component, [0, 1].
         /// </summary>
-        public Range Saturation
+        public DoubleRange Saturation
         {
             get { return saturation; }
             set { saturation = value; }
@@ -113,7 +113,7 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Range of luminance component, [0, 1].
         /// </summary>
-        public Range Luminance
+        public DoubleRange Luminance
         {
             get { return luminance; }
             set { luminance = value; }
@@ -200,9 +200,9 @@ namespace AForge.Imaging.Filters
         /// </summary>
         public HSLFiltering( )
         {
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace AForge.Imaging.Filters
         /// <param name="saturation">Range of saturation component.</param>
         /// <param name="luminance">Range of luminance component.</param>
         /// 
-        public HSLFiltering( IntRange hue, Range saturation, Range luminance ) :
+        public HSLFiltering( IntRange hue, DoubleRange saturation, DoubleRange luminance ) :
             this( )
         {
             this.hue = hue;

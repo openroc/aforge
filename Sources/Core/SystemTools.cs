@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge
@@ -148,13 +148,13 @@ namespace AForge
 
 #if !MONO
         // Win32 memory copy function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
+        [DllImport( "ntdll.dll" )]
         private static unsafe extern byte* memcpy(
             byte* dst,
             byte* src,
             int count );
         // Win32 memory set function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
+        [DllImport( "ntdll.dll" )]
         private static unsafe extern byte* memset(
             byte* dst,
             int filler,

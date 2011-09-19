@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2010
+// Copyright © Andrew Kirillov, 2005-2009
 // andrew.kirillov@aforgenet.com
 //
 // Alejandro Pirola, 2008
@@ -29,7 +29,8 @@ namespace AForge.Imaging
     /// with black letters. The algorithm is not supposed for any type of objects, but for
     /// document images with text.</note></para>
     /// 
-    /// <para>The range of angles to detect is controlled by <see cref="MaxSkewToDetect"/> property.</para>
+    /// <para>The range of angles to detect is controlled by <see cref="MinBeta"/> and
+    /// <see cref="MaxBeta"/> properties.</para>
     /// 
     /// <para>The filter accepts 8 bpp grayscale images for processing.</para>
     /// 
@@ -60,7 +61,8 @@ namespace AForge.Imaging
         private int     stepsPerDegree;
         private int     houghHeight;
         private double  thetaStep;
-        private double  maxSkewToDetect;
+        private double  minTheta;
+        private double  maxTheta;
 
         // Hough transformation: precalculated Sine and Cosine values
         private double[]	sinMap;
@@ -81,7 +83,7 @@ namespace AForge.Imaging
         /// <remarks><para>The value defines quality of Hough transform and its ability to detect
         /// line slope precisely.</para>
         /// 
-        /// <para>Default value is set to <b>1</b>.</para>
+        /// <para>Default value is <b>1</b>.</para>
         /// </remarks>
         /// 
         public int StepsPerDegree
@@ -95,55 +97,41 @@ namespace AForge.Imaging
         }
 
         /// <summary>
-        /// Maximum skew angle to detect, [0, 45] degrees.
-        /// </summary>
-        /// 
-        /// <remarks><para>The value sets maximum document's skew angle to detect.
-        /// Document's skew angle can be as positive (rotated counter clockwise), as negative
-        /// (rotated clockwise). So setting this value to 25, for example, will lead to
-        /// [-25, 25] degrees detection range.</para>
-        ///
-        /// <para>Scanned documents usually have skew in the [-20, 20] degrees range.</para>
-        /// 
-        /// <para>Default value is set to <b>30</b>.</para>
-        /// </remarks>
-        /// 
-        public double MaxSkewToDetect
-        {
-            get { return maxSkewToDetect; }
-            set
-            {
-                maxSkewToDetect = Math.Max( 0, Math.Min( 45, value ) );
-                needToInitialize = true;
-            }
-        }
-
-        /// <summary>
         /// Minimum angle to detect skew in degrees.
         /// </summary>
         ///
-        /// <remarks><para><note>The property is deprecated and setting it has not any effect.
-        /// Use <see cref="MaxSkewToDetect"/> property instead.</note></para></remarks>
+        /// <remarks><para>The value sets minimum angle for a line to detect skew of. 
+        /// Scanned mages usualy have a skew between in the range of [-20, 20] degrees.</para>
+        /// 
+        /// <para>Default value is <b>-30</b>.</para></remarks>
         ///
-        [Obsolete( "The property is deprecated and setting it has not any effect. Use MaxSkewToDetect property instead." )]
         public double MinBeta
         {
-            get { return ( -maxSkewToDetect ); }
-            set { }
+            get { return ( 90 - minTheta ); }
+            set
+            {
+                minTheta = 90 + value;
+                needToInitialize = true;
+            }
         }
 
         /// <summary>
         /// Maximum angle to detect skew in degrees.
         /// </summary>
         ///
-        /// <remarks><para><note>The property is deprecated and setting it has not any effect.
-        /// Use <see cref="MaxSkewToDetect"/> property instead.</note></para></remarks>
+        /// <remarks><para>The value sets maximum angle for a line to detect skew of. 
+        /// Scanned mages usualy have a skew between in the range of [-20, 20] degrees.</para>
+        /// 
+        /// <para>Default value is <b>30</b> degrees.</para></remarks>
         ///
-        [Obsolete( "The property is deprecated and setting it has not any effect. Use MaxSkewToDetect property instead." )]
         public double MaxBeta
         {
-            get { return ( maxSkewToDetect ); }
-            set { }
+            get { return ( 90 - maxTheta ); }
+            set
+            {
+                maxTheta = 90 + value;
+                needToInitialize = true;
+            }
         }
 
         /// <summary>
@@ -167,7 +155,8 @@ namespace AForge.Imaging
         public DocumentSkewChecker( )
         {
             StepsPerDegree = 10;
-            MaxSkewToDetect = 30;
+            MinBeta = -30;
+            MaxBeta =  30;
         }
 
         /// <summary>
@@ -176,30 +165,11 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Document's image to get skew angle of.</param>
         /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
+        /// <returns>Returns document's skew angle.</returns>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
         /// 
         public double GetSkewAngle( Bitmap image )
-        {
-            return GetSkewAngle( image, new Rectangle( 0, 0, image.Width, image.Height ) );
-        }
-
-        /// <summary>
-        /// Get skew angle of the provided document image.
-        /// </summary>
-        /// 
-        /// <param name="image">Document's image to get skew angle of.</param>
-        /// <param name="rect">Image's rectangle to process (used to exclude processing of
-        /// regions, which are not relevant to skew detection).</param>
-        /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// 
-        public double GetSkewAngle( Bitmap image, Rectangle rect )
         {
             // check image format
             if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
@@ -217,7 +187,7 @@ namespace AForge.Imaging
             try
             {
                 // process the image
-                skewAngle = GetSkewAngle( new UnmanagedImage( imageData ), rect );
+                skewAngle = GetSkewAngle( new UnmanagedImage( imageData ) );
             }
             finally
             {
@@ -234,33 +204,13 @@ namespace AForge.Imaging
         /// 
         /// <param name="imageData">Document's image data to get skew angle of.</param>
         /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
+        /// <returns>Returns document's skew angle.</returns>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
         /// 
         public double GetSkewAngle( BitmapData imageData )
         {
-            return GetSkewAngle( new UnmanagedImage( imageData ),
-                new Rectangle( 0, 0, imageData.Width, imageData.Height ) );
-        }
-
-        /// <summary>
-        /// Get skew angle of the provided document image.
-        /// </summary>
-        /// 
-        /// <param name="imageData">Document's image data to get skew angle of.</param>
-        /// <param name="rect">Image's rectangle to process (used to exclude processing of
-        /// regions, which are not relevant to skew detection).</param>
-        /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// 
-        public double GetSkewAngle( BitmapData imageData, Rectangle rect )
-        {
-            return GetSkewAngle( new UnmanagedImage( imageData ), rect );
+            return GetSkewAngle( new UnmanagedImage( imageData ) );
         }
 
         /// <summary>
@@ -269,30 +219,11 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Document's unmanaged image to get skew angle of.</param>
         /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
+        /// <returns>Returns document's skew angle.</returns>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
         /// 
         public double GetSkewAngle( UnmanagedImage image )
-        {
-            return GetSkewAngle( image, new Rectangle( 0, 0, image.Width, image.Height ) );
-        }
-
-        /// <summary>
-        /// Get skew angle of the provided document image.
-        /// </summary>
-        /// 
-        /// <param name="image">Document's unmanaged image to get skew angle of.</param>
-        /// <param name="rect">Image's rectangle to process (used to exclude processing of
-        /// regions, which are not relevant to skew detection).</param>
-        /// 
-        /// <returns>Returns document's skew angle. If the returned angle equals to -90,
-        /// then document skew detection has failed.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// 
-        public double GetSkewAngle( UnmanagedImage image, Rectangle rect )
         {
             if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
             {
@@ -305,18 +236,11 @@ namespace AForge.Imaging
             // get source image size
             int width       = image.Width;
             int height      = image.Height;
+            int offset      = image.Stride - width;
             int halfWidth   = width / 2;
             int halfHeight  = height / 2;
-
-            // make sure the specified rectangle recides with the source image
-            rect.Intersect( new Rectangle( 0, 0, width, height ) );
-
-            int startX = -halfWidth  + rect.Left;
-            int startY = -halfHeight + rect.Top;
-            int stopX  = width  - halfWidth  - ( width  - rect.Right );
-            int stopY  = height - halfHeight - ( height - rect.Bottom ) - 1;
-
-            int offset = image.Stride - rect.Width;
+            int toWidth     = width - halfWidth;
+            int toHeight    = height - halfHeight - 1;
 
             // calculate Hough map's width
             int halfHoughWidth = (int) Math.Sqrt( halfWidth * halfWidth + halfHeight * halfHeight );
@@ -327,15 +251,14 @@ namespace AForge.Imaging
             // do the job
             unsafe
             {
-                byte* src = (byte*) image.ImageData.ToPointer( ) +
-                    rect.Top * image.Stride + rect.Left;
-                byte* srcBelow = src + image.Stride;
+                byte* src = (byte*) image.ImageData.ToPointer( );
+                byte* srcBelow = (byte*) image.ImageData.ToPointer( ) + image.Stride;
 
                 // for each row
-                for ( int y = startY; y < stopY; y++ )
+                for ( int y = -halfHeight; y < toHeight; y++ )
                 {
                     // for each pixel
-                    for ( int x = startX; x < stopX; x++, src++, srcBelow++ )
+                    for ( int x = -halfWidth; x < toWidth; x++, src++, srcBelow++ )
                     {
                         // if current pixel is more black
                         // and pixel below is more white
@@ -378,16 +301,18 @@ namespace AForge.Imaging
 
             double skewAngle = 0;
             double sumIntensity = 0;
-
-            foreach ( HoughLine hl in hls )
+            if ( hls != null )
             {
-                if ( hl.RelativeIntensity > 0.5 )
+                foreach ( HoughLine hl in hls )
                 {
-                    skewAngle += ( hl.Theta * hl.RelativeIntensity );
-                    sumIntensity += hl.RelativeIntensity;
+                    if ( hl.RelativeIntensity > 0.5 )
+                    {
+                        skewAngle += ( hl.Theta * hl.RelativeIntensity );
+                        sumIntensity += hl.RelativeIntensity;
+                    }
                 }
+                if ( hls.Length > 0 ) skewAngle = skewAngle / sumIntensity;
             }
-            if ( hls.Length > 0 ) skewAngle = skewAngle / sumIntensity;
 
             return skewAngle - 90.0;
         }
@@ -397,6 +322,9 @@ namespace AForge.Imaging
         {
             // lines count
             int n = Math.Min( count, lines.Count );
+
+            if ( n == 0 )
+                return null;
 
             // result array
             HoughLine[] dst = new HoughLine[n];
@@ -436,17 +364,26 @@ namespace AForge.Imaging
                     // check neighboors
                     for ( int tt = theta - localPeakRadius, ttMax = theta + localPeakRadius; tt < ttMax; tt++ )
                     {
-                        // skip out of map values
-                        if ( tt < 0 )
-                            continue;
-                        if ( tt >= maxTheta )
-                            break;
-
                         // break if it is not local maximum
                         if ( foundGreater == true )
                             break;
 
-                        for ( int tr = radius - localPeakRadius, trMax = radius + localPeakRadius; tr < trMax; tr++ )
+                        int cycledTheta = tt;
+                        int cycledRadius = radius;
+
+                        // check limits
+                        if ( cycledTheta < 0 )
+                        {
+                            cycledTheta = maxTheta + cycledTheta;
+                            cycledRadius = maxRadius - cycledRadius;
+                        }
+                        if ( cycledTheta >= maxTheta )
+                        {
+                            cycledTheta -= maxTheta;
+                            cycledRadius = maxRadius - cycledRadius;
+                        }
+
+                        for ( int tr = cycledRadius - localPeakRadius, trMax = cycledRadius + localPeakRadius; tr < trMax; tr++ )
                         {
                             // skip out of map values
                             if ( tr < 0 )
@@ -455,7 +392,7 @@ namespace AForge.Imaging
                                 break;
 
                             // compare the neighboor with current value
-                            if ( houghMap[tt, tr] > intensity )
+                            if ( houghMap[cycledTheta, tr] > intensity )
                             {
                                 foundGreater = true;
                                 break;
@@ -467,7 +404,7 @@ namespace AForge.Imaging
                     if ( !foundGreater )
                     {
                         // we have local maximum
-                        lines.Add( new HoughLine( 90.0 - maxSkewToDetect + (double) theta / stepsPerDegree, (short) ( radius - halfHoughWidth ), intensity, (double) intensity / maxMapIntensity ) );
+                        lines.Add( new HoughLine( minTheta + (double) theta / stepsPerDegree, (short) ( radius - halfHoughWidth ), intensity, (double) intensity / maxMapIntensity ) );
                     }
                 }
             }
@@ -482,14 +419,12 @@ namespace AForge.Imaging
             {
                 needToInitialize = false;
 
-                houghHeight = (int) ( 2 * maxSkewToDetect * stepsPerDegree );
-                thetaStep = ( 2 * maxSkewToDetect * Math.PI / 180 ) / houghHeight;
+                houghHeight = (int) ( ( maxTheta - minTheta ) * stepsPerDegree );
+                thetaStep = ( ( maxTheta - minTheta ) * Math.PI / 180 ) / houghHeight;
 
                 // precalculate Sine and Cosine values
                 sinMap = new double[houghHeight];
                 cosMap = new double[houghHeight];
-
-                double minTheta = 90.0 - maxSkewToDetect;
 
                 for ( int i = 0; i < houghHeight; i++ )
                 {
