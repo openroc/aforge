@@ -14,19 +14,15 @@ namespace AForge.Imaging.Filters
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Generic Bayer fileter image processing routine.
+    /// Bayer fileter image processing routine.
     /// </summary>
     /// 
     /// <remarks><para>The class implements <a href="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</a>
     /// routine, which creates color image out of grayscale image produced by image sensor built with
     /// Bayer color matrix.</para>
     /// 
-    /// <para>This Bayer filter implementation is made generic by allowing user to specify used
-    /// <see cref="BayerPattern">Bayer pattern</see>. This makes it slower. For optimized version
-    /// of the Bayer filter see <see cref="BayerFilterOptimized"/> class, which implements Bayer filter
-    /// specifically optimized for some well known patterns.</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and produces 24 bpp RGB image.</para>
+    /// <para>The filter accepts 8 bpp grayscale images and produces
+    /// 24 bpp RGB image.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -42,15 +38,13 @@ namespace AForge.Imaging.Filters
     /// <img src="img/imaging/bayer_filter.jpg" width="640" height="480" />
     /// </remarks>
     /// 
-    /// <see cref="BayerFilterOptimized"/>
-    /// 
     public class BayerFilter : BaseFilter
     {
         // private format translation dictionary
         private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
 
         private bool performDemosaicing = true;
-        private int[,] bayerPattern = new int[2, 2] { { RGB.G, RGB.R }, { RGB.B, RGB.G } };
+        private int[,] bayerPattern = new int[2, 2] { { RGB.G, RGB.B }, { RGB.R, RGB.G } };
 
         /// <summary>
         /// Specifies if demosaicing must be done or not.
@@ -82,12 +76,12 @@ namespace AForge.Imaging.Filters
         /// 
         /// <para>By default the property is set to:
         /// <code>
-        /// new int[2, 2] { { RGB.G, RGB.R }, { RGB.B, RGB.G } }
+        /// new int[2, 2] { { RGB.G, RGB.B }, { RGB.R, RGB.G } }
         /// </code>,
         /// which corresponds to
         /// <code lang="none">
-        /// G R
-        /// B G
+        /// G B
+        /// R G
         /// </code>
         /// pattern.
         /// </para>
@@ -161,7 +155,7 @@ namespace AForge.Imaging.Filters
                     for ( int x = 0; x < width; x++, src++, dst += 3 )
                     {
                         dst[RGB.R] = dst[RGB.G] = dst[RGB.B] = 0;
-                        dst[bayerPattern[y & 1, x & 1]] = *src;
+                        dst[bayerPattern[x & 1, y & 1]] = *src;
                     }
                     src += srcOffset;
                     dst += dstOffset;
@@ -178,14 +172,14 @@ namespace AForge.Imaging.Filters
                         rgbValues[0] = rgbValues[1] = rgbValues[2] = 0;
                         rgbCounters[0] = rgbCounters[1] = rgbCounters[2] = 0;
 
-                        int bayerIndex = bayerPattern[y & 1, x & 1];
+                        int bayerIndex = bayerPattern[x & 1, y & 1];
 
                         rgbValues[bayerIndex] += *src;
                         rgbCounters[bayerIndex]++;
 
                         if ( x != 0 )
                         {
-                            bayerIndex = bayerPattern[y & 1, ( x - 1 ) & 1];
+                            bayerIndex = bayerPattern[( x - 1 ) & 1, y & 1];
 
                             rgbValues[bayerIndex] += src[-1];
                             rgbCounters[bayerIndex]++;
@@ -193,7 +187,7 @@ namespace AForge.Imaging.Filters
 
                         if ( x != widthM1 )
                         {
-                            bayerIndex = bayerPattern[y & 1, ( x + 1 ) & 1];
+                            bayerIndex = bayerPattern[( x + 1 ) & 1, y & 1];
 
                             rgbValues[bayerIndex] += src[1];
                             rgbCounters[bayerIndex]++;
@@ -201,14 +195,14 @@ namespace AForge.Imaging.Filters
 
                         if ( y != 0 )
                         {
-                            bayerIndex = bayerPattern[( y - 1 ) & 1, x & 1];
+                            bayerIndex = bayerPattern[x & 1, ( y - 1 ) & 1];
 
                             rgbValues[bayerIndex] += src[-srcStride];
                             rgbCounters[bayerIndex]++;
 
                             if ( x != 0 )
                             {
-                                bayerIndex = bayerPattern[( y - 1 ) & 1, ( x - 1 ) & 1];
+                                bayerIndex = bayerPattern[( x - 1 ) & 1, ( y - 1 ) & 1];
 
                                 rgbValues[bayerIndex] += src[-srcStride - 1];
                                 rgbCounters[bayerIndex]++;
@@ -216,7 +210,7 @@ namespace AForge.Imaging.Filters
 
                             if ( x != widthM1 )
                             {
-                                bayerIndex = bayerPattern[( y - 1 ) & 1, ( x + 1 ) & 1];
+                                bayerIndex = bayerPattern[( x + 1 ) & 1, ( y - 1 ) & 1];
 
                                 rgbValues[bayerIndex] += src[-srcStride + 1];
                                 rgbCounters[bayerIndex]++;
@@ -225,14 +219,14 @@ namespace AForge.Imaging.Filters
 
                         if ( y != heightM1 )
                         {
-                            bayerIndex = bayerPattern[( y + 1 ) & 1, x & 1];
+                            bayerIndex = bayerPattern[x & 1, ( y + 1 ) & 1];
 
                             rgbValues[bayerIndex] += src[srcStride];
                             rgbCounters[bayerIndex]++;
 
                             if ( x != 0 )
                             {
-                                bayerIndex = bayerPattern[( y + 1 ) & 1, ( x - 1 ) & 1];
+                                bayerIndex = bayerPattern[( x - 1 ) & 1, ( y + 1 ) & 1];
 
                                 rgbValues[bayerIndex] += src[srcStride - 1];
                                 rgbCounters[bayerIndex]++;
@@ -240,7 +234,7 @@ namespace AForge.Imaging.Filters
 
                             if ( x != widthM1 )
                             {
-                                bayerIndex = bayerPattern[( y + 1 ) & 1, ( x + 1 ) & 1];
+                                bayerIndex = bayerPattern[( x + 1 ) & 1, ( y + 1 ) & 1];
 
                                 rgbValues[bayerIndex] += src[srcStride + 1];
                                 rgbCounters[bayerIndex]++;

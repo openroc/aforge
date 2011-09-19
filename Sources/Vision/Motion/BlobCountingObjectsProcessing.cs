@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Vision.Motion
@@ -191,7 +191,7 @@ namespace AForge.Vision.Motion
         /// 
         /// <param name="highlightMotionRegions">Highlight motion regions or not (see <see cref="HighlightMotionRegions"/> property).</param>
         /// 
-        public BlobCountingObjectsProcessing( bool highlightMotionRegions ) : this( 10, 10, highlightMotionRegions ) { }
+        public BlobCountingObjectsProcessing( bool highlightMotionRegions ) : this( 10, 10, true ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlobCountingObjectsProcessing"/> class.
@@ -250,23 +250,8 @@ namespace AForge.Vision.Motion
         /// original video frame.
         /// </para></remarks>
         /// 
-        /// <exception cref="InvalidImagePropertiesException">Motion frame is not 8 bpp image, but it must be so.</exception>
-        /// <exception cref="UnsupportedImageFormatException">Video frame must be 8 bpp grayscale image or 24/32 bpp color image.</exception>
-        /// 
         public unsafe void ProcessFrame( UnmanagedImage videoFrame, UnmanagedImage motionFrame )
         {
-            if ( motionFrame.PixelFormat != PixelFormat.Format8bppIndexed )
-            {
-                throw new InvalidImagePropertiesException( "Motion frame must be 8 bpp image." );
-            }
-
-            if ( ( videoFrame.PixelFormat != PixelFormat.Format8bppIndexed ) &&
-                 ( videoFrame.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                 ( videoFrame.PixelFormat != PixelFormat.Format32bppArgb ) )
-            {
-                throw new UnsupportedImageFormatException( "Video frame must be 8 bpp grayscale image or 24/32 bpp color image." );
-            } 
-
             int width  = videoFrame.Width;
             int height = videoFrame.Height;
 

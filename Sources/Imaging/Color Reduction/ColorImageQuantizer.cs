@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
+// Copyright © AForge.NET, 2005-2010
 // contacts@aforgenet.com
 //
 
@@ -183,9 +183,7 @@ namespace AForge.Imaging.ColorReduction
 
             try
             {
-                Bitmap result = ReduceColors( new UnmanagedImage( data ), paletteSize );
-                result.SetResolution( image.HorizontalResolution, image.VerticalResolution );
-                return result;
+                return ReduceColors( new UnmanagedImage( data ), paletteSize );
             }
             finally
             {
@@ -242,9 +240,7 @@ namespace AForge.Imaging.ColorReduction
 
             try
             {
-                Bitmap result = ReduceColors( new UnmanagedImage( data ), palette );
-                result.SetResolution( image.HorizontalResolution, image.VerticalResolution );
-                return result;
+                return ReduceColors( new UnmanagedImage( data ), palette );
             }
             finally
             {
@@ -286,6 +282,7 @@ namespace AForge.Imaging.ColorReduction
             {
                 throw new ArgumentException( "Invalid size of the target color palette." );
             }
+
 
             paletteToUse = palette;
             cache.Clear( );

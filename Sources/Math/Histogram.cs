@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math
@@ -24,11 +24,10 @@ namespace AForge.Math
     /// // create histogram
     /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
     /// // get mean and standard deviation values
-    /// Console.WriteLine( "mean = " + histogram.Mean + ", std.dev = " + histogram.StdDev );
+    /// System.Diagnostics.Debug.WriteLine( "mean = " + histogram.Mean + ", std.dev = " + histogram.StdDev );
     /// </code>
     /// </remarks>
-    ///
-    [Serializable]
+    /// 
     public class Histogram
     {
         private int[]   values;
@@ -37,7 +36,6 @@ namespace AForge.Math
         private int     median = 0;
         private int     min;
         private int     max;
-        private long    total;
 
         /// <summary>
         /// Values of the histogram.
@@ -63,7 +61,7 @@ namespace AForge.Math
         /// // create histogram
         /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
         /// // get mean value (= 4.862)
-        /// Console.WriteLine( "mean = " + histogram.Mean.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "mean = " + histogram.Mean.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
@@ -83,7 +81,7 @@ namespace AForge.Math
         /// // create histogram
         /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
         /// // get std.dev. value (= 1.136)
-        /// Console.WriteLine( "std.dev. = " + histogram.StdDev.ToString( "F3" ) );
+        /// System.Diagnostics.Debug.WriteLine( "std.dev. = " + histogram.StdDev.ToString( "F3" ) );
         /// </code>
         /// </remarks>
         /// 
@@ -103,7 +101,7 @@ namespace AForge.Math
         /// // create histogram
         /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
         /// // get median value (= 5)
-        /// Console.WriteLine( "median = " + histogram.Median );
+        /// System.Diagnostics.Debug.WriteLine( "median = " + histogram.Median );
         /// </code>
         /// </remarks>
         /// 
@@ -124,7 +122,7 @@ namespace AForge.Math
         /// // create histogram
         /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
         /// // get min value (= 2)
-        /// Console.WriteLine( "min = " + histogram.Min );
+        /// System.Diagnostics.Debug.WriteLine( "min = " + histogram.Min );
         /// </code>
         /// </remarks>
         /// 
@@ -145,34 +143,13 @@ namespace AForge.Math
         /// // create histogram
         /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
         /// // get max value (= 6)
-        /// Console.WriteLine( "max = " + histogram.Max );
+        /// System.Diagnostics.Debug.WriteLine( "max = " + histogram.Max );
         /// </code>
         /// </remarks>
         /// 
         public int Max
         {
             get { return max; }
-        }
-
-        /// <summary>
-        /// Total count of values.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property represents total count of values contributed to the histogram, which is
-        /// essentially sum of the <see cref="Values"/> array.</para>
-        ///
-        /// <para>Sample usage:</para>
-        /// <code>
-        /// // create histogram
-        /// Histogram histogram = new Histogram( new int[10] { 0, 0, 1, 3, 6, 8, 11, 0, 0, 0 } );
-        /// // get total value (= 29)
-        /// Console.WriteLine( "total = " + histogram.TotalCount );
-        /// </code>
-        /// </remarks>
-        /// 
-        public long TotalCount
-        {
-            get { return total; }
         }
 
         /// <summary>
@@ -209,7 +186,7 @@ namespace AForge.Math
         /// // get 50% range
         /// IntRange range = histogram.GetRange( 0.5 );
         /// // show the range ([4, 6])
-        /// Console.WriteLine( "50% range = [" + range.Min + ", " + range.Max + "]" );
+        /// System.Diagnostics.Debug.WriteLine( "50% range = [" + range.Min + ", " + range.Max + "]" );
         /// </code>
         /// </remarks>
         /// 
@@ -234,7 +211,6 @@ namespace AForge.Math
 
             max = 0;
             min = n;
-            total = 0;
 
             // calculate min and max
             for ( i = 0; i < n; i++ )
@@ -247,13 +223,11 @@ namespace AForge.Math
                     // min
                     if ( i < min )
                         min = i;
-
-                    total += values[i];
                 }
             }
 
-            mean   = Statistics.Mean( values );
-            stdDev = Statistics.StdDev( values, mean );
+            mean = Statistics.Mean( values );
+            stdDev = Statistics.StdDev( values );
             median = Statistics.Median( values );
         }
     }

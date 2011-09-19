@@ -21,7 +21,7 @@ namespace AForge.Math.Geometry
     /// 
     /// <para>Generally, the equation of the line is y = <see cref="Slope"/> * x + 
     /// <see cref="Intercept"/>. However, when <see cref="Slope"/> is an Infinity,
-    /// <see name="Intercept"/> would normally be meaningless, and it would be
+    /// <paramref name="Intercept"/> would normally be meaningless, and it would be
     /// impossible to distinguish the line x = 5 from the line x = -5. Therefore,
     /// if <see cref="Slope"/> is <see cref="float.PositiveInfinity"/> or
     /// <see cref="float.NegativeInfinity"/>, the line's equation is instead 
@@ -381,16 +381,6 @@ namespace AForge.Math.Geometry
         ///
         public static bool operator ==( Line line1, Line line2 )
         {
-            if ( System.Object.ReferenceEquals( line1, line2 ) )
-            {
-                return true;
-            }
-
-            if ( ( (object) line1 == null ) || ( (object) line2 == null ) )
-            {
-                return false;
-            }
-
             return ( ( line1.k == line2.k ) && ( line1.b == line2.b ) );
         }
 
@@ -406,7 +396,7 @@ namespace AForge.Math.Geometry
         ///
         public static bool operator !=( Line line1, Line line2 )
         {
-            return !( line1 == line2 );
+            return ( ( line1.k != line2.k ) || ( line1.b != line2.b ) );
         }
 
         /// <summary>

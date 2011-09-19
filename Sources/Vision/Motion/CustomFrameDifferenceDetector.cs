@@ -283,7 +283,7 @@ namespace AForge.Vision.Motion
                     frameSize = backgroundFrame.Stride * height;
 
                     // convert source frame to grayscale
-                    Tools.ConvertToGrayscale( videoFrame, backgroundFrame );
+                    Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, backgroundFrame );
 
                     return;
                 }
@@ -305,7 +305,7 @@ namespace AForge.Vision.Motion
                 }
 
                 // convert current image to grayscale
-                Tools.ConvertToGrayscale( videoFrame, motionFrame );
+                Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, motionFrame );
 
                 // pointers to background and current frames
                 byte* backFrame;
@@ -461,7 +461,7 @@ namespace AForge.Vision.Motion
                 frameSize = this.backgroundFrame.Stride * height;
 
                 // convert source frame to grayscale
-                Tools.ConvertToGrayscale( backgroundFrame, this.backgroundFrame );
+                Grayscale.CommonAlgorithms.BT709.Apply( backgroundFrame, this.backgroundFrame );
 
                 manuallySetBackgroundFrame = true;
             }

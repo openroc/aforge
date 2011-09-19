@@ -204,15 +204,7 @@ namespace IPPrototyper
             }
             config.SetConfigurationOption( openLastOption, openLastFolderOnStartToolStripMenuItem.Checked.ToString( ) );
 
-            try
-            {
-                config.Save( );
-            }
-            catch ( IOException ex )
-            {
-                MessageBox.Show( "Failed saving confguration file.\r\n\r\n" + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-            }
+            config.Save( );
         }
 
         // Add folder to the list of recently used folders

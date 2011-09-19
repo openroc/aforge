@@ -391,7 +391,7 @@ namespace AForge.Video.VFW
             /// </summary>
             /// 
             [MarshalAs( UnmanagedType.I4 )]
-            public int Capabilities;
+            public int ñapabilities;
 
             /// <summary>
             /// Priority of the stream.

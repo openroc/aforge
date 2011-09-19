@@ -99,17 +99,23 @@ namespace Snapshot_Maker
 
                 foreach ( VideoCapabilities capabilty in videoCapabilities )
                 {
-                    if ( !videoResolutionsCombo.Items.Contains( capabilty.FrameSize ) )
+                    string item = string.Format(
+                        "{0} x {1}", capabilty.FrameSize.Width, capabilty.FrameSize.Height );
+
+                    if ( !videoResolutionsCombo.Items.Contains( item ) )
                     {
-                        videoResolutionsCombo.Items.Add( capabilty.FrameSize );
+                        videoResolutionsCombo.Items.Add( item );
                     }
                 }
 
                 foreach ( VideoCapabilities capabilty in snapshotCapabilities )
                 {
-                    if ( !snapshotResolutionsCombo.Items.Contains( capabilty.FrameSize ) )
+                    string item = string.Format(
+                        "{0} x {1}", capabilty.FrameSize.Width, capabilty.FrameSize.Height );
+
+                    if ( !snapshotResolutionsCombo.Items.Contains( item ) )
                     {
-                        snapshotResolutionsCombo.Items.Add( capabilty.FrameSize );
+                        snapshotResolutionsCombo.Items.Add( item );
                     }
                 }
 
@@ -138,13 +144,13 @@ namespace Snapshot_Maker
             {
                 if ( ( videoCapabilities != null ) && ( videoCapabilities.Length != 0 ) )
                 {
-                    videoDevice.DesiredFrameSize = (Size) videoResolutionsCombo.SelectedItem;
+                    videoDevice.DesiredFrameSize = videoCapabilities[videoResolutionsCombo.SelectedIndex].FrameSize;
                 }
 
                 if ( ( snapshotCapabilities != null ) && ( snapshotCapabilities.Length != 0 ) )
                 {
                     videoDevice.ProvideSnapshots = true;
-                    videoDevice.DesiredSnapshotSize = (Size) snapshotResolutionsCombo.SelectedItem;
+                    videoDevice.DesiredSnapshotSize = snapshotCapabilities[snapshotResolutionsCombo.SelectedIndex].FrameSize;
                     videoDevice.SnapshotFrame += new NewFrameEventHandler( videoDevice_SnapshotFrame );
                 }
 
@@ -197,11 +203,14 @@ namespace Snapshot_Maker
             ShowSnapshot( (Bitmap) eventArgs.Frame.Clone( ) );
         }
 
+        private delegate void ShowSnapshotCallback( Bitmap snapshot );
+
         private void ShowSnapshot( Bitmap snapshot )
         {
             if ( InvokeRequired )
             {
-                Invoke( new Action<Bitmap>( ShowSnapshot ), snapshot );
+                ShowSnapshotCallback d = new ShowSnapshotCallback( ShowSnapshot );
+                Invoke( d, new object[] { snapshot } );
             }
             else
             {
