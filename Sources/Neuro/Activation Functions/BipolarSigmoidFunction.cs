@@ -13,9 +13,9 @@ namespace AForge.Neuro
     /// Bipolar sigmoid activation function.
     /// </summary>
     ///
-    /// <remarks><para>The class represents bipolar sigmoid activation function with
-    /// the next expression:
-    /// <code lang="none">
+    /// <remarks>The class represents bipolar sigmoid activation function with
+    /// the next expression:<br />
+    /// <code>
     ///                2
     /// f(x) = ------------------ - 1
     ///        1 + exp(-alpha * x)
@@ -24,12 +24,9 @@ namespace AForge.Neuro
     /// f'(x) = -------------------------------- = alpha * (1 - f(x)^2) / 2
     ///           (1 + exp(-alpha * x))^2
     /// </code>
-    /// </para>
-    /// 
-    /// <para>Output range of the function: <b>[-1, 1]</b>.</para>
-    /// 
-    /// <para>Functions graph:</para>
-    /// <img src="img/neuro/sigmoid_bipolar.bmp" width="242" height="172" />
+    /// Output range of the function: <b>[-1, 1]</b><br /><br />
+    /// Functions graph:<br />
+    /// <img src="sigmoid_bipolar.bmp" width="242" height="172" />
     /// </remarks>
     /// 
     [Serializable]
@@ -42,14 +39,8 @@ namespace AForge.Neuro
         /// Sigmoid's alpha value.
         /// </summary>
         ///
-        /// <remarks><para>The value determines steepness of the function. Increasing value of
-        /// this property changes sigmoid to look more like a threshold function. Decreasing
-        /// value of this property makes sigmoid to be very smooth (slowly growing from its
-        /// minimum value to its maximum value).</para>
-        ///
-        /// <para>Default value is set to <b>2</b>.</para>
+        /// <remarks>The value determines steepness of the function. Default value is <b>2</b>.
         /// </remarks>
-        /// 
         public double Alpha
         {
             get { return alpha; }
@@ -80,7 +71,7 @@ namespace AForge.Neuro
         /// 
         /// <returns>Function output value, <i>f(x)</i>.</returns>
         ///
-        /// <remarks>The method calculates function value at point <paramref name="x"/>.</remarks>
+        /// <remarks>The method calculates function value at point <b>x</b>.</remarks>
         ///
         public double Function( double x )
         {
@@ -95,7 +86,7 @@ namespace AForge.Neuro
         /// 
         /// <returns>Function derivative, <i>f'(x)</i>.</returns>
         /// 
-        /// <remarks>The method calculates function derivative at point <paramref name="x"/>.</remarks>
+        /// <remarks>The method calculates function derivative at point <b>x</b>.</remarks>
         ///
         public double Derivative( double x )
         {
@@ -112,15 +103,13 @@ namespace AForge.Neuro
         /// with the help of <see cref="Function"/> method.</param>
         /// 
         /// <returns>Function derivative, <i>f'(x)</i>.</returns>
-        ///
-        /// <remarks><para>The method calculates the same derivative value as the
+        /// 
+        /// <remarks>The method calculates the same derivative value as the
         /// <see cref="Derivative"/> method, but it takes not the input <b>x</b> value
         /// itself, but the function value, which was calculated previously with
-        /// the help of <see cref="Function"/> method.</para>
-        /// 
-        /// <para><note>Some applications require as function value, as derivative value,
-        /// so they can save the amount of calculations using this method to calculate derivative.</note></para>
-        /// </remarks>
+        /// the help of <see cref="Function"/> method. <i>(Some applications require as
+        /// function value, as derivative value, so they can seve the amount of
+        /// calculations using this method to calculate derivative)</i>.</remarks>
         /// 
         public double Derivative2( double y )
         {

@@ -1,10 +1,9 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2007
 // andrew.kirillov@gmail.com
 //
-
 namespace AForge.Imaging.Filters
 {
     using System;
@@ -16,17 +15,14 @@ namespace AForge.Imaging.Filters
     /// </summary>
     /// 
     /// <remarks><para>The filter represents binarization filter, which is based on
-    /// error diffusion dithering with <a href="http://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering">Floyd-Steinberg</a>
-    /// coefficients. Error is diffused on 4 neighbor pixels with next coefficients:</para>
-    /// 
-    /// <code lang="none">
+    /// error diffusion dithering with Floyd-Steinberg coefficients. Error is diffused
+    /// on 4 neighbor pixels with next coefficients:</para>
+    /// <code>
     ///     | * | 7 |
     /// | 3 | 5 | 1 |
     /// 
     /// / 16
     /// </code>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images for processing.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -35,17 +31,11 @@ namespace AForge.Imaging.Filters
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
-    /// 
     /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/grayscale.jpg" width="480" height="361" />
+    /// <img src="grayscale.jpg" width="480" height="361" />
     /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/floyd_steinberg.jpg" width="480" height="361" />
+    /// <img src="floyd_steinberg.jpg" width="480" height="361" />
     /// </remarks>
-    /// 
-    /// <seealso cref="BurkesDithering"/>
-    /// <seealso cref="JarvisJudiceNinkeDithering"/>
-    /// <seealso cref="SierraDithering"/>
-    /// <seealso cref="StuckiDithering"/>
     /// 
     public sealed class FloydSteinbergDithering : ErrorDiffusionToAdjacentNeighbors
     {

@@ -1,9 +1,8 @@
-// Motion Detection sample application
 // AForge.NET Framework
-// http://www.aforgenet.com/framework/
+// Motion Detection sample application
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -16,7 +15,7 @@ using System.Windows.Forms;
 
 using AForge.Video.DirectShow;
 
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     public partial class VideoCaptureDeviceForm : Form
     {

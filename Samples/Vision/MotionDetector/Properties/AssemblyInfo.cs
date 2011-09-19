@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "Motion Detector" )]
-[assembly: AssemblyDescription( "Motion Detector sample" )]
+[assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "AForge" )]
-[assembly: AssemblyProduct( "AForge.NET" )]
-[assembly: AssemblyCopyright( "AForge © 2009" )]
+[assembly: AssemblyProduct( "Motion Detector" )]
+[assembly: AssemblyCopyright( "AForge.NET © 2007" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion( "2.4.0.0" )]
-[assembly: AssemblyFileVersion( "2.4.0.0" )]
+[assembly: AssemblyVersion( "2.3.0.0" )]
+[assembly: AssemblyFileVersion( "2.3.0.0" )]

@@ -1,9 +1,8 @@
 // AForge Neural Net Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Neuro
@@ -33,6 +32,7 @@ namespace AForge.Neuro
             get { return (ActivationNeuron) neurons[index]; }
         }
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivationLayer"/> class.
         /// </summary>
@@ -41,7 +41,7 @@ namespace AForge.Neuro
         /// <param name="inputsCount">Layer's inputs count.</param>
         /// <param name="function">Activation function of neurons of the layer.</param>
         /// 
-        /// <remarks>The new layer is randomized (see <see cref="ActivationNeuron.Randomize"/>
+        /// <remarks>The new layet will be randomized (see <see cref="ActivationNeuron.Randomize"/>
         /// method) after it is created.</remarks>
         /// 
         public ActivationLayer( int neuronsCount, int inputsCount, IActivationFunction function )
@@ -50,23 +50,6 @@ namespace AForge.Neuro
             // create each neuron
             for ( int i = 0; i < neuronsCount; i++ )
                 neurons[i] = new ActivationNeuron( inputsCount, function );
-        }
-
-        /// <summary>
-        /// Set new activation function for all neurons of the layer.
-        /// </summary>
-        /// 
-        /// <param name="function">Activation function to set.</param>
-        /// 
-        /// <remarks><para>The methods sets new activation function for each neuron by setting
-        /// their <see cref="ActivationNeuron.ActivationFunction"/> property.</para></remarks>
-        /// 
-        public void SetActivationFunction( IActivationFunction function )
-        {
-            for ( int i = 0; i < neuronsCount; i++ )
-            {
-                ( (ActivationNeuron) neurons[i] ).ActivationFunction = function;
-            }
         }
     }
 }

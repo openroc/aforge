@@ -1,82 +1,43 @@
 // AForge Image Processing Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Resize image using bicubic interpolation algorithm.
+    /// Resize image using bicubic interpolation
     /// </summary>
     /// 
-    /// <remarks><para>The class implements image resizing filter using bicubic
-    /// interpolation algorithm. It uses bicubic kernel W(x) as described on
-    /// <a href="http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm">Wikipedia</a>
-    /// (coefficient <b>a</b> is set to <b>-0.5</b>).</para>
+    /// <remarks></remarks>
     /// 
-    /// <para>The filter accepts 8 grayscale images and 24 bpp
-    /// color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// ResizeBicubic filter = new ResizeBicubic( 400, 300 );
-    /// // apply the filter
-    /// Bitmap newImage = filter.Apply( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample9.png" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/resize_bicubic.png" width="400" height="300" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="ResizeNearestNeighbor"/>
-    /// <seealso cref="ResizeBilinear"/>
-    ///
-    public class ResizeBicubic : BaseResizeFilter
+    public class ResizeBicubic : FilterResize
     {
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ResizeBicubic"/> class.
+        /// Initializes a new instance of the <see cref="ResizeBicubic"/> class
         /// </summary>
         /// 
-        /// <param name="newWidth">Width of new image.</param>
-        /// <param name="newHeight">Height of new image.</param>
+        /// <param name="newWidth">Width of new image</param>
+        /// <param name="newHeight">Height of new image</param>
         /// 
 		public ResizeBicubic( int newWidth, int newHeight ) :
             base( newWidth, newHeight )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-        }
+		}
 
         /// <summary>
-        /// Process the filter on the specified image.
+        /// Process the filter on the specified image
         /// </summary>
         /// 
-        /// <param name="sourceData">Source image data.</param>
-        /// <param name="destinationData">Destination image data.</param>
+        /// <param name="sourceData">Source image data</param>
+        /// <param name="destinationData">Destination image data</param>
         /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
+        protected override unsafe void ProcessFilter( BitmapData sourceData, BitmapData destinationData )
         {
             // get source image size
             int width   = sourceData.Width;
@@ -89,8 +50,8 @@ namespace AForge.Imaging.Filters
             double yFactor = (double) height / newHeight;
 
             // do the job
-            byte* src = (byte*) sourceData.ImageData.ToPointer( );
-            byte* dst = (byte*) destinationData.ImageData.ToPointer( );
+            byte* src = (byte*) sourceData.Scan0.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
 
             // coordinates of source points and cooefficiens
             double  ox, oy, dx, dy, k1, k2;
@@ -149,7 +110,7 @@ namespace AForge.Imaging.Filters
                                 g += k2 * src[oy2 * srcStride + ox2];
                             }
                         }
-                        *dst = (byte) Math.Max( 0, Math.Min( 255, g ) );
+                        *dst = (byte) g;
                     }
                     dst += dstOffset;
                 }
@@ -205,9 +166,9 @@ namespace AForge.Imaging.Filters
                             }
                         }
 
-                        dst[RGB.R] = (byte) Math.Max( 0, Math.Min( 255, r ) );
-                        dst[RGB.G] = (byte) Math.Max( 0, Math.Min( 255, g ) );
-                        dst[RGB.B] = (byte) Math.Max( 0, Math.Min( 255, b ) );
+                        dst[RGB.R] = (byte) r;
+                        dst[RGB.G] = (byte) g;
+                        dst[RGB.B] = (byte) b;
                     }
                     dst += dstOffset;
                 }

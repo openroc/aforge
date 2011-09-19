@@ -1,95 +1,57 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Resize image using bilinear interpolation algorithm.
+    /// Resize image using bilinear interpolation
     /// </summary>
     /// 
-    /// <remarks><para>The class implements image resizing filter using bilinear
-    /// interpolation algorithm.</para>
+    /// <remarks></remarks>
     /// 
-    /// <para>The filter accepts 8 grayscale images and 24/32 bpp
-    /// color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// ResizeBilinear filter = new ResizeBilinear( 400, 300 );
-    /// // apply the filter
-    /// Bitmap newImage = filter.Apply( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample9.png" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/resize_bilinear.png" width="400" height="300" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="ResizeNearestNeighbor"/>
-    /// <seealso cref="ResizeBicubic"/>
-    ///
-    public class ResizeBilinear : BaseResizeFilter
+    public class ResizeBilinear : FilterResize
     {
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ResizeBilinear"/> class.
+        /// Initializes a new instance of the <see cref="ResizeBilinear"/> class
         /// </summary>
         /// 
-        /// <param name="newWidth">Width of the new image.</param>
-        /// <param name="newHeight">Height of the new image.</param>
+        /// <param name="newWidth">Width of new image</param>
+        /// <param name="newHeight">Height of new image</param>
         /// 
 		public ResizeBilinear( int newWidth, int newHeight ) :
             base( newWidth, newHeight )
 		{
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
-        }
+		}
 
         /// <summary>
-        /// Process the filter on the specified image.
+        /// Process the filter on the specified image
         /// </summary>
         /// 
-        /// <param name="sourceData">Source image data.</param>
-        /// <param name="destinationData">Destination image data.</param>
+        /// <param name="sourceData">Source image data</param>
+        /// <param name="destinationData">Destination image data</param>
         /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
+        protected override unsafe void ProcessFilter( BitmapData sourceData, BitmapData destinationData )
         {
             // get source image size
             int width   = sourceData.Width;
             int height  = sourceData.Height;
 
-            int pixelSize = Image.GetPixelFormatSize( sourceData.PixelFormat ) / 8;
+            int pixelSize = ( sourceData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
             int srcStride = sourceData.Stride;
             int dstOffset = destinationData.Stride - pixelSize * newWidth;
             double xFactor = (double) width / newWidth;
             double yFactor = (double) height / newHeight;
 
             // do the job
-            byte* src = (byte*) sourceData.ImageData.ToPointer( );
-            byte* dst = (byte*) destinationData.ImageData.ToPointer( );
+            byte* src = (byte*) sourceData.Scan0.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
 
             // coordinates of source points
             double  ox, oy, dx1, dy1, dx2, dy2;

@@ -10,7 +10,6 @@
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
@@ -24,10 +23,7 @@ namespace AForge.Imaging.Filters
     /// areas of lower local contrast to gain a higher contrast without affecting the global contrast.
     /// </para>
     /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24/32 bpp
-    /// color images for processing.</para>
-    /// 
-    /// <para><note>For color images the histogram equalization is applied to each color plane separately.</note></para>
+    /// <para><note>The class processes only grayscale (8 bpp indexed) and color (24 bpp) images.</note></para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -38,61 +34,36 @@ namespace AForge.Imaging.Filters
     /// </code>
     /// 
     /// <para><b>Source image:</b></para>
-    /// <img src="img/imaging/sample5.jpg" width="480" height="387" />
+    /// <img src="sample5.jpg" width="480" height="387" />
     /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/equalized.jpg" width="480" height="387" />
+    /// <img src="equalized.jpg" width="480" height="387" />
     /// </remarks>
     ///
-    public class HistogramEqualization : BaseInPlacePartialFilter
+    public class HistogramEqualization : FilterAnyToAnyPartial
     {
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
-        /// <summary>   
-        /// Initializes a new instance of the <see cref="HistogramEqualization"/> class.
-        /// </summary>
-        public HistogramEqualization( )
-        {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
-        }
-
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 :
-                ( image.PixelFormat == PixelFormat.Format24bppRgb ) ? 3 : 4;
-
             int startX = rect.Left;
             int startY = rect.Top;
             int stopX  = startX + rect.Width;
             int stopY  = startY + rect.Height;
-            int stride = image.Stride;
-            int offset = stride - rect.Width * pixelSize;
+            int stride = imageData.Stride;
+            int offset = stride - rect.Width * ( ( imageData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3 );
 
             int numberOfPixels = ( stopX - startX ) * ( stopY - startY );
 
             // check image format
-            if ( image.PixelFormat == PixelFormat.Format8bppIndexed )
+            if ( imageData.PixelFormat == PixelFormat.Format8bppIndexed )
             {
                 // grayscale image
-                byte* ptr = (byte*) image.ImageData.ToPointer( );
+                byte* ptr = (byte*) imageData.Scan0.ToPointer( );
                 // allign pointer to the first pixel to process
                 ptr += ( startY * stride + startX );
 
@@ -111,7 +82,7 @@ namespace AForge.Imaging.Filters
                 byte[] equalizedHistogram = Equalize( histogram, numberOfPixels );
 
                 // update pixels' intensities
-                ptr = (byte*) image.ImageData.ToPointer( );
+                ptr = (byte*) imageData.Scan0.ToPointer( );
                 // allign pointer to the first pixel to process
                 ptr += ( startY * stride + startX );
 
@@ -127,9 +98,9 @@ namespace AForge.Imaging.Filters
             else
             {
                 // color image
-                byte* ptr = (byte*) image.ImageData.ToPointer( );
+                byte* ptr = (byte*) imageData.Scan0.ToPointer( );
                 // allign pointer to the first pixel to process
-                ptr += ( startY * stride + startX * pixelSize );
+                ptr += ( startY * stride + startX * 3 );
 
                 // calculate histogram
                 int[] histogramR = new int[256];
@@ -138,7 +109,7 @@ namespace AForge.Imaging.Filters
 
                 for ( int y = startY; y < stopY; y++ )
                 {
-                    for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                    for ( int x = startX; x < stopX; x++, ptr += 3 )
                     {
                         histogramR[ptr[RGB.R]]++;
                         histogramG[ptr[RGB.G]]++;
@@ -153,13 +124,13 @@ namespace AForge.Imaging.Filters
                 byte[] equalizedHistogramB = Equalize( histogramB, numberOfPixels );
 
                 // update pixels' intensities
-                ptr = (byte*) image.ImageData.ToPointer( );
+                ptr = (byte*) imageData.Scan0.ToPointer( );
                 // allign pointer to the first pixel to process
-                ptr += ( startY * stride + startX * pixelSize );
+                ptr += ( startY * stride + startX * 3 );
 
                 for ( int y = startY; y < stopY; y++ )
                 {
-                    for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                    for ( int x = startX; x < stopX; x++, ptr += 3 )
                     {
                         ptr[RGB.R] = equalizedHistogramR[ptr[RGB.R]];
                         ptr[RGB.G] = equalizedHistogramG[ptr[RGB.G]];
