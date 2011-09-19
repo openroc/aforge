@@ -1,9 +1,8 @@
+// AForge Framework
 // Approximation using Mutli-Layer Neural Network
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -69,8 +68,8 @@ namespace Approximation
 		private int		neuronsInFirstLayer = 20;
 		private int		iterations = 1000;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -422,33 +421,15 @@ namespace Approximation
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -469,9 +450,9 @@ namespace Approximation
 			{
 				StreamReader reader = null;
 				// read maximum 50 points
-                float[,] tempData = new float[50, 2];
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
+				double[,] tempData = new double[50, 2];
+				double minX = double.MaxValue;
+				double maxX = double.MinValue;
 
 				try
 				{
@@ -487,8 +468,8 @@ namespace Approximation
 						if ( strs.Length == 1 )
 							strs = str.Split( ',' );
 						// parse X
-                        tempData[i, 0] = float.Parse( strs[0] );
-                        tempData[i, 1] = float.Parse( strs[1] );
+						tempData[i, 0] = double.Parse( strs[0] );
+						tempData[i, 1] = double.Parse( strs[1] );
 
 						// search for min value
 						if ( tempData[i, 0] < minX )
@@ -518,7 +499,7 @@ namespace Approximation
 
 				// update list and chart
 				UpdateDataListView( );
-				chart.RangeX = new Range( minX, maxX );
+				chart.RangeX = new DoubleRange( minX, maxX );
 				chart.UpdateDataSeries( "data", data );
 				chart.UpdateDataSeries( "solution", null );
 				// enable "Start" button
@@ -539,30 +520,19 @@ namespace Approximation
 			}
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-			    loadDataButton.Enabled		= enable;
-			    learningRateBox.Enabled		= enable;
-			    momentumBox.Enabled			= enable;
-			    alphaBox.Enabled			= enable;
-			    neuronsBox.Enabled			= enable;
-			    iterationsBox.Enabled		= enable;
+			loadDataButton.Enabled		= enable;
+			learningRateBox.Enabled		= enable;
+			momentumBox.Enabled			= enable;
+			alphaBox.Enabled			= enable;
+			neuronsBox.Enabled			= enable;
+			iterationsBox.Enabled		= enable;
 
-			    startButton.Enabled	= enable;
-			    stopButton.Enabled	= !enable;
-		    }
-        }
+			startButton.Enabled	= enable;
+			stopButton.Enabled	= !enable;
+		}
 
 		// On button "Start"
 		private void startButton_Click( object sender, System.EventArgs e )
@@ -629,9 +599,8 @@ namespace Approximation
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
@@ -705,8 +674,8 @@ namespace Approximation
 				}
 			
 				// set current iteration's info
-                SetText( currentIterationBox, iteration.ToString( ) );
-                SetText( currentErrorBox, learningError.ToString( "F3" ) );
+				currentIterationBox.Text = iteration.ToString( );
+				currentErrorBox.Text = learningError.ToString( "F3" );
 
 				// increase current iteration
 				iteration++;

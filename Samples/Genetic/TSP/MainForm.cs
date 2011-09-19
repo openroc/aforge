@@ -1,9 +1,8 @@
+// AForge Framework
 // Traveling Salesman Problem using Genetic Algorithms
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -59,8 +58,8 @@ namespace TSP
 
 		private double[,]	map = null;
 
-		private Thread workerThread = null;
-		private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -71,8 +70,8 @@ namespace TSP
 			InitializeComponent();
 
 			// set up map control
-			mapControl.RangeX = new Range( 0, 1000 );
-			mapControl.RangeY = new Range( 0, 1000 );
+			mapControl.RangeX = new DoubleRange( 0, 1000 );
+			mapControl.RangeY = new DoubleRange( 0, 1000 );
 			mapControl.AddDataSeries( "map", Color.Red, Chart.SeriesType.Dots, 5, false );
 			mapControl.AddDataSeries( "path", Color.Blue, Chart.SeriesType.Line, 1, false );
 
@@ -357,32 +356,14 @@ namespace TSP
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing( object sender, System.ComponentModel.CancelEventArgs e )
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
+				workerThread.Join( );
 			}
 		}
 
@@ -394,29 +375,18 @@ namespace TSP
 			iterationsBox.Text		= iterations.ToString( );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-                citiesCountBox.Enabled      = enable;
-                populationSizeBox.Enabled   = enable;
-                iterationsBox.Enabled       = enable;
-                selectionBox.Enabled        = enable;
+			citiesCountBox.Enabled		= enable;
+			populationSizeBox.Enabled	= enable;
+			iterationsBox.Enabled		= enable;
+			selectionBox.Enabled		= enable;
 
-                generateMapButton.Enabled   = enable;
+			generateMapButton.Enabled	= enable;
 
-                startButton.Enabled = enable;
-                stopButton.Enabled  = !enable;
-            }
+			startButton.Enabled	= enable;
+			stopButton.Enabled	= !enable;
 		}
 
 		// Generate new map for the Traivaling Salesman problem
@@ -497,13 +467,9 @@ namespace TSP
 		private void stopButton_Click( object sender, System.EventArgs e )
 		{
 			// stop worker thread
-            if ( workerThread != null )
-            {
-                needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-                workerThread = null;
-            }
+			needToStop = true;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
@@ -545,8 +511,8 @@ namespace TSP
 				mapControl.UpdateDataSeries( "path", path );
 
 				// set current iteration's info
-                SetText( currentIterationBox, i.ToString( ) );
-                SetText( pathLengthBox, fitnessFunction.PathLength( population.BestChromosome ).ToString( ) );
+				currentIterationBox.Text = i.ToString( );
+				pathLengthBox.Text = fitnessFunction.PathLength( population.BestChromosome ).ToString( );
 
 				// increase current iteration
 				i++;

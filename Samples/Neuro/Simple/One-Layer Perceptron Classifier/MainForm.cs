@@ -1,9 +1,8 @@
+// AForge Framework
 // One-Layer Perceptron Classifier
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -61,8 +60,8 @@ namespace Classifier
 		private double		learningRate = 0.1;
 		private bool		saveStatisticsToFiles = false;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// color for data series
 		private static Color[]	dataSereisColors = new Color[10] {
@@ -322,6 +321,7 @@ namespace Classifier
 			this.Name = "MainForm";
 			this.Text = "One-Layer Perceptron Classifier";
 			this.Closing += new System.ComponentModel.CancelEventHandler(this.MainForm_Closing);
+			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox2.ResumeLayout(false);
 			this.groupBox3.ResumeLayout(false);
@@ -339,82 +339,15 @@ namespace Classifier
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-        private delegate void ClearListCallback( System.Windows.Forms.ListView control );
-        private delegate ListViewItem AddListItemCallback( System.Windows.Forms.ListView control, string itemText );
-        private delegate void AddListSubitemCallback( ListViewItem item, string subItemText );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // Thread safe clearing of list view
-        private void ClearList( System.Windows.Forms.ListView control )
-        {
-            if ( control.InvokeRequired )
-            {
-                ClearListCallback d = new ClearListCallback( ClearList );
-                Invoke( d, new object[] { control } );
-            }
-            else
-            {
-                control.Items.Clear( );
-            }
-        }
-
-        // Thread safe adding of item to list control
-        private ListViewItem AddListItem( System.Windows.Forms.ListView control, string itemText )
-        {
-            ListViewItem item = null;
-
-            if ( control.InvokeRequired )
-            {
-                AddListItemCallback d = new AddListItemCallback( AddListItem );
-                item = (ListViewItem) Invoke( d, new object[] { control, itemText } );
-            }
-            else
-            {
-                item = control.Items.Add( itemText );
-            }
-
-            return item;
-        }
-
-        // Thread safe adding of subitem to list control
-        private void AddListSubitem( ListViewItem item, string subItemText )
-        {
-            if ( this.InvokeRequired )
-            {
-                AddListSubitemCallback d = new AddListSubitemCallback( AddListSubitem );
-                Invoke( d, new object[] { item, subItemText } );
-            }
-            else
-            {
-                item.SubItems.Add( subItemText );
-            }
-        }
-
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Load input data
@@ -431,12 +364,12 @@ namespace Classifier
 				StreamReader reader = null;
 
 				// temp buffers (for 200 samples only)
-                float[,]	tempData    = new float[200, 2];
+				double[,]	tempData = new double[200, 2];
 				int[]		tempClasses = new int[200];
 
 				// min and max X values
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
+				double minX = double.MaxValue;
+				double maxX = double.MinValue;
 
 				// samples count
 				samples = 0;
@@ -464,8 +397,8 @@ namespace Classifier
 							throw new ApplicationException( "Invalid file format" );
 
 						// parse tokens
-                        tempData[samples, 0] = float.Parse( strs[0] );
-                        tempData[samples, 1] = float.Parse( strs[1] );
+						tempData[samples, 0] = double.Parse( strs[0] );
+						tempData[samples, 1] = double.Parse( strs[1] );
 						tempClasses[samples] = int.Parse( strs[2] );
 
 						// skip classes over 10, except only first 10 classes
@@ -511,7 +444,7 @@ namespace Classifier
 				}
 
 				// update chart
-				chart.RangeX = new Range( minX, maxX );
+				chart.RangeX = new DoubleRange( minX, maxX );
 				ShowTrainingData( );
 
 				// enable start button
@@ -564,26 +497,15 @@ namespace Classifier
 			}
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-			    learningRateBox.Enabled	= enable;
-			    loadButton.Enabled		= enable;
-			    startButton.Enabled		= enable;
-			    saveFilesCheck.Enabled	= enable;
-    			stopButton.Enabled		= !enable;
-	    	}
-        }
+			learningRateBox.Enabled	= enable;
+			loadButton.Enabled		= enable;
+			startButton.Enabled		= enable;
+			saveFilesCheck.Enabled	= enable;
+			stopButton.Enabled		= !enable;
+		}
 
 		// On "Start" button click
 		private void startButton_Click(object sender, System.EventArgs e)
@@ -616,9 +538,8 @@ namespace Classifier
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
@@ -694,7 +615,7 @@ namespace Classifier
 					}				
 
 					// show current iteration
-                    SetText( iterationsBox, iteration.ToString( ) );
+					iterationsBox.Text = iteration.ToString( );
 
 					// stop if no error
 					if ( error == 0 )
@@ -703,8 +624,8 @@ namespace Classifier
 					// show classifiers
 					for ( int j = 0; j < classesCount; j++ )
 					{
-						double k = ( layer[j][1] != 0 ) ? ( - layer[j][0] / layer[j][1] ) : 0;
-						double b = ( layer[j][1] != 0 ) ? ( - layer[j].Threshold / layer[j][1] ) : 0;
+						double k = - layer[j][0] / layer[j][1];
+						double b = - layer[j].Threshold / layer[j][1];
 
 						double[,] classifier = new double[2, 2] {
 							{ chart.RangeX.Min, chart.RangeX.Min * k + b },
@@ -719,23 +640,23 @@ namespace Classifier
 				}
 
 				// show perceptron's weights
-                ClearList( weightsList );
+				weightsList.Items.Clear( );
 				for ( int i = 0; i < classesCount; i++ )
 				{
 					string neuronName = string.Format( "Neuron {0}", i + 1 );
 
 					// weight 0
-                    ListViewItem item = AddListItem( weightsList, neuronName );
-                    AddListSubitem( item, "Weight 1" );
-                    AddListSubitem( item, layer[i][0].ToString( "F6" ) );
+					ListViewItem item = weightsList.Items.Add( neuronName );
+					item.SubItems.Add( "Weight 1" );
+					item.SubItems.Add( layer[i][0].ToString( "F6" ) );
 					// weight 1
-                    item = AddListItem( weightsList, neuronName );
-                    AddListSubitem( item, "Weight 2" );
-                    AddListSubitem( item, layer[i][1].ToString( "F6" ) );
+					item = weightsList.Items.Add( neuronName );
+					item.SubItems.Add( "Weight 2" );
+					item.SubItems.Add( layer[i][1].ToString( "F6" ) );
 					// threshold
-                    item = AddListItem( weightsList, neuronName );
-                    AddListSubitem( item, "Threshold" );
-                    AddListSubitem( item, layer[i].Threshold.ToString( "F6" ) );
+					item = weightsList.Items.Add( neuronName );
+					item.SubItems.Add( "Threshold" );
+					item.SubItems.Add( layer[i].Threshold.ToString( "F6" ) );
 				}
 
 				// show error's dynamics
@@ -747,7 +668,7 @@ namespace Classifier
 					errors[i, 1] = (double) errorsList[i];
 				}
 
-				errorChart.RangeX = new Range( 0, errorsList.Count - 1 );
+				errorChart.RangeX = new DoubleRange( 0, errorsList.Count - 1 );
 				errorChart.UpdateDataSeries( "error", errors );
 			}
 			catch ( IOException )
@@ -765,6 +686,11 @@ namespace Classifier
 
 			// enable settings controls
 			EnableControls( true );
+		}
+
+		private void MainForm_Load(object sender, System.EventArgs e)
+		{
+		
 		}
 	}
 }

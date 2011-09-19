@@ -1,20 +1,21 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C# Express 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls", "Controls.csproj", "{4CCA6844-9102-4A3B-8148-EA3D359B2586}"
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls", "Controls.csproj", "{D08F6D8A-A5F5-49C3-B607-526D9EE0DEE3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4CCA6844-9102-4A3B-8148-EA3D359B2586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CCA6844-9102-4A3B-8148-EA3D359B2586}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CCA6844-9102-4A3B-8148-EA3D359B2586}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CCA6844-9102-4A3B-8148-EA3D359B2586}.Release|Any CPU.Build.0 = Release|Any CPU
+	GlobalSection(ProjectConfiguration) = postSolution
+		{D08F6D8A-A5F5-49C3-B607-526D9EE0DEE3}.Debug.ActiveCfg = Debug|.NET
+		{D08F6D8A-A5F5-49C3-B607-526D9EE0DEE3}.Debug.Build.0 = Debug|.NET
+		{D08F6D8A-A5F5-49C3-B607-526D9EE0DEE3}.Release.ActiveCfg = Release|.NET
+		{D08F6D8A-A5F5-49C3-B607-526D9EE0DEE3}.Release.Build.0 = Release|.NET
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
 	EndGlobalSection
 EndGlobal

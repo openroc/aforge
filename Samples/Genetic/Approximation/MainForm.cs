@@ -1,9 +1,8 @@
+// AForge Framework
 // Approximation (Symbolic Regression) using Genetic Programming and Gene Expression Programming
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -62,14 +61,14 @@ namespace Approximation
 
 		private double[,] data = null;
 
-		private int populationSize = 100;
-		private int iterations = 1000;
+		private int populationSize = 40;
+		private int iterations = 100;
 		private int selectionMethod = 0;
 		private int functionsSet = 0;
 		private int geneticMethod = 0;
 
 		private Thread	workerThread = null;
-        private volatile bool needToStop = false;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm()
@@ -448,23 +447,6 @@ namespace Approximation
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
 		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
@@ -472,9 +454,8 @@ namespace Approximation
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -492,9 +473,9 @@ namespace Approximation
 			{
 				StreamReader reader = null;
 				// read maximum 50 points
-                float[,] tempData = new float[50, 2];
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
+				double[,] tempData = new double[50, 2];
+				double minX = double.MaxValue;
+				double maxX = double.MinValue;
 
 				try
 				{
@@ -510,8 +491,8 @@ namespace Approximation
 						if ( strs.Length == 1 )
 							strs = str.Split( ',' );
 						// parse X
-						tempData[i, 0] = float.Parse( strs[0] );
-						tempData[i, 1] = float.Parse( strs[1] );
+						tempData[i, 0] = double.Parse( strs[0] );
+						tempData[i, 1] = double.Parse( strs[1] );
 
 						// search for min value
 						if ( tempData[i, 0] < minX )
@@ -541,7 +522,7 @@ namespace Approximation
 
 				// update list and chart
 				UpdateDataListView( );
-				chart.RangeX = new Range( minX, maxX );
+				chart.RangeX = new DoubleRange( minX, maxX );
 				chart.UpdateDataSeries( "data", data );
 				chart.UpdateDataSeries( "solution", null );
 				// enable "Start" button
@@ -562,30 +543,19 @@ namespace Approximation
 			}
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-                loadDataButton.Enabled      = enable;
-                populationSizeBox.Enabled   = enable;
-                iterationsBox.Enabled       = enable;
-                selectionBox.Enabled        = enable;
-                functionsSetBox.Enabled     = enable;
-                geneticMethodBox.Enabled    = enable;
+			loadDataButton.Enabled		= enable;
+			populationSizeBox.Enabled	= enable;
+			iterationsBox.Enabled		= enable;
+			selectionBox.Enabled		= enable;
+			functionsSetBox.Enabled		= enable;
+			geneticMethodBox.Enabled	= enable;
 
-                startButton.Enabled         = enable;
-                stopButton.Enabled          = !enable;
-            }
- 		}
+			startButton.Enabled	= enable;
+			stopButton.Enabled	= !enable;
+		}
 		
 		// On button "Start"
 		private void startButton_Click(object sender, System.EventArgs e)
@@ -623,17 +593,15 @@ namespace Approximation
 			// run worker thread
 			needToStop = false;
 			workerThread = new Thread( new ThreadStart( SearchSolution ) );
-            
 			workerThread.Start( );
 		}
 
 		// On button "Stop"
-		private void stopButton_Click( object sender, System.EventArgs e )
+		private void stopButton_Click(object sender, System.EventArgs e)
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
+			workerThread.Join( );
 			workerThread = null;
 		}
 
@@ -695,8 +663,8 @@ namespace Approximation
 					}
 
 					// set current iteration's info
-                    SetText( currentIterationBox, i.ToString( ) );
-                    SetText( currentErrorBox, error.ToString( "F3" ) );
+					currentIterationBox.Text = i.ToString( );
+					currentErrorBox.Text = error.ToString( "F3" );
 				}
 				catch
 				{
@@ -713,7 +681,7 @@ namespace Approximation
 			}
 
 			// show solution
-            SetText( solutionBox, population.BestChromosome.ToString( ) );
+			solutionBox.Text = population.BestChromosome.ToString( );
 
 			// enable settings controls
 			EnableControls( true );

@@ -1,91 +1,107 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.comm
+// Copyright © Andrew Kirillov, 2005-2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
 
-    /// <summary>
-    /// Convert grayscale image to RGB.
-    /// </summary>
-    /// 
-    /// <remarks><para>The filter creates color image from specified grayscale image
-    /// initializing all RGB channels to the same value - pixel's intensity of grayscale image.</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and produces
-    /// 24 bpp RGB image.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// GrayscaleToRGB filter = new GrayscaleToRGB( );
-    /// // apply the filter
-    /// Bitmap rgbImage = filter.Apply( image );
-    /// </code>
-    /// 
-    /// </remarks>
-    /// 
-    public sealed class GrayscaleToRGB : BaseFilter
-    {
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+	/// <summary>
+	/// Convert grayscale image to RGB
+	/// </summary>
+	/// 
+	/// <remarks>The filter creates color image from specified grayscale image
+	/// initializing all RGB channels to the same value - pixel's intensity.</remarks>
+	/// 
+	public sealed class GrayscaleToRGB : IFilter
+	{
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="image">Source image to apply filter to</param>
+		/// 
+		/// <returns>Returns filter's result obtained by applying the filter to
+		/// the source image</returns>
+		/// 
+		/// <remarks>The method keeps the source image unchanged and returns the
+		/// the result of image processing filter as new image.</remarks> 
+		///
+		public Bitmap Apply( Bitmap image )
+		{
+			// lock source bitmap data
+			BitmapData imageData = image.LockBits(
+				new Rectangle( 0, 0, image.Width, image.Height ),
+				ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
 
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
+			// apply the filter
+			Bitmap dstImage = Apply( imageData );
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GrayscaleToRGB"/> class.
-        /// </summary>
-        /// 
-        public GrayscaleToRGB( )
-        {
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format24bppRgb;
-        }
+			// unlock source image
+			image.UnlockBits( imageData );
 
-        /// <summary>
-        /// Process the filter on the specified image.
-        /// </summary>
-        /// 
-        /// <param name="sourceData">Source image data.</param>
-        /// <param name="destinationData">Destination image data.</param>
-        /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
-        {
-            // get width and height
-            int width = sourceData.Width;
-            int height = sourceData.Height;
+			return dstImage;
+		}
 
-            int srcOffset = sourceData.Stride - width;
-            int dstOffset = destinationData.Stride - width * 3;
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="imageData">Source image to apply filter to</param>
+		/// 
+		/// <returns>Returns filter's result obtained by applying the filter to
+		/// the source image</returns>
+		/// 
+		/// <remarks>The filter accepts birmap data as input and returns the result
+		/// of image processing filter as new image. The source image data are kept
+		/// unchanged.</remarks>
+		/// 
+		public Bitmap Apply( BitmapData imageData )
+		{
+			if ( imageData.PixelFormat != PixelFormat.Format8bppIndexed )
+				throw new ArgumentException( );
 
-            // do the job
-            byte * src = (byte*) sourceData.ImageData.ToPointer( );
-            byte * dst = (byte*) destinationData.ImageData.ToPointer( );
+			// get source image size
+			int width = imageData.Width;
+			int height = imageData.Height;
 
-            // for each line
-            for ( int y = 0; y < height; y++ )
-            {
-                // for each pixel
-                for ( int x = 0; x < width; x++, src++, dst += 3 )
-                {
-                    dst[RGB.R] = dst[RGB.G] = dst[RGB.B] = *src;
-                }
-                src += srcOffset;
-                dst += dstOffset;
-            }
-        }
-    }
+			// create new RGB image
+			Bitmap dstImage = new Bitmap( width, height, PixelFormat.Format24bppRgb );
+
+			// lock destination bitmap data
+			BitmapData dstData = dstImage.LockBits(
+				new Rectangle( 0, 0, width, height ),
+				ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb );
+
+			int srcOffset = imageData.Stride - width;
+			int dstOffset = dstData.Stride - width * 3;
+
+			// do the job
+			unsafe
+			{
+				byte * src = (byte *) imageData.Scan0.ToPointer( );
+				byte * dst = (byte *) dstData.Scan0.ToPointer( );
+
+				// for each row
+				for ( int y = 0; y < height; y++ )
+				{
+					// for each pixel
+					for ( int x = 0; x < width; x++, src++, dst += 3 )
+					{
+						dst[RGB.R] = dst[RGB.G] = dst[RGB.B] = *src;
+					}
+					src += srcOffset;
+					dst += dstOffset;
+				}
+			}
+			// unlock destination images
+			dstImage.UnlockBits( dstData );
+
+			return dstImage;
+		}
+	}
 }

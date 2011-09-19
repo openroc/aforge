@@ -1,9 +1,8 @@
+// AForge Framework
 // Color Clustering using Kohonen SOM
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -22,7 +21,7 @@ using AForge.Neuro.Learning;
 namespace Color
 {
 	/// <summary>
-	/// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -54,8 +53,8 @@ namespace Color
 		private double			learningRate = 0.1;
 		private double			radius = 15;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -285,33 +284,15 @@ namespace Color
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -331,7 +312,7 @@ namespace Color
 		// Radnomize weights of network
 		private void RandomizeNetwork( )
 		{
-			Neuron.RandRange = new Range( 0, 255 );
+			Neuron.RandRange = new DoubleRange( 0, 255 );
 
 			// randomize net
 			network.Randomize( );
@@ -407,27 +388,16 @@ namespace Color
 			Monitor.Exit( this );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-			    iterationsBox.Enabled	= enable;
-			    rateBox.Enabled			= enable;
-			    radiusBox.Enabled		= enable;
+			iterationsBox.Enabled	= enable;
+			rateBox.Enabled			= enable;
+			radiusBox.Enabled		= enable;
 
-			    startButton.Enabled		= enable;
-			    randomizeButton.Enabled	= enable;
-			    stopButton.Enabled		= !enable;
-            }
+			startButton.Enabled		= enable;
+			randomizeButton.Enabled	= enable;
+			stopButton.Enabled		= !enable;
 		}
 
 		// On "Start" button click
@@ -477,9 +447,8 @@ namespace Color
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
@@ -519,7 +488,7 @@ namespace Color
 				i++;
 
 				// set current iteration's info
-                SetText( currentIterationBox, i.ToString( ) );
+				currentIterationBox.Text = i.ToString( );
 
 				// stop ?
 				if ( i >= iterations )

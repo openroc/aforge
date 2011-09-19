@@ -1,9 +1,8 @@
+// AForge Framework
 // Kohonen SOM 2D Organizing
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -21,7 +20,7 @@ using AForge.Neuro.Learning;
 namespace SOMOrganizing
 {
 	/// <summary>
-    /// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -67,7 +66,7 @@ namespace SOMOrganizing
 
 		private Random		rand = new Random( );
 		private Thread		workerThread = null;
-        private volatile bool needToStop = false;
+		private bool		needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -380,33 +379,15 @@ namespace SOMOrganizing
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-        
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -558,28 +539,17 @@ namespace SOMOrganizing
 			}
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-                sizeBox.Enabled         = enable;
-                iterationsBox.Enabled   = enable;
-                rateBox.Enabled         = enable;
-                radiusBox.Enabled       = enable;
+			sizeBox.Enabled			= enable;
+			iterationsBox.Enabled	= enable;
+			rateBox.Enabled			= enable;
+			radiusBox.Enabled		= enable;
 
-                startButton.Enabled     = enable;
-                generateButton.Enabled  = enable;
-                stopButton.Enabled      = !enable;
-            }
+			startButton.Enabled		= enable;
+			generateButton.Enabled	= enable;
+			stopButton.Enabled		= !enable;
 		}
 
 		// Show/hide connections on map
@@ -657,16 +627,15 @@ namespace SOMOrganizing
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
 		void SearchSolution( )
 		{
 			// set random generators range
-			Neuron.RandRange = new Range( 0, Math.Max( pointsPanel.ClientRectangle.Width, pointsPanel.ClientRectangle.Height ) );
+			Neuron.RandRange = new DoubleRange( 0, Math.Max( pointsPanel.ClientRectangle.Width, pointsPanel.ClientRectangle.Height ) );
 
 			// create network
 			DistanceNetwork network = new DistanceNetwork( 2, networkSize * networkSize );
@@ -699,7 +668,7 @@ namespace SOMOrganizing
 				i++;
 
 				// set current iteration's info
-                SetText( currentIterationBox, i.ToString( ) );
+				currentIterationBox.Text = i.ToString( );
 
 				// stop ?
 				if ( i >= iterations )

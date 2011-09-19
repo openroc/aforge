@@ -1,297 +1,149 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
 
-    /// <summary>
-    /// Replace channel of YCbCr color space.
-    /// </summary>
-    /// 
-    /// <remarks><para>Replaces specified YCbCr channel of color image with
-    /// specified grayscale imge.</para>
-    /// 
-    /// <para>The filter is quite useful in conjunction with <see cref="YCbCrExtractChannel"/> filter
-    /// (however may be used alone in some cases). Using the <see cref="YCbCrExtractChannel"/> filter
-    /// it is possible to extract one of YCbCr channel, perform some image processing with it and then
-    /// put it back into the original color image.</para>
-    /// 
-    /// <para>The filter accepts 24 and 32 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create YCbCrExtractChannel filter for channel extracting
-    /// YCbCrExtractChannel extractFilter = new YCbCrExtractChannel(
-    ///                                     YCbCr.CbIndex );
-    /// // extract Cb channel
-    /// Bitmap cbChannel = extractFilter.Apply( image );
-    /// // invert the channel
-    /// Invert invertFilter = new Invert( );
-    /// invertFilter.ApplyInPlace( cbChannel );
-    /// // put the channel back into the source image
-    /// YCbCrReplaceChannel replaceFilter = new YCbCrReplaceChannel(
-    ///                                     YCbCr.CbIndex, cbChannel );
-    /// replaceFilter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/ycbcr_replace_channel.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="YCbCrExtractChannel"/>
-    /// 
-    public class YCbCrReplaceChannel : BaseInPlacePartialFilter
-    {
-        private short channel = YCbCr.YIndex;
-        private Bitmap channelImage;
-        private UnmanagedImage unmanagedChannelImage;
+	/// <summary>
+	/// Replace channel of YCbCr color space
+	/// </summary>
+	/// 
+	/// <remarks>Replaces specified YCbCr channel of color image with
+	/// specified grayscale imge.</remarks>
+	/// 
+	public class YCbCrReplaceChannel : FilterColorToColor
+	{
+		private short channel = YCbCr.YIndex;
+		private Bitmap channelImage;
+		
+		/// <summary>
+		/// YCbCr channel to replace
+		/// </summary>
+		public short Channel
+		{
+			get { return channel; }
+			set
+			{
+				if (
+					( value != YCbCr.YIndex  ) &&
+					( value != YCbCr.CbIndex ) &&
+					( value != YCbCr.CrIndex )
+					)
+				{
+					throw new ArgumentException( );
+				}
+				channel = value;
+			}
+		}
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+		/// <summary>
+		/// Grayscale image to use for channel replacement
+		/// </summary>
+		public Bitmap ChannelImage
+		{
+			get { return channelImage; }
+			set
+			{
+				// check for not null
+				if ( value == null )
+					throw new NullReferenceException( );
+				// check for valid format
+				if ( value.PixelFormat != PixelFormat.Format8bppIndexed )
+					throw new ArgumentException( );
 
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-        
-        /// <summary>
-        /// YCbCr channel to replace.
-        /// </summary>
-        /// 
-        /// <remarks><para>Default value is set to <see cref="YCbCr.YIndex"/> (Y channel).</para></remarks>
-        /// 
-        /// <exception cref="ArgumentException">Invalid channel was specified.</exception>
-        /// 
-        public short Channel
-        {
-            get { return channel; }
-            set
-            {
-                if (
-                    ( value != YCbCr.YIndex ) &&
-                    ( value != YCbCr.CbIndex ) &&
-                    ( value != YCbCr.CrIndex )
-                    )
-                {
-                    throw new ArgumentException( "Invalid YCbCr channel was specified." );
-                }
-                channel = value;
-            }
-        }
+				channelImage = value;
+			}
+		}
 
-        /// <summary>
-        /// Grayscale image to use for channel replacement.
-        /// </summary>
-        /// 
-        /// <remarks>
-        /// <para><note>Setting this property will clear the <see cref="UnmanagedChannelImage"/> property -
-        /// only one channel image is allowed: managed or unmanaged.</note></para>
-        /// </remarks>
-        /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image should be 8bpp indexed image (grayscale).</exception>
-        /// 
-        public Bitmap ChannelImage
-        {
-            get { return channelImage; }
-            set
-            {
-                // check for not null
-                if ( value == null )
-                    throw new NullReferenceException( "Channel image was not specified." );
-                // check for valid format
-                if ( value.PixelFormat != PixelFormat.Format8bppIndexed )
-                    throw new InvalidImagePropertiesException( "Channel image should be 8bpp indexed image (grayscale)." );
+		/// <summary>
+		/// Initializes a new instance of the <see cref="YCbCrReplaceChannel"/> class
+		/// </summary>
+		/// 
+		/// <param name="channel">YCbCr channel to replace</param>
+		/// <param name="channelImage">Channel image to use for replacement</param>
+		/// 
+		public YCbCrReplaceChannel( short channel, Bitmap channelImage )
+		{
+			this.Channel = channel;
+			this.ChannelImage = channelImage;
+		}
 
-                channelImage = value;
-                unmanagedChannelImage = null;
-            }
-        }
 
-        /// <summary>
-        /// Unmanaged grayscale image to use for channel replacement.
-        /// </summary>
-        /// 
-        /// <remarks>
-        /// <para><note>Setting this property will clear the <see cref="ChannelImage"/> property -
-        /// only one channel image is allowed: managed or unmanaged.</note></para>
-        /// </remarks>
-        /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image should be 8bpp indexed image (grayscale).</exception>
-        /// 
-        public UnmanagedImage UnmanagedChannelImage
-        {
-            get { return unmanagedChannelImage; }
-            set
-            {
-                // check for not null
-                if ( value == null )
-                    throw new NullReferenceException( "Channel image was not specified." );
+		/// <summary>
+		/// Process the filter on the specified image
+		/// </summary>
+		/// 
+		/// <param name="imageData">Image data</param>
+		/// 
+		protected override unsafe void ProcessFilter( BitmapData imageData )
+		{
+			int width	= imageData.Width;
+			int height	= imageData.Height;
+			int offset	= imageData.Stride - width * 3;
 
-                // check for valid format
-                if ( value.PixelFormat != PixelFormat.Format8bppIndexed )
-                    throw new InvalidImagePropertiesException( "Channel image should be 8bpp indexed image (grayscale)." );
+			// check channel's image dimension
+			if ( ( width != channelImage.Width ) || ( height != channelImage.Height ) )
+				throw new ArgumentException( "Channel image size does not match source image size" );
 
-                channelImage = null;
-                unmanagedChannelImage = value;
-            }
-        }
+			// lock channel image
+			BitmapData chData = channelImage.LockBits(
+				new Rectangle( 0, 0, width, height ),
+				ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
 
-        // private constructor
-        private YCbCrReplaceChannel( )
-        {
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-        }
+			int offsetCh = chData.Stride - width;
+			RGB rgb = new RGB( );
+			YCbCr ycbcr = new YCbCr( );
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="YCbCrReplaceChannel"/> class.
-        /// </summary>
-        /// 
-        /// <param name="channel">YCbCr channel to replace.</param>
-        /// <param name="channelImage">Channel image to use for replacement.</param>
-        /// 
-        public YCbCrReplaceChannel( short channel, Bitmap channelImage ) : this( )
-        {
-            this.Channel = channel;
-            this.ChannelImage = channelImage;
-        }
+			// do the job
+			byte * dst = (byte *) imageData.Scan0.ToPointer( );
+			byte * ch = (byte *) chData.Scan0.ToPointer( );
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="YCbCrReplaceChannel"/> class.
-        /// </summary>
-        /// 
-        /// <param name="channel">YCbCr channel to replace.</param>
-        /// <param name="channelImage">Unmanaged channel image to use for replacement.</param>
-        /// 
-        public YCbCrReplaceChannel( short channel, UnmanagedImage channelImage ) : this( )
-        {
-            this.Channel = channel;
-            this.UnmanagedChannelImage = channelImage;
-        }
+			// for each line
+			for ( int y = 0; y < height; y++ )
+			{
+				// for each pixel
+				for ( int x = 0; x < width; x++, dst += 3, ch ++ )
+				{
+					rgb.Red		= dst[RGB.R];
+					rgb.Green	= dst[RGB.G];
+					rgb.Blue	= dst[RGB.B];
 
-        /// <summary>
-        /// Process the filter on the specified image.
-        /// </summary>
-        /// 
-        /// <param name="image">Source image data.</param>
-        /// <param name="rect">Image rectangle for processing by the filter.</param>
-        /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image size does not match source
-        /// image size.</exception>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
-        {
-            int pixelSize = Image.GetPixelFormatSize( image.PixelFormat ) / 8;
+					// convert to YCbCr
+					AForge.Imaging.ColorConverter.RGB2YCbCr( rgb, ycbcr );
 
-            int width   = image.Width;
-            int height  = image.Height;
-            int startX  = rect.Left;
-            int startY  = rect.Top;
-            int stopX   = startX + rect.Width;
-            int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+					switch ( channel )
+					{
+						case YCbCr.YIndex:
+							ycbcr.Y = (double) *ch / 255;
+							break;
 
-            BitmapData chData = null;
-            // pointer to channel's data
-            byte* ch;
-            // channel's image stride
-            int chStride = 0;
+						case YCbCr.CbIndex:
+							ycbcr.Cb = (double) *ch / 255 - 0.5;
+							break;
 
-            // check channel's image type
-            if ( channelImage != null )
-            {
-                // check channel's image dimension
-                if ( ( width != channelImage.Width ) || ( height != channelImage.Height ) )
-                    throw new InvalidImagePropertiesException( "Channel image size does not match source image size." );
+						case YCbCr.CrIndex:
+							ycbcr.Cr = (double) *ch / 255 - 0.5;
+							break;
+					}
 
-                // lock channel image
-                chData = channelImage.LockBits(
-                    new Rectangle( 0, 0, width, height ),
-                    ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
+					// convert back to RGB
+					AForge.Imaging.ColorConverter.YCbCr2RGB( ycbcr, rgb );
 
-                ch = (byte*) chData.Scan0.ToPointer( );
-                chStride = chData.Stride;
-            }
-            else
-            {
-                // check channel's image dimension
-                if ( ( width != unmanagedChannelImage.Width ) || ( height != unmanagedChannelImage.Height ) )
-                    throw new InvalidImagePropertiesException( "Channel image size does not match source image size." );
-
-                ch = (byte*) unmanagedChannelImage.ImageData;
-                chStride = unmanagedChannelImage.Stride;
-            }
-
-            int     offsetCh = chStride - rect.Width;
-            RGB     rgb = new RGB( );
-            YCbCr   ycbcr = new YCbCr( );
-
-            // do the job
-            byte* dst = (byte*) image.ImageData.ToPointer( );
-
-            // allign pointer to the first pixel to process
-            dst += ( startY * image.Stride + startX * pixelSize );
-            ch += ( startY * chStride + startX );
-
-            // for each line
-            for ( int y = startY; y < stopY; y++ )
-            {
-                // for each pixel
-                for ( int x = startX; x < stopX; x++, dst += pixelSize, ch++ )
-                {
-                    rgb.Red     = dst[RGB.R];
-                    rgb.Green   = dst[RGB.G];
-                    rgb.Blue    = dst[RGB.B];
-
-                    // convert to YCbCr
-                    AForge.Imaging.YCbCr.FromRGB( rgb, ycbcr );
-
-                    switch ( channel )
-                    {
-                        case YCbCr.YIndex:
-                            ycbcr.Y = (float) *ch / 255;
-                            break;
-
-                        case YCbCr.CbIndex:
-                            ycbcr.Cb = (float) *ch / 255 - 0.5f;
-                            break;
-
-                        case YCbCr.CrIndex:
-                            ycbcr.Cr = (float) *ch / 255 - 0.5f;
-                            break;
-                    }
-
-                    // convert back to RGB
-                    AForge.Imaging.YCbCr.ToRGB( ycbcr, rgb );
-
-                    dst[RGB.R] = rgb.Red;
-                    dst[RGB.G] = rgb.Green;
-                    dst[RGB.B] = rgb.Blue;
-                }
-                dst += offset;
-                ch  += offsetCh;
-            }
-
-            if ( chData != null )
-            {
-                // unlock
-                channelImage.UnlockBits( chData );
-            }
-        }
-    }
+					dst[RGB.R] = rgb.Red;
+					dst[RGB.G] = rgb.Green;
+					dst[RGB.B] = rgb.Blue;
+				}
+				dst += offset;
+				ch += offsetCh;
+			}
+			// unlock
+			channelImage.UnlockBits( chData );
+		}
+	}
 }

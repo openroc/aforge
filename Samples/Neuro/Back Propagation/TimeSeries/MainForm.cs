@@ -1,9 +1,8 @@
+// AForge Framework
 // Time Series Prediction using Multi-Layer Neural Network
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -75,8 +74,8 @@ namespace TimeSeries
 		private int			predictionSize = 1;
 		private int			iterations = 1000;
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread		workerThread = null;
+		private bool		needToStop = false;
 
 		private double[,]	windowDelimiter = new double[2, 2] { { 0, 0 }, { 0, 0 } };
 		private double[,]	predictionDelimiter = new double[2, 2] { { 0, 0 }, { 0, 0 } };
@@ -488,38 +487,6 @@ namespace TimeSeries
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-        private delegate void AddSubItemCallback( System.Windows.Forms.ListView control, int item, string subitemText );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // Thread safe adding of subitem to list control
-        private void AddSubItem( System.Windows.Forms.ListView control, int item, string subitemText )
-        {
-            if ( control.InvokeRequired )
-            {
-                AddSubItemCallback d = new AddSubItemCallback( AddSubItem );
-                Invoke( d, new object[] { control, item, subitemText } );
-            }
-            else
-            {
-                control.Items[item].SubItems.Add( subitemText );
-            }
-        }
-
 		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
@@ -527,9 +494,8 @@ namespace TimeSeries
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -593,7 +559,7 @@ namespace TimeSeries
 
 				// update list and chart
 				UpdateDataListView( );
-				chart.RangeX = new Range( 0, data.Length - 1 );
+				chart.RangeX = new DoubleRange( 0, data.Length - 1 );
 				chart.UpdateDataSeries( "data", dataToShow );
 				chart.UpdateDataSeries( "solution", null );
 				// set delimiters
@@ -630,31 +596,20 @@ namespace TimeSeries
 			}
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disable controls
+		// Enable/disable controls
 		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-			    loadDataButton.Enabled		= enable;
-			    learningRateBox.Enabled		= enable;
-			    momentumBox.Enabled			= enable;
-			    alphaBox.Enabled			= enable;
-			    windowSizeBox.Enabled		= enable;
-			    predictionSizeBox.Enabled	= enable;
-			    iterationsBox.Enabled		= enable;
+			loadDataButton.Enabled		= enable;
+			learningRateBox.Enabled		= enable;
+			momentumBox.Enabled			= enable;
+			alphaBox.Enabled			= enable;
+			windowSizeBox.Enabled		= enable;
+			predictionSizeBox.Enabled	= enable;
+			iterationsBox.Enabled		= enable;
 
-			    startButton.Enabled			= enable;
-			    stopButton.Enabled			= !enable;
-    		}
-        }
+			startButton.Enabled			= enable;
+			stopButton.Enabled			= !enable;
+		}
 
 		// On window size changed
 		private void windowSizeBox_TextChanged(object sender, System.EventArgs e)
@@ -775,9 +730,8 @@ namespace TimeSeries
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
@@ -865,9 +819,9 @@ namespace TimeSeries
 				chart.UpdateDataSeries( "solution", solution );
 
 				// set current iteration's info
-				SetText( currentIterationBox, iteration.ToString( ) );
-				SetText( currentLearningErrorBox, learningError.ToString( "F3" ) );
-				SetText( currentPredictionErrorBox, predictionError.ToString( "F3" ) );
+				currentIterationBox.Text = iteration.ToString( );
+				currentLearningErrorBox.Text = learningError.ToString( "F3" );
+				currentPredictionErrorBox.Text = predictionError.ToString( "F3" );
 
 				// increase current iteration
 				iteration++;
@@ -880,8 +834,8 @@ namespace TimeSeries
 			// show new solution
 			for ( int j = windowSize, k = 0, n = data.Length; j < n; j++, k++ )
 			{
-                AddSubItem( dataList, j, solution[k, 1].ToString( ) );
-            }
+				dataList.Items[j].SubItems.Add( solution[k, 1].ToString( ) );
+			}
 
 			// enable settings controls
 			EnableControls( true );

@@ -1,9 +1,8 @@
+// AForge Framework
 // Traveling Salesman Problem using Elastic Net
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -22,7 +21,7 @@ using AForge.Controls;
 namespace TSP
 {
 	/// <summary>
-    /// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -60,8 +59,8 @@ namespace TSP
 		private double[,]	map = null;
 		private Random		rand = new Random();
 
-		private Thread workerThread = null;
-        private volatile bool needToStop = false;
+		private Thread	workerThread = null;
+		private bool	needToStop = false;
 
 		// Constructor
 		public MainForm( )
@@ -74,8 +73,8 @@ namespace TSP
 			// initialize chart
 			chart.AddDataSeries( "cities", Color.Red, Chart.SeriesType.Dots, 5, false );
 			chart.AddDataSeries( "path", Color.Blue, Chart.SeriesType.Line, 1, false );
-			chart.RangeX = new Range( 0, 1000 );
-			chart.RangeY = new Range( 0, 1000 );
+			chart.RangeX = new DoubleRange( 0, 1000 );
+			chart.RangeY = new DoubleRange( 0, 1000 );
 
 			//
 			UpdateSettings( );
@@ -337,33 +336,15 @@ namespace TSP
 			Application.Run( new MainForm( ) );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void SetTextCallback( System.Windows.Forms.Control control, string text );
-
-        // Thread safe updating of control's text property
-        private void SetText( System.Windows.Forms.Control control, string text )
-        {
-            if ( control.InvokeRequired )
-            {
-                SetTextCallback d = new SetTextCallback( SetText );
-                Invoke( d, new object[] { control, text } );
-            }
-            else
-            {
-                control.Text = text;
-            }
-        }
-
-        // On main form closing
+		// On main form closing
 		private void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			// check if worker thread is running
 			if ( ( workerThread != null ) && ( workerThread.IsAlive ) )
 			{
 				needToStop = true;
-                while ( !workerThread.Join( 100 ) )
-                    Application.DoEvents( );
-            }
+				workerThread.Join( );
+			}
 		}
 
 		// Update settings controls
@@ -414,29 +395,18 @@ namespace TSP
 			GenerateMap( );
 		}
 
-        // Delegates to enable async calls for setting controls properties
-        private delegate void EnableCallback( bool enable );
-
-        // Enable/disale controls (safe for threading)
-        private void EnableControls( bool enable )
+		// Enable/disale controls
+		private void EnableControls( bool enable )
 		{
-            if ( InvokeRequired )
-            {
-                EnableCallback d = new EnableCallback( EnableControls );
-                Invoke( d, new object[] { enable } );
-            }
-            else
-            {
-			    neuronsBox.Enabled		= enable;
-			    iterationsBox.Enabled	= enable;
-			    rateBox.Enabled			= enable;
-			    radiusBox.Enabled		= enable;
+			neuronsBox.Enabled		= enable;
+			iterationsBox.Enabled	= enable;
+			rateBox.Enabled			= enable;
+			radiusBox.Enabled		= enable;
 
-			    startButton.Enabled			= enable;
-			    generateMapButton.Enabled	= enable;
-			    stopButton.Enabled			= !enable;
-		    }
-        }
+			startButton.Enabled			= enable;
+			generateMapButton.Enabled	= enable;
+			stopButton.Enabled			= !enable;
+		}
 
 		// On "Start" button click
 		private void startButton_Click(object sender, System.EventArgs e)
@@ -494,16 +464,15 @@ namespace TSP
 		{
 			// stop worker thread
 			needToStop = true;
-            while ( !workerThread.Join( 100 ) )
-                Application.DoEvents( );
-            workerThread = null;
+			workerThread.Join( );
+			workerThread = null;
 		}
 
 		// Worker thread
 		void SearchSolution( )
 		{
 			// set random generators range
-			Neuron.RandRange = new Range( 0, 1000 );
+			Neuron.RandRange = new DoubleRange( 0, 1000 );
 
 			// create network
 			DistanceNetwork network = new DistanceNetwork( 2, neurons );
@@ -553,7 +522,7 @@ namespace TSP
 				i++;
 
 				// set current iteration's info
-                SetText( currentIterationBox, i.ToString( ) );
+				currentIterationBox.Text = i.ToString( );
 
 				// stop ?
 				if ( i >= iterations )
