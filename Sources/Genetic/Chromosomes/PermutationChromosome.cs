@@ -1,54 +1,38 @@
 // AForge Genetic Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Genetic
 {
 	using System;
-	using System.Collections.Generic;
+	using System.Text;
 
 	/// <summary>
-	/// Permutation chromosome.
-    /// </summary>
-    /// 
-    /// <remarks><para>Permutation chromosome is based on short array chromosome,
-    /// but has two features:</para>
-    /// <list type="bullet">
-    /// <item>all genes are unique within chromosome, i.e. there are no two genes
-    /// with the same value;</item>
-    /// <item>maximum value of each gene is equal to chromosome length minus 1.</item>
-    /// </list>
-    /// </remarks>
-    /// 
+	/// Permutation Chromosome is a Short Array Chromosome, but with two
+	/// restrictions:
+	/// 1) all genes are unique, i.e. there are no two genes in such
+	///    chromosome with the same value;
+	/// 2) maximum value of each gene is equal to chromosome length - 1.
+	/// 
+	/// With these two restrictions the chromosome represents permutation.
+	/// </summary>
 	public class PermutationChromosome : ShortArrayChromosome
 	{
 		/// <summary>
-        /// Initializes a new instance of the <see cref="PermutationChromosome"/> class.
-        /// </summary>
+		/// Constructor
+		/// </summary>
 		public PermutationChromosome( int length ) : base( length, length - 1 ) { }
 
 		/// <summary>
-        /// Initializes a new instance of the <see cref="PermutationChromosome"/> class.
-        /// </summary>
-        /// 
-        /// <param name="source">Source chromosome to copy.</param>
-        /// 
-        /// <remarks><para>This is a copy constructor, which creates the exact copy
-        /// of specified chromosome.</para></remarks>
-        /// 
-        protected PermutationChromosome( PermutationChromosome source ) : base( source ) { }
+		/// Copy Constructor
+		/// </summary>
+		protected PermutationChromosome( PermutationChromosome source ) : base( source ) { }
 
-        /// <summary>
-        /// Generate random chromosome value.
-        /// </summary>
-        /// 
-        /// <remarks><para>Regenerates chromosome's value using random number generator.</para>
-        /// </remarks>
-        ///
+		/// <summary>
+		/// Generate random chromosome value
+		/// </summary>
 		public override void Generate( )
 		{
 			// create ascending permutation initially
@@ -71,40 +55,25 @@ namespace AForge.Genetic
 			}
 		}
 
-        /// <summary>
-        /// Create new random chromosome with same parameters (factory method).
-        /// </summary>
-        /// 
-        /// <remarks><para>The method creates new chromosome of the same type, but randomly
-        /// initialized. The method is useful as factory method for those classes, which work
-        /// with chromosome's interface, but not with particular chromosome type.</para></remarks>
-        ///
-		public override IChromosome CreateNew( )
+		/// <summary>
+		/// Create new random chromosome (factory method)
+		/// </summary>
+		public override IChromosome CreateOffspring( )
 		{
 			return new PermutationChromosome( length );
 		}
 
-        /// <summary>
-        /// Clone the chromosome.
-        /// </summary>
-        /// 
-        /// <returns>Return's clone of the chromosome.</returns>
-        /// 
-        /// <remarks><para>The method clones the chromosome returning the exact copy of it.</para>
-        /// </remarks>
-        ///
+		/// <summary>
+		/// Clone the chromosome
+		/// </summary>
 		public override IChromosome Clone( )
 		{
 			return new PermutationChromosome( this );
 		}
-
-        /// <summary>
-        /// Mutation operator.
-        /// </summary>
-        /// 
-        /// <remarks><para>The method performs chromosome's mutation, swapping two randomly
-        /// chosen genes (array elements).</para></remarks>
-        ///
+		
+		/// <summary>
+		/// Mutation operator
+		/// </summary>
 		public override void Mutate( )
 		{
 			ushort t;
@@ -117,15 +86,9 @@ namespace AForge.Genetic
 			val[j2]	= t;
 		}
 
-        /// <summary>
-        /// Crossover operator.
-        /// </summary>
-        /// 
-        /// <param name="pair">Pair chromosome to crossover with.</param>
-        /// 
-        /// <remarks><para>The method performs crossover between two chromosomes – interchanging
-        /// some parts between these chromosomes.</para></remarks>
-        ///
+		/// <summary>
+		/// Crossover operator
+		/// </summary>
 		public override void Crossover( IChromosome pair )
 		{
 			PermutationChromosome p = (PermutationChromosome) pair;
@@ -141,17 +104,14 @@ namespace AForge.Genetic
 				CreateChildUsingCrossover( p.val, this.val, child2 );
 
 				// replace parents with children
-				this.val = child1;
-				p.val    = child2;
+				this.val	= child1;
+				p.val		= child2;
 			}
 		}
 
 		// Produce new child applying crossover to two parents
 		private void CreateChildUsingCrossover( ushort[] parent1, ushort[] parent2, ushort[] child )
 		{
-            ushort[] indexDictionary1 = CreateIndexDictionary( parent1 );
-            ushort[] indexDictionary2 = CreateIndexDictionary( parent2 );
-
 			// temporary array to specify if certain gene already
 			// present in the child
 			bool[]	geneIsBusy = new bool[length];
@@ -172,11 +132,19 @@ namespace AForge.Genetic
 			{
 				// find the next gene after PREV in both parents
 				// 1
-                j = indexDictionary1[prev];
+				for ( j = 0; j < k; j++ )
+				{
+					if ( parent1[j] == prev )
+						break;
+				}
 				next1 = ( j == k ) ? parent1[0] : parent1[j + 1];
 				// 2
-                j = indexDictionary2[prev];
-                next2 = ( j == k ) ? parent2[0] : parent2[j + 1];
+				for ( j = 0; j < k; j++ )
+				{
+					if ( parent2[j] == prev )
+						break;
+				}
+				next2 = ( j == k ) ? parent2[0] : parent2[j + 1];
 
 				// check candidate genes for validness
 				valid1 = !geneIsBusy[next1];
@@ -217,18 +185,5 @@ namespace AForge.Genetic
 				geneIsBusy[prev] = true;
 			}
 		}
-
-        // Create dictionary for fast lookup of genes' indexes
-        private static ushort[] CreateIndexDictionary( ushort[] genes )
-        {
-            ushort[] indexDictionary = new ushort[genes.Length];
-
-            for ( int i = 0, n = genes.Length; i < n; i++ )
-            {
-                indexDictionary[genes[i]] = (ushort) i;
-            }
-
-            return indexDictionary;
-        }
 	}
 }

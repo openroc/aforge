@@ -1,9 +1,8 @@
 // AForge Video for Windows Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video.DirectShow.Internals
@@ -16,7 +15,7 @@ namespace AForge.Video.DirectShow.Internals
     /// Some Win32 API used internally.
     /// </summary>
     /// 
-    internal static class Win32
+    internal class Win32
     {
         /// <summary>
         /// Supplies a pointer to an implementation of <b>IBindCtx</b> (a bind context object).
@@ -60,43 +59,10 @@ namespace AForge.Video.DirectShow.Internals
         /// 
         /// <returns>Return's the value of <b>dst</b> - pointer to destination.</returns>
         /// 
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
-        public static unsafe extern int memcpy(
-            byte* dst,
-            byte* src,
+        [DllImport( "ntdll.dll" )]
+        public static extern int memcpy(
+            int dst,
+            int src,
             int count );
-
-        /// <summary>
-        /// Invokes a new property frame, that is, a property sheet dialog box.
-        /// </summary>
-        /// 
-        /// <param name="hwndOwner">Parent window of property sheet dialog box.</param>
-        /// <param name="x">Horizontal position for dialog box.</param>
-        /// <param name="y">Vertical position for dialog box.</param>
-        /// <param name="caption">Dialog box caption.</param>
-        /// <param name="cObjects">Number of object pointers in <b>ppUnk</b>.</param>
-        /// <param name="ppUnk">Pointer to the objects for property sheet.</param>
-        /// <param name="cPages">Number of property pages in <b>lpPageClsID</b>.</param>
-        /// <param name="lpPageClsID">Array of CLSIDs for each property page.</param>
-        /// <param name="lcid">Locale identifier for property sheet locale.</param>
-        /// <param name="dwReserved">Reserved.</param>
-        /// <param name="lpvReserved">Reserved.</param>
-        /// 
-        /// <returns>Returns <b>S_OK</b> on success.</returns>
-        /// 
-        [DllImport( "oleaut32.dll" )]
-        public static extern int OleCreatePropertyFrame(
-            IntPtr hwndOwner,
-            int x,
-            int y,
-            [MarshalAs( UnmanagedType.LPWStr )] string caption,
-            int cObjects,
-            [MarshalAs( UnmanagedType.Interface, ArraySubType = UnmanagedType.IUnknown )] 
-            ref object ppUnk,
-            int cPages,
-            IntPtr lpPageClsID,
-            int lcid,
-            int dwReserved,
-            IntPtr lpvReserved );
     }
 }

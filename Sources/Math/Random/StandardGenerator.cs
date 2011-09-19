@@ -1,9 +1,7 @@
 // AForge Math Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Math.Random
@@ -11,52 +9,42 @@ namespace AForge.Math.Random
     using System;
 
     /// <summary>
-    /// Standard random numbers generator.
+    /// Standard random numbers generator
     /// </summary>
     /// 
     /// <remarks><para>The random number generator generates gaussian
     /// random numbers with zero mean and standard deviation of one. The generator
     /// implements polar form of the Box-Muller transformation.</para>
-    /// 
-    /// <para>The generator uses <see cref="UniformOneGenerator"/> generator as a base
-    /// to generate random numbers.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create instance of random generator
-    /// IRandomNumberGenerator generator = new StandardGenerator( );
-    /// // generate random number
-    /// float randomNumber = generator.Next( );
-    /// </code>
-    /// </remarks>
+    /// <para>The generator uses <see cref="UniformOneGenerator"/> generator
+    /// to generate random numbers.</para></remarks>
     /// 
     public class StandardGenerator : IRandomNumberGenerator
     {
         private UniformOneGenerator rand = null;
 
-        private float  secondValue;
+        private double  secondValue;
         private bool    useSecond = false;
 
         /// <summary>
-        /// Mean value of the generator.
+        /// Mean value of generator
         /// </summary>
         /// 
-        public float Mean
+        public double Mean
         {
             get { return 0; }
         }
 
         /// <summary>
-        /// Variance value of the generator.
+        /// Variance value of generator
         /// </summary>
         ///
-        public float Variance
+        public double Variance
         {
             get { return 1; }
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StandardGenerator"/> class.
+        /// Initializes a new instance of the <see cref="StandardGenerator"/> class
         /// </summary>
         /// 
         public StandardGenerator( )
@@ -65,10 +53,10 @@ namespace AForge.Math.Random
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StandardGenerator"/> class.
+        /// Initializes a new instance of the <see cref="StandardGenerator"/> class
         /// </summary>
         /// 
-        /// <param name="seed">Seed value to initialize random numbers generator.</param>
+        /// <param name="seed">Seed value to initialize random numbers generator</param>
         /// 
         public StandardGenerator( int seed )
         {
@@ -76,12 +64,12 @@ namespace AForge.Math.Random
         }
 
         /// <summary>
-        /// Generate next random number.
+        /// Generate next random number
         /// </summary>
         /// 
-        /// <returns>Returns next random number.</returns>
+        /// <returns>Returns next random number</returns>
         /// 
-        public float Next( )
+        public double Next( )
         {
             // check if we can use second value
             if ( useSecond )
@@ -91,18 +79,18 @@ namespace AForge.Math.Random
                 return secondValue;
             }
 
-            float x1, x2, w, firstValue;
+            double x1, x2, w, firstValue;
 
             // generate new numbers
             do
             {
-                x1 = (float) rand.Next( ) * 2.0f - 1.0f;
-                x2 = (float) rand.Next( ) * 2.0f - 1.0f;
-                w  = x1 * x1 + x2 * x2;
+                x1  = rand.Next( ) * 2.0 - 1.0;
+                x2  = rand.Next( ) * 2.0 - 1.0;
+                w   = x1 * x1 + x2 * x2;
             }
-            while ( w >= 1.0f );
+            while ( w >= 1.0 );
 
-            w = (float) Math.Sqrt( ( -2.0f * Math.Log( w ) ) / w );
+            w = Math.Sqrt( ( -2.0 * Math.Log( w ) ) / w );
 
             // get two standard random numbers
             firstValue  = x1 * w;
@@ -115,10 +103,10 @@ namespace AForge.Math.Random
         }
 
         /// <summary>
-        /// Set seed of the random numbers generator.
+        /// Set seed of the random numbers generator
         /// </summary>
         /// 
-        /// <param name="seed">Seed value.</param>
+        /// <param name="seed">Seed value</param>
         /// 
         /// <remarks>Resets random numbers generator initializing it with
         /// specified seed value.</remarks>
