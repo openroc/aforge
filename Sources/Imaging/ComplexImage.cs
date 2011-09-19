@@ -1,316 +1,295 @@
 // AForge Image Processing Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
-    using AForge;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
+	using AForge;
     using AForge.Math;
 
-    /// <summary>
-    /// Complex image.
-    /// </summary>
+	/// <summary>
+	/// Complex image
+	/// </summary>
     /// 
-    /// <remarks><para>The class is used to keep image represented in complex numbers sutable for Fourier
-    /// transformations.</para>
+    /// <remarks>Represents image in complex numbers sutable for Fourier
+    /// transformations.</remarks>
     /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create complex image
-    /// ComplexImage complexImage = ComplexImage.FromBitmap( image );
-    /// // do forward Fourier transformation
-    /// complexImage.ForwardFourierTransform( );
-    /// // get complex image as bitmat
-    /// Bitmap fourierImage = complexImage.ToBitmap( );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample3.jpg" width="256" height="256" />
-    /// <para><b>Fourier image:</b></para>
-    /// <img src="img/imaging/fourier.jpg" width="256" height="256" />
-    /// </remarks>
-    /// 
-    public class ComplexImage : ICloneable
-    {
+	public class ComplexImage : ICloneable
+	{
         // image complex data
-        private Complex[,] data;
+		private Complex[,]	data;
         // image dimension
-        private int width;
-        private int height;
+		private int			width;
+		private int			height;
         // current state of the image (transformed with Fourier ot not)
-        private bool fourierTransformed = false;
+		private bool		fmode = false;
 
         /// <summary>
-        /// Image width.
+        /// Image width
         /// </summary>
         /// 
-        public int Width
-        {
-            get { return width; }
-        }
+		public int Width
+		{
+			get { return width; }
+		}
 
         /// <summary>
-        /// Image height.
+        /// Image height
         /// </summary>
         /// 
-        public int Height
-        {
-            get { return height; }
-        }
+		public int Height
+		{
+			get { return height; }
+		}
 
         /// <summary>
-        /// Status of the image - Fourier transformed or not.
+        /// Initializes a new instance of the <see cref="ComplexImage"/> class
         /// </summary>
         /// 
-        public bool FourierTransformed
-        {
-            get { return fourierTransformed; }
-        }
-
-        /// <summary>
-        /// Complex image's data.
-        /// </summary>
+        /// <param name="width">Image width</param>
+        /// <param name="height">Image height</param>
         /// 
-        /// <remarks>Return's 2D array of [<b>height</b>, <b>width</b>] size, which keeps image's
-        /// complex data.</remarks>
-        /// 
-        public Complex[,] Data
-        {
-            get { return data; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ComplexImage"/> class.
-        /// </summary>
-        /// 
-        /// <param name="width">Image width.</param>
-        /// <param name="height">Image height.</param>
-        /// 
-        /// <remarks>The constractor is protected, what makes it imposible to instantiate this
-        /// class directly. To create an instance of this class <see cref="FromBitmap(Bitmap)"/> or
-        /// <see cref="FromBitmap(BitmapData)"/> method should be used.</remarks>
-        ///
         protected ComplexImage( int width, int height )
         {
-            this.width = width;
+            this.width  = width;
             this.height = height;
-            this.data = new Complex[height, width];
-            this.fourierTransformed = false;
+            this.data   = new Complex[height, width];
+            this.fmode  = false;
         }
 
         /// <summary>
-        /// Clone the complex image.
+        /// Clone the complex image
         /// </summary>
         /// 
-        /// <returns>Returns copy of the complex image.</returns>
+        /// <returns>Returns copy of the image.</returns>
         /// 
-        public object Clone( )
-        {
-            // create new complex image
-            ComplexImage dstImage = new ComplexImage( width, height );
-            Complex[,] data = dstImage.data;
+		public object Clone( )
+		{
+			// create new complex image
+			ComplexImage    dstImage = new ComplexImage( width, height );
+            Complex[,]      data = dstImage.data;
 
-            for ( int i = 0; i < height; i++ )
-            {
-                for ( int j = 0; j < width; j++ )
-                {
-                    data[i, j] = this.data[i, j];
-                }
-            }
+			for ( int i = 0; i < height; i++ )
+			{
+				for ( int j = 0; j < width; j++ )
+				{
+					data[i, j] = this.data[i, j];
+				}
+			}
 
             // clone mode as well
-            dstImage.fourierTransformed = fourierTransformed;
+            dstImage.fmode = fmode;
 
             return dstImage;
-        }
+		}
 
         /// <summary>
-        /// Create complex image from grayscale bitmap.
+        /// Creates complex image from bitmap
         /// </summary>
         /// 
-        /// <param name="image">Source grayscale bitmap (8 bpp indexed).</param>
+        /// <param name="srcImage">Source bitmap</param>
         /// 
         /// <returns>Returns an instance of complex image.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Image width and height should be power of 2.</exception>
-        /// 
-        public static ComplexImage FromBitmap( Bitmap image )
-        {
-            // check image format
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-            {
-                throw new UnsupportedImageFormatException( "Source image can be graysclae (8bpp indexed) image only." );
-            }
+		public static ComplexImage FromBitmap( Bitmap srcImage )
+		{
+			// get source image size
+            int width   = srcImage.Width;
+            int height  = srcImage.Height;
 
-            // lock source bitmap data
-            BitmapData imageData = image.LockBits(
-                new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
+			// check image size
+			if ( 
+				( !Tools.IsPowerOf2( width ) ) ||
+				( !Tools.IsPowerOf2( height ) )
+				)
+			{
+				throw new ArgumentException( "Image width and height should be power of 2" );
+			}
 
-            ComplexImage complexImage;
+			// create new complex image
+			ComplexImage	dstImage = new ComplexImage( width, height );
+			Complex[,]		data = dstImage.data;
 
-            try
-            {
-                complexImage = FromBitmap( imageData );
-            }
-            finally
-            {
-                // unlock source images
-                image.UnlockBits( imageData );
-            }
+			// lock source bitmap data
+            BitmapData srcData = srcImage.LockBits(
+				new Rectangle( 0, 0, width, height ),
+                ImageLockMode.ReadOnly, srcImage.PixelFormat );
 
-            return complexImage;
-        }
+            int offset = srcData.Stride - ( ( srcImage.PixelFormat == PixelFormat.Format8bppIndexed ) ? width : width * 3 );
 
-        /// <summary>
-        /// Create complex image from grayscale bitmap.
-        /// </summary>
-        /// 
-        /// <param name="imageData">Source image data (8 bpp indexed).</param>
-        /// 
-        /// <returns>Returns an instance of complex image.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Image width and height should be power of 2.</exception>
-        /// 
-        public static ComplexImage FromBitmap( BitmapData imageData )
-        {
-            // check image format
-            if ( imageData.PixelFormat != PixelFormat.Format8bppIndexed )
-            {
-                throw new UnsupportedImageFormatException( "Source image can be graysclae (8bpp indexed) image only." );
-            }
+			// do the job
+			unsafe
+			{
+				byte * src = (byte *) srcData.Scan0.ToPointer( );
 
-            // get source image size
-            int width  = imageData.Width;
-            int height = imageData.Height;
-            int offset = imageData.Stride - width;
+                if ( srcImage.PixelFormat == PixelFormat.Format8bppIndexed )
+				{
+					// grayscale image
 
-            // check image size
-            if ( ( !Tools.IsPowerOf2( width ) ) || ( !Tools.IsPowerOf2( height ) ) )
-            {
-                throw new InvalidImagePropertiesException( "Image width and height should be power of 2." );
-            }
+					// for each line
+					for ( int y = 0; y < height; y++ )
+					{
+						// for each pixel
+						for ( int x = 0; x < width; x++, src++ )
+						{
+							data[y, x].Re = (float) *src / 255;
+						}
+						src += offset;
+					}
+				}
+				else
+				{
+					// RGB image
 
-            // create new complex image
-            ComplexImage complexImage = new ComplexImage( width, height );
-            Complex[,] data = complexImage.data;
+					// for each line
+					for ( int y = 0; y < height; y++ )
+					{
+						// for each pixel
+						for ( int x = 0; x < width; x++, src += 3 )
+						{
+							data[y, x].Re = ( 0.2125 * src[RGB.R] + 0.7154 * src[RGB.G] + 0.0721 * src[RGB.B] ) / 255;
+						}
+						src += offset;
+					}
+				}
+			}
+			// unlock source images
+			srcImage.UnlockBits( srcData );
 
-            // do the job
-            unsafe
-            {
-                byte* src = (byte*) imageData.Scan0.ToPointer( );
-
-                // for each line
-                for ( int y = 0; y < height; y++ )
-                {
-                    // for each pixel
-                    for ( int x = 0; x < width; x++, src++ )
-                    {
-                        data[y, x].Re = (float) *src / 255;
-                    }
-                    src += offset;
-                }
-            }
-
-            return complexImage;
-        }
+            return dstImage;
+		}
 
         /// <summary>
-        /// Convert complex image to bitmap.
+        /// Convert complex image to bitmap
         /// </summary>
         /// 
-        /// <returns>Returns grayscale bitmap.</returns>
+        /// <returns>Returns grayscale bitmap</returns>
         /// 
-        public Bitmap ToBitmap( )
-        {
-            // create new image
-            Bitmap dstImage = AForge.Imaging.Image.CreateGrayscaleImage( width, height );
-
-            // lock destination bitmap data
+		public Bitmap ToBitmap( )
+		{
+			// create new image
+			Bitmap dstImage = AForge.Imaging.Image.CreateGrayscaleImage( width, height );
+			
+			// lock destination bitmap data
             BitmapData dstData = dstImage.LockBits(
-                new Rectangle( 0, 0, width, height ),
-                ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
+				new Rectangle( 0, 0, width, height ),
+				ImageLockMode.ReadWrite, PixelFormat.Format8bppIndexed );
 
-            int offset = dstData.Stride - width;
-            double scale = ( fourierTransformed ) ? Math.Sqrt( width * height ) : 1;
+			int offset = dstData.Stride - width;
+			double scale = ( fmode ) ? Math.Sqrt( width * height ) : 1;
 
-            // do the job
-            unsafe
-            {
-                byte* dst = (byte*) dstData.Scan0.ToPointer( );
+			// do the job
+			unsafe
+			{
+				byte * dst = (byte *) dstData.Scan0.ToPointer( );
 
-                for ( int y = 0; y < height; y++ )
-                {
-                    for ( int x = 0; x < width; x++, dst++ )
-                    {
-                        *dst = (byte) System.Math.Max( 0, System.Math.Min( 255, data[y, x].Magnitude * scale * 255 ) );
-                    }
-                    dst += offset;
-                }
-            }
-            // unlock destination images
+				for ( int y = 0; y < height; y++ )
+				{
+					for ( int x = 0; x < width; x++, dst ++ )
+					{
+						*dst = (byte) System.Math.Max( 0, System.Math.Min( 255, data[y, x].Magnitude * scale * 255 ) );
+					}
+					dst += offset;
+				}
+			}
+			// unlock destination images
             dstImage.UnlockBits( dstData );
 
             return dstImage;
-        }
+		}
 
         /// <summary>
-        /// Applies forward fast Fourier transformation to the complex image.
+        /// Applies forward fast Fourier transformation to the complex image
         /// </summary>
         /// 
-        public void ForwardFourierTransform( )
-        {
-            if ( !fourierTransformed )
-            {
-                for ( int y = 0; y < height; y++ )
-                {
-                    for ( int x = 0; x < width; x++ )
-                    {
-                        if ( ( ( x + y ) & 0x1 ) != 0 )
-                        {
-                            data[y, x].Re *= -1;
-                            data[y, x].Im *= -1;
-                        }
-                    }
-                }
+		public void ForwardFourierTransform( )
+		{
+			if ( !fmode )
+			{
+				for ( int y = 0; y < height; y++ )
+				{
+					for ( int x = 0; x < width; x++ )
+					{
+						if ( ( ( x + y ) & 0x1 ) != 0 )
+						{
+							data[y, x].Re *= -1;
+							data[y, x].Im *= -1;
+						}
+					}
+				}
 
                 FourierTransform.FFT2( data, FourierTransform.Direction.Forward );
-                fourierTransformed = true;
-            }
-        }
+				fmode = true;
+			}
+		}
 
         /// <summary>
-        /// Applies backward fast Fourier transformation to the complex image.
+        /// Applies backward fast Fourier transformation to the complex image
         /// </summary>
         /// 
-        public void BackwardFourierTransform( )
-        {
-            if ( fourierTransformed )
-            {
-                FourierTransform.FFT2( data, FourierTransform.Direction.Backward );
-                fourierTransformed = false;
+		public void BackwardFourierTransform( )
+		{
+			if ( fmode )
+			{
+				FourierTransform.FFT2( data, FourierTransform.Direction.Backward );
+				fmode = false;
 
-                for ( int y = 0; y < height; y++ )
-                {
-                    for ( int x = 0; x < width; x++ )
-                    {
-                        if ( ( ( x + y ) & 0x1 ) != 0 )
-                        {
-                            data[y, x].Re *= -1;
-                            data[y, x].Im *= -1;
-                        }
-                    }
-                }
-            }
-        }
-    }
+				for ( int y = 0; y < height; y++ )
+				{
+					for ( int x = 0; x < width; x++ )
+					{
+						if ( ( ( x + y ) & 0x1 ) != 0 )
+						{
+							data[y, x].Re *= -1;
+							data[y, x].Im *= -1;
+						}
+					}
+				}
+			}
+		}
+
+        /// <summary>
+        /// Performs frequency filter
+        /// </summary>
+        /// 
+        /// <param name="range">Frequency range to keep</param>
+        /// 
+        /// <remarks>Frequency filter zeros all values which frequencies are
+        /// outside of the spefied range.</remarks>
+        /// 
+		public void FrequencyFilter( IntRange range )
+		{
+			if ( fmode )
+			{
+				int hw = width >> 1;
+				int hh = height >> 1;
+				int min = range.Min;
+				int max = range.Max;
+
+				// process all data
+				for ( int i = 0; i < height; i++ )
+				{
+					int y = i - hh;
+
+					for ( int j = 0; j < width; j++ )
+					{
+						int	x = j - hw;
+						int d = (int) Math.Sqrt( x * x + y * y );
+
+                        // filter values outside the range
+						if ( ( d > max ) || ( d < min ) )
+						{
+							data[i, j].Re = 0;
+							data[i, j].Im = 0;
+						}
+					}
+				}
+			}
+		}
+	}
 }

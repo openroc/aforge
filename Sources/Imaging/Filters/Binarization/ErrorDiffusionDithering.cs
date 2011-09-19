@@ -1,173 +1,148 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2006
 // andrew.kirillov@gmail.com
 //
-
 namespace AForge.Imaging.Filters
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
-    using AForge;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
+	using AForge;
 
-    /// <summary>
-    /// Base class for error diffusion dithering.
-    /// </summary>
-    /// 
-    /// <remarks><para>The class is the base class for binarization algorithms based on
-    /// <a href="http://en.wikipedia.org/wiki/Error_diffusion">error diffusion</a>.</para>
-    /// 
-    /// <para>Binarization with error diffusion in its idea is similar to binarization based on thresholding
-    /// of pixels' cumulative value (see <see cref="ThresholdWithCarry"/>). Each pixel is binarized based not only
-    /// on its own value, but on values of some surrounding pixels. During pixel's binarization, its <b>binarization
-    /// error</b> is distributed (diffused) to some neighbor pixels with some coefficients. This error diffusion
-    /// updates neighbor pixels changing their values, what affects their upcoming binarization. Error diffuses
-    /// only on unprocessed yet neighbor pixels, which are right and bottom pixels usually (in the case if image
-    /// processing is done from upper left corner to bottom right corner). <b>Binarization error</b> equals
-    /// to processing pixel value, if it is below threshold value, or pixel value minus 255 otherwise.</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images for processing.</para>
-    /// </remarks>
-    /// 
-    public abstract class ErrorDiffusionDithering : BaseInPlacePartialFilter
-    {
-        private byte threshold = 128;
+	/// <summary>
+	/// Base class for error diffusion dithering
+	/// </summary>
+	/// 
+	/// <remarks></remarks>
+	/// 
+	public abstract class ErrorDiffusionDithering : FilterAnyToGray
+	{
+		/// <summary>
+		/// Current processing X coordinate
+		/// </summary>
+		protected int x;
 
-        /// <summary>
-        /// Threshold value.
-        /// </summary>
-        /// 
-        /// <remarks>Default value is 128.</remarks>
-        /// 
-        public byte ThresholdValue
-        {
-            get { return threshold; }
-            set { threshold = value; }
-        }
+		/// <summary>
+		/// Current processing Y coordinate
+		/// </summary>
+		protected int y;
 
-        /// <summary>
-        /// Current processing X coordinate.
-        /// </summary>
-        protected int x;
+		/// <summary>
+		/// Processing image's width
+		/// </summary>
+		protected int width;
 
-        /// <summary>
-        /// Current processing Y coordinate.
-        /// </summary>
-        protected int y;
+		/// <summary>
+		/// Processing image's height
+		/// </summary>
+		protected int height;
 
-        /// <summary>
-        /// Processing X start position.
-        /// </summary>
-        protected int startX;
+		/// <summary>
+		/// Processing image's width minus 1
+		/// </summary>
+		protected int widthM1;
 
-        /// <summary>
-        /// Processing Y start position.
-        /// </summary>
-        protected int startY;
+		/// <summary>
+		/// Processing image's height minus 1 
+		/// </summary>
+		protected int heightM1;
+		
+		/// <summary>
+		/// Processing image's stride (line size)
+		/// </summary>
+		protected int stride;
 
-        /// <summary>
-        /// Processing X stop position.
-        /// </summary>
-        protected int stopX;
+		/// <summary>
+		/// Do error diffusion
+		/// </summary>
+		/// 
+		/// <param name="error">Current error value</param>
+		/// <param name="ptr">Pointer to current processing pixel</param>
+		/// 
+		/// <remarks>All parameters of the image and current processing pixel's coordinates
+		/// are initialized in protected members.</remarks>
+		/// 
+		protected abstract unsafe void Diffuse( int error, byte * ptr );
 
-        /// <summary>
-        /// Processing Y stop position.
-        /// </summary>
-        protected int stopY;
+		/// <summary>
+		/// Process the filter on the specified image
+		/// </summary>
+		/// 
+		/// <param name="sourceData">Source image data</param>
+		/// <param name="destinationData">Destination image data</param>
+		/// 
+		protected override unsafe void ProcessFilter( BitmapData sourceData, BitmapData destinationData )
+		{
+			// get image dimension
+			width		= sourceData.Width;
+			height		= sourceData.Height;
+			stride		= destinationData.Stride;
+			widthM1		= width - 1;
+			heightM1	= height - 1;
 
-        /// <summary>
-        /// Processing image's stride (line size).
-        /// </summary>
-        protected int stride;
+			// allocate memory for source copy
+			IntPtr sourceCopy = Win32.LocalAlloc( Win32.MemoryFlags.Fixed, destinationData.Stride * height );
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+			// check source image format
+			if ( sourceData.PixelFormat == PixelFormat.Format8bppIndexed )
+			{
+				// copy source image
+				Win32.memcpy( sourceCopy, sourceData.Scan0, destinationData.Stride * height );
+			}
+			else
+			{
+				// convert color image to grayscale
+				IFilter filter = new GrayscaleRMY( );
+				Bitmap grayImage = filter.Apply( sourceData );
+				// copy the image
+				BitmapData grayData = grayImage.LockBits(
+					new Rectangle( 0, 0, width, height ),
+					ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
 
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
+				Win32.memcpy( sourceCopy, grayData.Scan0, destinationData.Stride * height );
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorDiffusionDithering"/> class.
-        /// </summary>
-        /// 
-        protected ErrorDiffusionDithering( )
-        {
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-        }
+				grayImage.UnlockBits( grayData );
+				// free the gray image
+				grayImage.Dispose( );
+			}
 
-        /// <summary>
-        /// Do error diffusion.
-        /// </summary>
-        /// 
-        /// <param name="error">Current error value.</param>
-        /// <param name="ptr">Pointer to current processing pixel.</param>
-        /// 
-        /// <remarks>All parameters of the image and current processing pixel's coordinates
-        /// are initialized in protected members.</remarks>
-        /// 
-        protected abstract unsafe void Diffuse( int error, byte* ptr );
+			int offset = stride - width;
+			int	v, error;
 
-        /// <summary>
-        /// Process the filter on the specified image.
-        /// </summary>
-        /// 
-        /// <param name="image">Source image data.</param>
-        /// <param name="rect">Image rectangle for processing by the filter.</param>
-        /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
-        {
-            // processing start and stop X,Y positions
-            startX = rect.Left;
-            startY = rect.Top;
-            stopX  = startX + rect.Width;
-            stopY  = startY + rect.Height;
-            stride = image.Stride;
+			// do the job
+			byte * src = (byte *) sourceCopy.ToPointer( );
+			byte * dst = (byte *) destinationData.Scan0.ToPointer( );
 
-            int offset = stride - rect.Width;
+			// for each line
+			for ( y = 0; y < height; y++ )
+			{
+				// for each pixels
+				for ( x = 0; x < width; x++, src++, dst++ )
+				{
+					v = *src;
 
-            // pixel value and error value
-            int v, error;
+					// fill the next destination pixel
+					if ( v < 128 )
+					{
+						*dst = 0;
+						error = v;
+					}
+					else
+					{
+						*dst = 255;
+						error = v - 255;
+					}
 
-            // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+					// do error diffusion
+					Diffuse( error, src );
+				}
+				src += offset;
+				dst += offset;
+			}
 
-            // allign pointer to the first pixel to process
-            ptr += ( startY * stride + startX );
-
-            // for each line
-            for ( y = startY; y < stopY; y++ )
-            {
-                // for each pixels
-                for ( x = startX; x < stopX; x++, ptr++ )
-                {
-                    v = *ptr;
-
-                    // fill the next destination pixel
-                    if ( v >= threshold )
-                    {
-                        *ptr = 255;
-                        error = v - 255;
-                    }
-                    else
-                    {
-                        *ptr = 0;
-                        error = v;
-                    }
-
-                    // do error diffusion
-                    Diffuse( error, ptr );
-                }
-                ptr += offset;
-            }
-        }
-    }
+			// free memory for image copy
+			Win32.LocalFree( sourceCopy );
+		}
+	}
 }
