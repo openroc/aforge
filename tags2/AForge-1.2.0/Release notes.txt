@@ -1,0 +1,70 @@
+AForge.NET 1.2.0 release notes
+------------------------------
+15.03.2007.
+
+Version updates and fixes:
+
+* General
+  - Setup project added to provide installer application;
+  - AForge.NET libraries got strong name;
+  - Sample applications update to use volatile for need-to-stop flag
+
+* AForge.Math
+  - Random numbers generators added (Uniform, Standard, Gaussian, Exponential);
+  - 2D Affine transformation added;
+
+* AForge.Imaging
+  - Texture class added to handle texture related work;
+  - BlobCounter class updated to have constructor. GetObjectRectangles() does not
+    require parameter any more;
+  - Bug fixed in ComplexImage - image mode was not cloned;
+  - Color remapping filter was added
+
+* AForge.Genetic
+  - Double array chromosome added
+
+
+
+
+AForge.NET 1.1.0 release notes
+------------------------------
+23.02.2007.
+
+Version updates and fixes:
+
+* General
+  - The framework was converted to .NET 2.0;
+  - Sandcastle is used for help files generation instead of NDoc;
+
+* AForge
+  - Issue fixed with IsInside() method of IntRange and DoubleRange
+
+* AForge.Math
+  - Complex number structure;
+  - Fourier transformation;
+  - Gaussian function;
+  - Perlin noise function;
+  - Statistics class;
+  - Histogram classes;
+  
+* AForge.Imaging
+  - Blob counter and Connected Components Labeling;
+  - Conservative Smoothing filter;
+  - Jitter filter;
+  - Oil Painting filter;
+  - Pixellatet filter;
+  - Gaussian Blur filter;
+  - SharpenEx (based on Gaussian function) filter;
+  - Canny Edge Detector filter;
+  - Adaptive Smooth filter;
+  - Simple Skeletonization filter;
+  - Texture generators added (Clouds, Marble, Wood, Labyrinth, Textile);
+  - Texturer, Textured Filter, Textured Merge filters;
+  - Resize filters (Nearest Neighbor, Bilinear, Bicubic);
+  - Rotate filters (Nearest Neighbor, Bilinear, Bicubic);
+  - Complex image (frequency filtering);
+  - Image statistics classes (RGB, HSL, YCbCr);  
+
+* Samples
+  - Textures demo application;
+
