@@ -1,9 +1,7 @@
 // AForge Math Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Math.Random
@@ -11,86 +9,72 @@ namespace AForge.Math.Random
     using System;
 
     /// <summary>
-    /// Exponential random numbers generator.
+    /// Exponential random numbers generator
     /// </summary>
     /// 
     /// <remarks><para>The random number generator generates exponential
     /// random numbers with specified rate value (lambda).</para>
-    /// 
-    /// <para>The generator uses <see cref="UniformOneGenerator"/> generator as a base
-    /// to generate random numbers.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create instance of random generator
-    /// IRandomNumberGenerator generator = new ExponentialGenerator( 5 );
-    /// // generate random number
-    /// float randomNumber = generator.Next( );
-    /// </code>
-    /// </remarks>
+    /// <para>The generator uses <see cref="UniformOneGenerator"/> generator
+    /// to generate random numbers.</para></remarks>
     /// 
     public class ExponentialGenerator : IRandomNumberGenerator
     {
         private UniformOneGenerator rand = null;
 
-        private float rate = 0;
+        private double rate = 0;
 
         /// <summary>
-        /// Rate value (inverse mean).
+        /// Rate value (inverse scale)
         /// </summary>
         /// 
         /// <remarks>The rate value should be positive and non zero.</remarks>
         /// 
-        public float Rate
+        public double Rate
         {
             get { return rate; }
         }
 
         /// <summary>
-        /// Mean value of the generator.
+        /// Mean value of generator
         /// </summary>
         /// 
-        public float Mean
+        public double Mean
         {
-            get { return 1.0f / rate; }
+            get { return 1 / rate; }
         }
 
         /// <summary>
-        /// Variance value of the generator.
+        /// Variance value of generator
         /// </summary>
         ///
-        public float Variance
+        public double Variance
         {
-            get { return 1f / ( rate * rate ); }
+            get { return 1 / ( rate * rate ); }
         }
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialGenerator"/> class.
+        /// Initializes a new instance of the <see cref="ExponentialGenerator"/> class
         /// </summary>
         /// 
-        /// <param name="rate">Rate value.</param>
+        /// <param name="rate">Rate value</param>
         /// 
-        /// <exception cref="ArgumentException">Rate value should be greater than zero.</exception>
-        /// 
-        public ExponentialGenerator( float rate ) :
+        public ExponentialGenerator( double rate ) :
             this( rate, 0 )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExponentialGenerator"/> class.
+        /// Initializes a new instance of the <see cref="ExponentialGenerator"/> class
         /// </summary>
         /// 
-        /// <param name="rate">Rate value (inverse mean).</param>
-        /// <param name="seed">Seed value to initialize random numbers generator.</param>
+        /// <param name="rate">Rate value</param>
+        /// <param name="seed">Seed value to initialize random numbers generator</param>
         /// 
-        /// <exception cref="ArgumentException">Rate value should be greater than zero.</exception>
-        /// 
-        public ExponentialGenerator( float rate, int seed )
+        public ExponentialGenerator( double rate, int seed )
         {
             // check rate value
             if ( rate <= 0 )
-                throw new ArgumentException( "Rate value should be greater than zero." );
+                throw new ArgumentException( "Rate value should be positive and non zero" );
 
             this.rand = new UniformOneGenerator( seed );
             this.rate = rate;
@@ -100,18 +84,18 @@ namespace AForge.Math.Random
         /// Generate next random number
         /// </summary>
         /// 
-        /// <returns>Returns next random number.</returns>
+        /// <returns>Returns next random number</returns>
         /// 
-        public float Next( )
+        public double Next( )
         {
-            return - (float) Math.Log( rand.Next( ) ) / rate;
+            return - Math.Log( rand.Next( ) ) / rate;
         }
 
         /// <summary>
-        /// Set seed of the random numbers generator.
+        /// Set seed of the random numbers generator
         /// </summary>
         /// 
-        /// <param name="seed">Seed value.</param>
+        /// <param name="seed">Seed value</param>
         /// 
         /// <remarks>Resets random numbers generator initializing it with
         /// specified seed value.</remarks>

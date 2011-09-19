@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
@@ -19,14 +18,6 @@ namespace AForge.Imaging.Filters
     /// <remarks><para>Bottom-hat morphological operator <see cref="Subtract">subtracts</see>
     /// input image from the result of <see cref="Closing">morphological closing</see> on the
     /// the input image.</para>
-    /// 
-    /// <para>Applied to binary image, the filter allows to get all object parts, which were
-    /// added by <see cref="Closing">closing</see> filter, but were not removed after that due
-    /// to formed connections/fillings.</para>
-    /// 
-    /// <para>The filter accepts 8 and 16 bpp grayscale images and 24 and 48 bpp
-    /// color images for processing.</para>
-    ///
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
@@ -34,72 +25,86 @@ namespace AForge.Imaging.Filters
     /// // apply the filter
     /// filter.Apply( image );
     /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample12.png" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/bottomhat.png" width="320" height="240" />
     /// </remarks>
     /// 
-    /// <seealso cref="TopHat"/>
-    /// 
-    public class BottomHat : BaseInPlaceFilter
+    public class BottomHat : IFilter
     {
         private Closing closing = new Closing( );
         private Subtract subtract = new Subtract( );
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
+        /// Initializes a new instance of the <see cref="BottomHat"/> class.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
+        /// 
+        public BottomHat( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BottomHat"/> class.
         /// </summary>
         /// 
-        public BottomHat( )
-        {
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BottomHat"/> class.
-        /// </summary>
+        /// <param name="se">Structuring element.</param>
         /// 
-        /// <param name="se">Structuring element to pass to <see cref="Closing"/> operator.</param>
-        /// 
-        public BottomHat( short[,] se ) : this( )
+        public BottomHat( short[,] se )
         {
             closing = new Closing( se );
         }
 
         /// <summary>
-        /// Process the filter on the specified image.
+        /// Apply filter to an image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="image">Source image to apply filter to.</param>
+        /// 
+        /// <returns>Returns filter's result obtained by applying the filter to
+        /// the source image.</returns>
+        /// 
+        /// <remarks>The method keeps the source image unchanged and returns the
+        /// the result of image processing filter as new image.</remarks> 
         ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image )
+        public Bitmap Apply( Bitmap image )
         {
-            // copy source image
-            UnmanagedImage sourceImage = image.Clone( );
-            // perform closing on the source image
-            closing.ApplyInPlace( image );
-            // subtract source image from the closed image
-            subtract.UnmanagedOverlayImage = sourceImage;
-            subtract.ApplyInPlace( image );
+            // morphological closing
+            Bitmap tempImage = closing.Apply( image );
 
-            sourceImage.Dispose( );
+            // subtraction from original image
+            subtract.OverlayImage = image;
+            Bitmap destImage = subtract.Apply( tempImage );
+
+            tempImage.Dispose( );
+
+            return destImage;
+        }
+
+        /// <summary>
+        /// Apply filter to an image.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Source image to apply filter to.</param>
+        /// 
+        /// <returns>Returns filter's result obtained by applying the filter to
+        /// the source image.</returns>
+        /// 
+        /// <remarks>The filter accepts birmap data as input and returns the result
+        /// of image processing filter as new image. The source image data are kept
+        /// unchanged.</remarks>
+        /// 
+        public Bitmap Apply( BitmapData imageData )
+        {
+            // 2-source filters do not accept BitmapData as overlay, so
+            // we need to make a copy of the image
+            Bitmap source = AForge.Imaging.Image.Clone( imageData );
+
+            // morphological closing
+            Bitmap tempImage = closing.Apply( imageData );
+
+            // subtraction from original image
+            subtract.OverlayImage = source;
+            Bitmap destImage = subtract.Apply( tempImage );
+
+            tempImage.Dispose( );
+            source.Dispose( );
+
+            return destImage;
         }
     }
 }
