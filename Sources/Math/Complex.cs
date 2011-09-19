@@ -781,7 +781,12 @@ namespace AForge.Math
         /// 
         public override bool Equals( object obj )
         {
-            return ( obj is Complex ) ? ( this == (Complex) obj ) : false;
+            if ( obj is Complex )
+            {
+                Complex c = (Complex) obj;
+                return ( this.Re == c.Re ) && ( this.Im == c.Im );
+            }
+            return false;
         }
 
         /// <summary>
@@ -808,7 +813,7 @@ namespace AForge.Math
         /// 
         public static bool operator ==( Complex u, Complex v )
         {
-            return ( ( u.Re == v.Re ) && ( u.Im == v.Im ) );
+            return ValueType.Equals( u, v );
         }
 
         /// <summary>
@@ -822,7 +827,7 @@ namespace AForge.Math
         /// 
         public static bool operator !=( Complex u, Complex v )
         {
-            return !( u == v );
+            return !ValueType.Equals( u, v );
         }
         #endregion
 

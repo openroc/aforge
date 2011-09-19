@@ -19,16 +19,14 @@ namespace AForge.Imaging.Filters
     /// <remarks><para>The filter implements convolution operator, which calculates each pixel
     /// of the result image as weighted sum of the correspond pixel and its neighbors in the source
     /// image. The weights are set by <see cref="Kernel">convolution kernel</see>. The weighted
-    /// sum is divided by <see cref="Divisor"/> before putting it into result image and also
-    /// may be thresholded using <see cref="Threshold"/> value.</para>
+    /// sum is divided by <see cref="Divisor"/> before putting it into result image.</para>
     /// 
     /// <para>Convolution is a simple mathematical operation which is fundamental to many common
     /// image processing filters. Depending on the type of provided kernel, the filter may produce
     /// different results, like blur image, sharpen it, find edges, etc.</para>
     /// 
     /// <para>The filter accepts 8 and 16 bpp grayscale images and 24, 32, 48 and 64 bpp
-    /// color images for processing. Note: for 32 bpp and 64 bpp images, the alpha channel is
-    /// not processed anyhow with the specified kernel; its values are just copied as is. </para>
+    /// color images for processing.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -38,7 +36,7 @@ namespace AForge.Imaging.Filters
     ///             { -1,  1,  1 },
     ///             {  0,  1,  2 } };
     /// // create filter
-    /// Convolution filter = new Convolution( kernel );
+    /// Convolution filter = new Convolution( );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
@@ -55,22 +53,20 @@ namespace AForge.Imaging.Filters
         private int[,] kernel;
         // division factor
         private int divisor = 1;
-        // threshold to add to weighted sum
-        private int threshold = 0;
         // kernel size
         private int size;
         // use dynamic divisor for edges
         private bool dynamicDivisorForEdges = true;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -79,7 +75,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>
         /// <para><note>Convolution kernel must be square and its width/height
-        /// should be odd and should be in the [3, 99] range.</note></para>
+        /// should be odd and should be in the [3, 25] range.</note></para>
         /// 
         /// <para><note>Setting convolution kernel through this property does not
         /// affect <see cref="Divisor"/> - it is not recalculated automatically.</note></para>
@@ -95,7 +91,7 @@ namespace AForge.Imaging.Filters
                 int s = value.GetLength( 0 );
 
                 // check kernel size
-                if ( ( s != value.GetLength( 1 ) ) || ( s < 3 ) || ( s > 99 ) || ( s % 2 == 0 ) )
+                if ( ( s != value.GetLength( 1 ) ) || ( s < 3 ) || ( s > 25 ) || ( s % 2 == 0 ) )
                     throw new ArgumentException( "Invalid kernel size." );
 
                 this.kernel = value;
@@ -128,23 +124,6 @@ namespace AForge.Imaging.Filters
         }
 
         /// <summary>
-        /// Threshold to add to weighted sum.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property specifies threshold value, which is added to each weighted
-        /// sum of pixels. The value is added right after division was done by <see cref="Divisor"/>
-        /// value.</para>
-        /// 
-        /// <para>Default value is set to <b>0</b>.</para>
-        /// </remarks>
-        /// 
-        public int Threshold
-        {
-            get { return threshold; }
-            set { threshold = value; }
-        }
-
-        /// <summary>
         /// Use dynamic divisor for edges or not.
         /// </summary>
         /// 
@@ -170,13 +149,13 @@ namespace AForge.Imaging.Filters
         /// </summary>
         protected Convolution( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-            formatTranslations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
+            formatTransalations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
         }
 
         /// <summary>
@@ -343,7 +322,6 @@ namespace AForge.Imaging.Filters
                             {
                                 g /= div;
                             }
-                            g += threshold;
                             *dst = (byte) ( ( g > 255 ) ? 255 : ( ( g < 0 ) ? 0 : g ) );
                         }
                         src += srcOffset;
@@ -424,17 +402,9 @@ namespace AForge.Imaging.Filters
                                 g /= div;
                                 b /= div;
                             }
-                            r += threshold;
-                            g += threshold;
-                            b += threshold;
-
                             dst[RGB.R] = (byte) ( ( r > 255 ) ? 255 : ( ( r < 0 ) ? 0 : r ) );
                             dst[RGB.G] = (byte) ( ( g > 255 ) ? 255 : ( ( g < 0 ) ? 0 : g ) );
                             dst[RGB.B] = (byte) ( ( b > 255 ) ? 255 : ( ( b < 0 ) ? 0 : b ) );
-
-                            // take care of alpha channel
-                            if ( pixelSize == 4 )
-                                dst[RGB.A] = src[RGB.A];
                         }
                         src += srcOffset;
                         dst += dstOffset;
@@ -527,7 +497,6 @@ namespace AForge.Imaging.Filters
                             {
                                 g /= div;
                             }
-                            g += threshold;
                             *dst = (ushort) ( ( g > 65535 ) ? 65535 : ( ( g < 0 ) ? 0 : g ) );
                         }
                     }
@@ -607,17 +576,9 @@ namespace AForge.Imaging.Filters
                                 g /= div;
                                 b /= div;
                             }
-                            r += threshold;
-                            g += threshold;
-                            b += threshold;
-
                             dst[RGB.R] = (ushort) ( ( r > 65535 ) ? 65535 : ( ( r < 0 ) ? 0 : r ) );
                             dst[RGB.G] = (ushort) ( ( g > 65535 ) ? 65535 : ( ( g < 0 ) ? 0 : g ) );
                             dst[RGB.B] = (ushort) ( ( b > 65535 ) ? 65535 : ( ( b < 0 ) ? 0 : b ) );
-
-                            // take care of alpha channel
-                            if ( pixelSize == 4 )
-                                dst[RGB.A] = src[RGB.A];
                         }
                     }
                 }

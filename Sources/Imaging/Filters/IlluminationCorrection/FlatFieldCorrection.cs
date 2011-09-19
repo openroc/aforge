@@ -109,17 +109,17 @@ namespace AForge.Imaging.Filters
         }
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
         ///
-        /// <remarks><para>See <see cref="IFilterInformation.FormatTranslations"/> for more information.</para></remarks>
+        /// <remarks><para>See <see cref="IFilterInformation.FormatTransalations"/> for more information.</para></remarks>
         ///
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -134,8 +134,8 @@ namespace AForge.Imaging.Filters
         /// 
         public FlatFieldCorrection( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace AForge.Imaging.Filters
                     // check background image
                     if ( ( width != backgroundImage.Width ) || ( height != backgroundImage.Height ) || ( image.PixelFormat != backgroundImage.PixelFormat ) )
                     {
-                        throw new InvalidImagePropertiesException( "Source image and background images must have the same size and pixel format" );
+                        throw new InvalidImageProperties( "Source image and background images must have the same size and pixel format" );
                     }
 
                     // lock background image

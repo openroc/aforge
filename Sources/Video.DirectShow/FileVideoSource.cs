@@ -1,9 +1,8 @@
 // AForge Direct Show Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video.DirectShow
@@ -23,7 +22,6 @@ namespace AForge.Video.DirectShow
     /// 
     /// <remarks><para>The video source provides access to video files. DirectShow is used to access video
     /// files.</para>
-    /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create video source
@@ -37,7 +35,6 @@ namespace AForge.Video.DirectShow
     /// videoSource.SignalToStop( );
     /// // ...
     /// 
-    /// // New frame event handler, which is invoked on each new available video frame
     /// private void video_NewFrame( object sender, NewFrameEventArgs eventArgs )
     /// {
     ///     // get new frame
@@ -51,14 +48,14 @@ namespace AForge.Video.DirectShow
     {
         // video file name
         private string fileName;
+        // user data associated with the video source
+        private object userData = null;
         // received frames count
         private int framesReceived;
         // recieved byte count
         private int bytesReceived;
         // prevent freezing
         private bool preventFreezing = false;
-        // reference clock for the graph - when disabled, graph processes frames ASAP
-        private bool referenceClockEnabled = true;
 
         private Thread thread = null;
         private ManualResetEvent stopEvent = null;
@@ -84,15 +81,6 @@ namespace AForge.Video.DirectShow
         /// video source object, for example internal exceptions.</remarks>
         /// 
         public event VideoSourceErrorEventHandler VideoSourceError;
-
-        /// <summary>
-        /// Video playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>This event is used to notify clients that the video playing has finished.</para>
-        /// </remarks>
-        /// 
-        public event PlayingFinishedEventHandler PlayingFinished;
 
         /// <summary>
         /// Video source.
@@ -143,6 +131,18 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
+        /// User data.
+        /// </summary>
+        /// 
+        /// <remarks>The property allows to associate user data with video source object.</remarks>
+        /// 
+        public object UserData
+        {
+            get { return userData; }
+            set { userData = value; }
+        }
+
+        /// <summary>
         /// State of the video source.
         /// </summary>
         /// 
@@ -178,40 +178,19 @@ namespace AForge.Video.DirectShow
         /// a trade off - it is possible to prevent video freezing skipping adding renderer filter or
         /// it is possible to keep renderer filter, but video may freeze during screen saver.</para>
         /// 
+        /// <para>Default value of this property is set to <b>false</b> for file video source.</para>
+        /// 
         /// <para><note>The property may become obsolete in the future when approach to disable freezing
         /// and adding all required filters is found.</note></para>
         /// 
         /// <para><note>The property should be set before calling <see cref="Start"/> method
-        /// of the class to have effect.</note></para>
-        /// 
-        /// <para>Default value of this property is set to <b>false</b>.</para>
-        /// 
+        /// of the class.</note></para>
         /// </remarks>
         /// 
         public bool PreventFreezing
         {
             get { return preventFreezing; }
             set { preventFreezing = value; }
-        }
-
-        /// <summary>
-        /// Enables/disables reference clock on the graph.
-        /// </summary>
-        /// 
-        /// <remarks><para>Disabling reference clocks causes DirectShow graph to run as fast as
-        /// it can process data. When enabled, it will process frames according to presentation
-        /// time of a video file.</para>
-        /// 
-        /// <para><note>The property should be set before calling <see cref="Start"/> method
-        /// of the class to have effect.</note></para>
-        /// 
-        /// <para>Default value of this property is set to <b>true</b>.</para>
-        /// </remarks>
-        /// 
-        public bool ReferenceClockEnabled
-        {
-            get { return referenceClockEnabled; }
-            set { referenceClockEnabled = value;}
         }
 
         /// <summary>
@@ -241,7 +220,7 @@ namespace AForge.Video.DirectShow
         /// 
         public void Start( )
         {
-            if ( !IsRunning )
+            if ( thread == null )
             {
                 // check source
                 if ( ( fileName == null ) || ( fileName == string.Empty ) )
@@ -335,13 +314,12 @@ namespace AForge.Video.DirectShow
         /// 
         private void WorkerThread( )
         {
-            ReasonToFinishPlaying reasonToStop = ReasonToFinishPlaying.StoppedByUser;
-
             // grabber
             Grabber grabber = new Grabber( this );
 
             // objects
             object graphObject = null;
+            object sourceObject = null;
             object grabberObject = null;
 
             // interfaces
@@ -350,8 +328,7 @@ namespace AForge.Video.DirectShow
             IBaseFilter         grabberBase = null;
             ISampleGrabber      sampleGrabber = null;
             IMediaControl       mediaControl = null;
-
-            IMediaEventEx       mediaEvent = null;
+            IFileSourceFilter   fileSource = null;
 
             try
             {
@@ -365,9 +342,15 @@ namespace AForge.Video.DirectShow
                 graph = (IGraphBuilder) graphObject;
 
                 // create source device's object
-                graph.AddSourceFilter( fileName, "source", out sourceBase );
-                if ( sourceBase == null )
-                    throw new ApplicationException( "Failed creating source filter" );
+                type = Type.GetTypeFromCLSID( Clsid.AsyncReader );
+                if ( type == null )
+                    throw new ApplicationException( "Failed creating filter async reader" );
+
+                sourceObject = Activator.CreateInstance( type );
+                sourceBase = (IBaseFilter) sourceObject;
+                fileSource = (IFileSourceFilter) sourceObject;
+
+                fileSource.Load( fileName, null );
 
                 // get type for sample grabber
                 type = Type.GetTypeFromCLSID( Clsid.SampleGrabber );
@@ -379,7 +362,8 @@ namespace AForge.Video.DirectShow
                 sampleGrabber = (ISampleGrabber) grabberObject;
                 grabberBase = (IBaseFilter) grabberObject;
 
-                // add grabber filters to graph
+                // add source and grabber filters to graph
+                graph.AddFilter( sourceBase, "source" );
                 graph.AddFilter( grabberBase, "grabber" );
 
                 // set media type
@@ -389,36 +373,8 @@ namespace AForge.Video.DirectShow
                 sampleGrabber.SetMediaType( mediaType );
 
                 // connect pins
-                int pinToTry = 0;
-
-                IPin inPin = Tools.GetInPin( grabberBase, 0 );
-                IPin outPin = null;
-
-                // find output pin acceptable by sample grabber
-                while ( true )
-                {
-                    outPin = Tools.GetOutPin( sourceBase, pinToTry );
-
-                    if ( outPin == null )
-                    {
-                        Marshal.ReleaseComObject( inPin );
-                        throw new ApplicationException( "Did not find acceptable output video pin in the given source" );
-                    }
-
-                    if ( graph.Connect( outPin, inPin ) < 0 )
-                    {
-                        Marshal.ReleaseComObject( outPin );
-                        outPin = null;
-                        pinToTry++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                Marshal.ReleaseComObject( outPin );
-                Marshal.ReleaseComObject( inPin );
+                if ( graph.Connect( Tools.GetOutPin( sourceBase, 0 ), Tools.GetInPin( grabberBase, 0 ) ) < 0 )
+                    throw new ApplicationException( "Failed connecting filters" );
 
                 // get media type
                 if ( sampleGrabber.GetConnectedMediaType( mediaType ) == 0 )
@@ -447,43 +403,17 @@ namespace AForge.Video.DirectShow
                 sampleGrabber.SetOneShot( false );
                 sampleGrabber.SetCallback( grabber, 1 );
 
-                // disable clock, if someone requested it
-                if ( !referenceClockEnabled )
-                {
-                    IMediaFilter mediaFilter = (IMediaFilter) graphObject;
-                    mediaFilter.SetSyncSource( null );
-                }
-
                 // get media control
                 mediaControl = (IMediaControl) graphObject;
-
-                // get media events' interface
-                mediaEvent = (IMediaEventEx) graphObject;
-                IntPtr p1, p2;
-                DsEvCode code;
 
                 // run
                 mediaControl.Run( );
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+                while ( !stopEvent.WaitOne( 0, true ) )
                 {
                     Thread.Sleep( 100 );
-
-                    if ( mediaEvent != null )
-                    {
-                        if ( mediaEvent.GetEvent( out code, out p1, out p2, 0 ) >= 0 )
-                        {
-                            mediaEvent.FreeEventParams( code, p1, p2 );
-
-                            if ( code == DsEvCode.Complete )
-                            {
-                                reasonToStop = ReasonToFinishPlaying.EndOfStreamReached;
-                                break;
-                            }
-                        }
-                    }
                 }
-                mediaControl.Stop( );
+                mediaControl.StopWhenReady( );
             }
             catch ( Exception exception )
             {
@@ -497,31 +427,27 @@ namespace AForge.Video.DirectShow
             {
                 // release all objects
                 graph           = null;
+                sourceBase      = null;
                 grabberBase     = null;
                 sampleGrabber   = null;
                 mediaControl    = null;
-                mediaEvent      = null;
+                fileSource      = null;
 
                 if ( graphObject != null )
                 {
                     Marshal.ReleaseComObject( graphObject );
                     graphObject = null;
                 }
-                if ( sourceBase != null )
+                if ( sourceObject != null )
                 {
-                    Marshal.ReleaseComObject( sourceBase );
-                    sourceBase = null;
+                    Marshal.ReleaseComObject( sourceObject );
+                    sourceObject = null;
                 }
                 if ( grabberObject != null )
                 {
                     Marshal.ReleaseComObject( grabberObject );
                     grabberObject = null;
                 }
-            }
-
-            if ( PlayingFinished != null )
-            {
-                PlayingFinished( this, reasonToStop );
             }
         }
 
@@ -534,12 +460,12 @@ namespace AForge.Video.DirectShow
         protected void OnNewFrame( Bitmap image )
         {
             framesReceived++;
-            if ( ( !stopEvent.WaitOne( 0, false ) ) && ( NewFrame != null ) )
+            if ( ( !stopEvent.WaitOne( 0, true ) ) && ( NewFrame != null ) )
                 NewFrame( this, new NewFrameEventArgs( image ) );
         }
 
         //
-        // Video grabber
+        // Vodeo grabber
         //
         private class Grabber : ISampleGrabberCB
         {
@@ -574,43 +500,37 @@ namespace AForge.Video.DirectShow
             // Callback method that receives a pointer to the sample buffer
             public int BufferCB( double sampleTime, IntPtr buffer, int bufferLen )
             {
-                if ( parent.NewFrame != null )
+                // create new image
+                System.Drawing.Bitmap image = new Bitmap( width, height, PixelFormat.Format24bppRgb );
+
+                // lock bitmap data
+                BitmapData imageData = image.LockBits(
+                    new Rectangle( 0, 0, width, height ),
+                    ImageLockMode.ReadWrite,
+                    PixelFormat.Format24bppRgb );
+
+                // copy image data
+                int srcStride = imageData.Stride;
+                int dstStride = imageData.Stride;
+
+                int dst = imageData.Scan0.ToInt32( ) + dstStride * ( height - 1 );
+                int src = buffer.ToInt32( );
+
+                for ( int y = 0; y < height; y++ )
                 {
-                    // create new image
-                    System.Drawing.Bitmap image = new Bitmap( width, height, PixelFormat.Format24bppRgb );
-
-                    // lock bitmap data
-                    BitmapData imageData = image.LockBits(
-                        new Rectangle( 0, 0, width, height ),
-                        ImageLockMode.ReadWrite,
-                        PixelFormat.Format24bppRgb );
-
-                    // copy image data
-                    int srcStride = imageData.Stride;
-                    int dstStride = imageData.Stride;
-
-                    unsafe
-                    {
-                        byte* dst = (byte*) imageData.Scan0.ToPointer( ) + dstStride * ( height - 1 );
-                        byte* src = (byte*) buffer.ToPointer( );
-
-                        for ( int y = 0; y < height; y++ )
-                        {
-                            Win32.memcpy( dst, src, srcStride );
-                            dst -= dstStride;
-                            src += srcStride;
-                        }
-                    }
-
-                    // unlock bitmap data
-                    image.UnlockBits( imageData );
-
-                    // notify parent
-                    parent.OnNewFrame( image );
-
-                    // release the image
-                    image.Dispose( );
+                    Win32.memcpy( dst, src, srcStride );
+                    dst -= dstStride;
+                    src += srcStride;
                 }
+
+                // unlock bitmap data
+                image.UnlockBits( imageData );
+
+                // notify parent
+                parent.OnNewFrame( image );
+
+                // release the image
+                image.Dispose( );
 
                 return 0;
             }

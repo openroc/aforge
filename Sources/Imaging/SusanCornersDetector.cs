@@ -52,9 +52,9 @@ namespace AForge.Imaging
     /// // create corners detector's instance
     /// SusanCornersDetector scd = new SusanCornersDetector( );
     /// // process image searching for corners
-    /// List&lt;IntPoint&gt; corners = scd.ProcessImage( image );
+    /// Point[] corners = scd.ProcessImage( image );
     /// // process points
-    /// foreach ( IntPoint corner in corners )
+    /// foreach ( Point corner in corners )
     /// {
     ///     // ... 
     /// }
@@ -79,7 +79,7 @@ namespace AForge.Imaging
         /// pixel (nucleus) and surrounding pixel is not higher than difference threshold,
         /// then that pixel becomes part of USAN.</para>
         /// 
-        /// <para>Increasing this value decreases the amount of detected corners.</para>
+        /// <para>Increasing this value increases the amount of detected corners.</para>
         /// 
         /// <para>Default value is set to <b>25</b>.</para>
         /// </remarks>
@@ -139,11 +139,11 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Source image to process.</param>
         /// 
-        /// <returns>Returns list of found corners (X-Y coordinates).</returns>
+        /// <returns>Returns array of found corners (X-Y coordinates).</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="UnsupportedImageFormat">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( Bitmap image )
+        public Point[] ProcessImage( Bitmap image )
         {
             // check image format
             if (
@@ -153,7 +153,7 @@ namespace AForge.Imaging
                 ( image.PixelFormat != PixelFormat.Format32bppArgb )
                 )
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
+                throw new UnsupportedImageFormat( "Unsupported pixel format of the source image." );
             }
 
             // lock source image
@@ -161,7 +161,7 @@ namespace AForge.Imaging
                 new Rectangle( 0, 0, image.Width, image.Height ),
                 ImageLockMode.ReadOnly, image.PixelFormat );
 
-            List<IntPoint> corners;
+            Point[] corners;
 
             try
             {
@@ -183,11 +183,11 @@ namespace AForge.Imaging
         /// 
         /// <param name="imageData">Source image data to process.</param>
         /// 
-        /// <returns>Returns list of found corners (X-Y coordinates).</returns>
+        /// <returns>Returns array of found corners (X-Y coordinates).</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="UnsupportedImageFormat">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( BitmapData imageData )
+        public Point[] ProcessImage( BitmapData imageData )
         {
             return ProcessImage( new UnmanagedImage( imageData ) );
         }
@@ -200,9 +200,9 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns array of found corners (X-Y coordinates).</returns>
         ///
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="UnsupportedImageFormat">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( UnmanagedImage image )
+        public Point[] ProcessImage( UnmanagedImage image )
         {
             // check image format
             if (
@@ -212,7 +212,7 @@ namespace AForge.Imaging
                 ( image.PixelFormat != PixelFormat.Format32bppArgb )
                 )
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
+                throw new UnsupportedImageFormat( "Unsupported pixel format of the source image." );
             }
 
             // get source image size
@@ -229,7 +229,8 @@ namespace AForge.Imaging
             else
             {
                 // create temporary grayscale image
-                grayImage = Grayscale.CommonAlgorithms.BT709.Apply( image );
+                GrayscaleBT709 grayFilter = new GrayscaleBT709( );
+                grayImage = grayFilter.Apply( image );
             }
 
             int[,] susanMap = new int[height, width];
@@ -307,14 +308,11 @@ namespace AForge.Imaging
                 }
             }
 
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-            {
-                // free grayscale image
-                grayImage.Dispose( );
-            }
+            // free grayscale image
+            grayImage.Dispose( );
 
             // collect interesting points - only those points, which are local maximums
-            List<IntPoint> cornersList = new List<IntPoint>( );
+            List<Point> cornersList = new List<Point>( );
 
             // for each row
             for ( int y = 2, maxY = height - 2; y < maxY; y++ )
@@ -341,12 +339,16 @@ namespace AForge.Imaging
                     // check if this point is really interesting
                     if ( currentValue != 0 )
                     {
-                        cornersList.Add( new IntPoint( x, y ) );
+                        cornersList.Add( new Point( x, y ) );
                     }
                 }
             }
 
-            return cornersList;
+            // convert list to array
+            Point[] corners = new Point[cornersList.Count];
+            cornersList.CopyTo( corners );
+
+            return corners;
         }
     }
 }

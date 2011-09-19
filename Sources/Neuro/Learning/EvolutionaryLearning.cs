@@ -2,8 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Cezary Wagner, 2008
+// Initial implementation of evolutionary learning algorithm
+// Cezary.Wagner@gmail.com
 //
 
 namespace AForge.Neuro.Learning
@@ -158,11 +162,11 @@ namespace AForge.Neuro.Learning
         /// <item>Mutation rate - 0.25;</item>
         /// <item>Rate of injection of random chromosomes during selection - 0.20;</item>
         /// <item>Random numbers generator for initializing new chromosome -
-        /// <c>UniformGenerator( new Range( -1, 1 ) )</c>;</item>
+        /// <c>UniformGenerator( new DoubleRange( -1, 1 ) )</c>;</item>
         /// <item>Random numbers generator used during mutation for genes' multiplication -
         /// <c>ExponentialGenerator( 1 )</c>;</item>
         /// <item>Random numbers generator used during mutation for adding random value to genes -
-        /// <c>UniformGenerator( new Range( -0.5f, 0.5f ) )</c>.</item>
+        /// <c>UniformGenerator( new DoubleRange( -0.5, 0.5 ) )</c>.</item>
         /// </list></para>
         /// 
         /// <para>In order to have full control over the above default parameters, it is possible to
@@ -175,15 +179,18 @@ namespace AForge.Neuro.Learning
             Debug.Assert( activationNetwork != null );
             Debug.Assert( populationSize > 0 );
 
+            DoubleRange range = new DoubleRange( -1, 1 );
+            UniformGenerator generator = new UniformGenerator( range );
+
             // networks's parameters
             this.network = activationNetwork;
             this.numberOfNetworksWeights = CalculateNetworkSize( activationNetwork );
 
             // population parameters
             this.populationSize = populationSize;
-            this.chromosomeGenerator = new UniformGenerator( new Range( -1, 1 ) );
+            this.chromosomeGenerator = new UniformGenerator( new DoubleRange( -1, 1 ) );
             this.mutationMultiplierGenerator = new ExponentialGenerator( 1 );
-            this.mutationAdditionGenerator = new UniformGenerator( new Range( -0.5f, 0.5f ) );
+            this.mutationAdditionGenerator = new UniformGenerator( new DoubleRange( -0.5, 0.5 ) );
             this.selectionMethod = new EliteSelection( );
             this.crossOverRate = 0.75;
             this.mutationRate = 0.25;
@@ -251,6 +258,9 @@ namespace AForge.Neuro.Learning
             Debug.Assert( output.Length > 0 );
             Debug.Assert( input.Length == output.Length );
             Debug.Assert( network.InputsCount == input.Length );
+
+            int inputSize = input[0].Length;
+            int outputSize = output[0].Length;
 
             // check if it is a first run and create population if so
             if ( population == null )

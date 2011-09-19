@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2010
+// Copyright © Andrew Kirillov, 2005-2009
 // andrew.kirillov@aforgenet.com
 //
 
@@ -24,7 +24,7 @@ namespace AForge.Imaging.Textures
     /// // create texture generator
     /// WoodTexture textureGenerator = new WoodTexture( );
     /// // generate new texture
-    /// float[,] texture = textureGenerator.Generate( 320, 240 );
+    /// float[,] texture = textureGenerator.Generate( 320, 240 )
     /// // convert it to image to visualize
     /// Bitmap textureImage = TextureTools.ToBitmap( texture );
     /// </code>
@@ -89,7 +89,7 @@ namespace AForge.Imaging.Textures
         /// 
         /// <returns>Returns texture as 2D float array.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
+        /// <exception cref="UnsupportedImageFormat">Only grayscale (8 bpp indexed images) are supported.</exception>
         /// 
         public static float[,] FromBitmap( Bitmap image )
         {
@@ -115,7 +115,7 @@ namespace AForge.Imaging.Textures
         /// 
         /// <returns>Returns texture as 2D float array.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
+        /// <exception cref="UnsupportedImageFormat">Only grayscale (8 bpp indexed images) are supported.</exception>
         /// 
         public static float[,] FromBitmap( BitmapData imageData )
         {
@@ -130,13 +130,13 @@ namespace AForge.Imaging.Textures
         /// 
         /// <returns>Returns texture as 2D float array.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
+        /// <exception cref="UnsupportedImageFormat">Only grayscale (8 bpp indexed images) are supported.</exception>
         /// 
         public static float[,] FromBitmap( UnmanagedImage image )
         {
             // check source image
             if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-                throw new UnsupportedImageFormatException( "Only grayscale (8 bpp indexed images) are supported." );
+                throw new UnsupportedImageFormat( "Only grayscale (8 bpp indexed images) are supported." );
 
             // get source image dimension
             int width  = image.Width;

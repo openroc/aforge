@@ -11,7 +11,6 @@ using TeRKIceLib = TeRK;
 namespace AForge.Robotics.TeRK
 {
     using System;
-    using AForge;
 
     public partial class Qwerk
     {
@@ -83,7 +82,7 @@ namespace AForge.Robotics.TeRK
             /// 
             /// <exception cref="NotConnectedException">The passed reference to <see cref="Qwerk"/> object is not connected to
             /// Qwerk board.</exception>
-            /// <exception cref="ConnectionFailedException">Failed connecting to the requested service.</exception>
+            /// <exception cref="ConnectFailedException">Failed connecting to the requested service.</exception>
             /// <exception cref="ServiceAccessFailedException">Failed accessing to the requested service.</exception>
             /// 
             public Leds( Qwerk qwerk )
@@ -96,7 +95,6 @@ namespace AForge.Robotics.TeRK
                     try
                     {
                         Ice.ObjectPrx obj = qwerk.iceCommunicator.stringToProxy( "'::TeRK::LEDController':tcp -h " + hostAddress + " -p 10101" );
-                        obj = obj.ice_timeout( Qwerk.TimeOut );
                         ledController = TeRKIceLib.LEDControllerPrxHelper.checkedCast( obj );
                     }
                     catch ( Ice.ObjectNotExistException )
@@ -106,7 +104,7 @@ namespace AForge.Robotics.TeRK
                     }
                     catch
                     {
-                        throw new ConnectionFailedException( "Failed connecting to the requested service." );
+                        throw new ConnectFailedException( "Failed connecting to the requested service." );
                     }
 
                     if ( ledController == null )

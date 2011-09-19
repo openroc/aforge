@@ -1,8 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -29,7 +29,7 @@ namespace AForge.Imaging.Filters
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
-    /// BrightnessCorrection filter = new BrightnessCorrection( -0.15 );
+    /// SaturationCorrection filter = new SaturationCorrection( -0.15 );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
@@ -43,7 +43,7 @@ namespace AForge.Imaging.Filters
     public class BrightnessCorrection : BaseInPlacePartialFilter
     {
         private HSLLinear baseFilter = new HSLLinear( );
-        private float adjustValue;	// [-1, 1]
+        private double adjustValue;	// [-1, 1]
 
         /// <summary>
         /// Brightness adjust value, [-1, 1].
@@ -52,43 +52,43 @@ namespace AForge.Imaging.Filters
         /// <remarks>Default value is set to <b>0.1</b>, which corresponds to increasing
         /// brightness by 10%.</remarks>
         ///
-        public float AdjustValue
+        public double AdjustValue
         {
             get { return adjustValue; }
             set
             {
-                adjustValue = Math.Max( -1.0f, Math.Min( 1.0f, value ) );
+                adjustValue = Math.Max( -1.0, Math.Min( 1.0, value ) );
 
                 // create luminance filter
                 if ( adjustValue > 0 )
                 {
-                    baseFilter.InLuminance  = new Range( 0.0f, 1.0f - adjustValue );
-                    baseFilter.OutLuminance = new Range( adjustValue, 1.0f );
+                    baseFilter.InLuminance  = new DoubleRange( 0.0, 1.0 - adjustValue );
+                    baseFilter.OutLuminance = new DoubleRange( adjustValue, 1.0 );
                 }
                 else
                 {
-                    baseFilter.InLuminance  = new Range( -adjustValue, 1.0f );
-                    baseFilter.OutLuminance = new Range( 0.0f, 1.0f + adjustValue );
+                    baseFilter.InLuminance  = new DoubleRange( -adjustValue, 1.0 );
+                    baseFilter.OutLuminance = new DoubleRange( 0.0, 1.0 + adjustValue );
                 }
             }
         }
 
         // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BrightnessCorrection"/> class.
         /// </summary>
         /// 
-        public BrightnessCorrection( ) : this( 0.1f )
+        public BrightnessCorrection( ) : this( 0.1 )
         {
         }
 
@@ -98,13 +98,13 @@ namespace AForge.Imaging.Filters
         /// 
         /// <param name="adjustValue">Brightness adjust value.</param>
         /// 
-        public BrightnessCorrection( float adjustValue )
+        public BrightnessCorrection( double adjustValue )
         {
             AdjustValue = adjustValue;
 
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>

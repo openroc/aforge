@@ -1,9 +1,8 @@
-﻿// Simple Player sample application
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
+﻿// AForge.NET Framework
+// Simple Player sample application
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -13,7 +12,6 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using System.Diagnostics;
 
 using AForge.Video;
 using AForge.Video.DirectShow;
@@ -22,7 +20,14 @@ namespace Player
 {
     public partial class MainForm : Form
     {
-        private Stopwatch stopWatch = null;
+        // statistics length
+        private const int statLength = 15;
+        // current statistics index
+        private int statIndex = 0;
+        // ready statistics values
+        private int statReady = 0;
+        // statistics array
+        private int[] statCount = new int[statLength];
 
         // Class constructor
         public MainForm( )
@@ -32,7 +37,11 @@ namespace Player
 
         private void MainForm_FormClosing( object sender, FormClosingEventArgs e )
         {
-            CloseCurrentVideoSource( );
+            if ( videoSourcePlayer.VideoSource != null )
+            {
+                videoSourcePlayer.SignalToStop( );
+                videoSourcePlayer.WaitForStop( );
+            }
         }
 
         // "Exit" menu item clicked
@@ -49,7 +58,7 @@ namespace Player
             if ( form.ShowDialog( this ) == DialogResult.OK )
             {
                 // create video source
-                VideoCaptureDevice videoSource = form.VideoDevice;
+                VideoCaptureDevice videoSource = new VideoCaptureDevice( form.VideoDevice );
 
                 // open it
                 OpenVideoSource( videoSource );
@@ -78,6 +87,7 @@ namespace Player
             form.URLs = new string[]
 				{
 					"http://195.243.185.195/axis-cgi/jpg/image.cgi?camera=1",
+					"http://webcam.mmhk.cz/axis-cgi/jpg/image.cgi?resolution=320x240"
 				};
 
             if ( form.ShowDialog( this ) == DialogResult.OK )
@@ -99,6 +109,7 @@ namespace Player
             form.URLs = new string[]
 				{
 					"http://195.243.185.195/axis-cgi/mjpg/video.cgi?camera=4",
+					"http://129.186.47.239/axis-cgi/mjpg/video.cgi?resolution=352x240",
 					"http://195.243.185.195/axis-cgi/mjpg/video.cgi?camera=3",
 				};
 
@@ -119,43 +130,20 @@ namespace Player
             this.Cursor = Cursors.WaitCursor;
 
             // stop current video source
-            CloseCurrentVideoSource( );
+            videoSourcePlayer.SignalToStop( );
+            videoSourcePlayer.WaitForStop( );
 
             // start new video source
             videoSourcePlayer.VideoSource = source;
             videoSourcePlayer.Start( );
 
-            // reset stop watch
-            stopWatch = null;
+            // reset statistics
+            statIndex = statReady = 0;
 
             // start timer
             timer.Start( );
 
             this.Cursor = Cursors.Default;
-        }
-
-        // Close video source if it is running
-        private void CloseCurrentVideoSource( )
-        {
-            if ( videoSourcePlayer.VideoSource != null )
-            {
-                videoSourcePlayer.SignalToStop( );
-
-                // wait ~ 3 seconds
-                for ( int i = 0; i < 30; i++ )
-                {
-                    if ( !videoSourcePlayer.IsRunning )
-                        break;
-                    System.Threading.Thread.Sleep( 100 );
-                }
-
-                if ( videoSourcePlayer.IsRunning )
-                {
-                    videoSourcePlayer.Stop( );
-                }
-
-                videoSourcePlayer.VideoSource = null;
-            }
         }
 
         // New frame received by the player
@@ -179,24 +167,27 @@ namespace Player
 
             if ( videoSource != null )
             {
-                // get number of frames since the last timer tick
-                int framesReceived = videoSource.FramesReceived;
+                // get number of frames for the last second
+                statCount[statIndex] = videoSource.FramesReceived;
 
-                if ( stopWatch == null )
+                // increment indexes
+                if ( ++statIndex >= statLength )
+                    statIndex = 0;
+                if ( statReady < statLength )
+                    statReady++;
+
+                float fps = 0;
+
+                // calculate average value
+                for ( int i = 0; i < statReady; i++ )
                 {
-                    stopWatch = new Stopwatch( );
-                    stopWatch.Start( );
+                    fps += statCount[i];
                 }
-                else
-                {
-                    stopWatch.Stop( );
+                fps /= statReady;
 
-                    float fps = 1000.0f * framesReceived / stopWatch.ElapsedMilliseconds;
-                    fpsLabel.Text = fps.ToString( "F2" ) + " fps";
+                statCount[statIndex] = 0;
 
-                    stopWatch.Reset( );
-                    stopWatch.Start( );
-                }
+                fpsLabel.Text = fps.ToString( "F2" ) + " fps";
             }
         }
     }

@@ -14,7 +14,7 @@ namespace AForge.Video.DirectShow
     /// DirectShow filter categories.
     /// </summary>
     [ComVisible( false )]
-    public static class FilterCategory
+    public class FilterCategory
     {
         /// <summary>
         /// Audio input device category.

@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -17,13 +16,17 @@ namespace AForge.Imaging.Filters
     /// Extract the biggest blob from image.
     /// </summary>
     /// 
-    /// <remarks><para>The filter locates the biggest blob in the source image and extracts it.
-    /// The filter also can use the source image for the biggest blob's location only, but extract it from
+    /// <remarks><para>The filter locates the biggest blob in the binary source image and extracts it.
+    /// The filter also can use the binary source for the biggest blob's location only, but extract it from
     /// another image, which is set using <see cref="OriginalImage"/> property. The original image 
-    /// usually is the source of the processed image.</para>
+    /// usually is the source of the binary image and user may be interested in the biggest blob
+    /// from the original image, but not from the binary.</para>
     /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24/32 color images for processing as source image passed to
-    /// <see cref="Apply( Bitmap )"/> method and also for the <see cref="OriginalImage"/>.</para>
+    /// <para>The filter accepts 8 bpp grayscale images for processing as source image passed to
+    /// <see cref="Apply( Bitmap )"/> method.</para>
+    /// 
+    /// <para>The filter accepts 8 bpp grayscale images and 24 bpp color images for processing as original
+    /// image passed to <see cref="OriginalImage"/> property.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -42,19 +45,6 @@ namespace AForge.Imaging.Filters
     public class ExtractBiggestBlob : IFilter, IFilterInformation
     {
         private Bitmap originalImage = null;
-        private IntPoint blobPosition;
-
-        /// <summary>
-        /// Position of the extracted blob.
-        /// </summary>
-        /// 
-        /// <remarks><para>After applying the filter this property keeps position of the extracted
-        /// blob in the source image.</para></remarks>
-        /// 
-        public IntPoint BlobPosition
-        {
-            get { return blobPosition; }
-        }
 
         /// <summary>
         /// Format translations dictionary.
@@ -64,45 +54,26 @@ namespace AForge.Imaging.Filters
         /// source images and which pixel format will be used for resulting image.
         /// </para>
         /// 
-        /// <para>See <see cref="IFilterInformation.FormatTranslations"/> for more information.</para>
+        /// <para>See <see cref="IFilterInformation.FormatTransalations"/> for more information.</para>
         /// </remarks>
         ///
-        public Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
             get
             {
-                Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+                Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
                 // initialize format translation dictionary
-                if ( originalImage == null )
-                {
-                    formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-                    formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-                    formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
-                    formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-                    formatTranslations[PixelFormat.Format32bppPArgb]  = PixelFormat.Format32bppPArgb;
-                }
-                else
-                {
-                    formatTranslations[PixelFormat.Format8bppIndexed] = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format24bppRgb]    = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppArgb]   = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppRgb]    = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppPArgb]  = originalImage.PixelFormat;
-                }
+                formatTransalations[PixelFormat.Format8bppIndexed] = ( originalImage == null ) ?
+                    PixelFormat.Format8bppIndexed : originalImage.PixelFormat;
 
-                return formatTranslations;
+                return formatTransalations;
             }
         }
 
         /// <summary>
-        /// Original image, which is the source of the processed image where the biggest blob is searched for.
+        /// Original image, which is the source of binary image where the biggest blob is searched for.
         /// </summary>
-        /// 
-        /// <remarks><para>The property may be set to <see langword="null"/>. In this case the biggest blob
-        /// is extracted from the image, which is passed to <see cref="Apply(Bitmap)"/> image.</para>
-        /// </remarks>
-        /// 
         public Bitmap OriginalImage
         {
             get { return originalImage; }
@@ -117,10 +88,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <returns>Returns image of the biggest blob.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the original image.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Source and original images must have the same size.</exception>
-        /// <exception cref="ArgumentException">The source image does not contain any blobs.</exception>
+        /// <exception cref="UnsupportedImageFormat">Unsupported pixel format of the source image.</exception>
         ///
         public Bitmap Apply( Bitmap image )
         {
@@ -153,16 +121,15 @@ namespace AForge.Imaging.Filters
         /// 
         /// <returns>Returns image of the biggest blob.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the original image.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Source and original images must have the same size.</exception>
-        /// <exception cref="ArgumentException">The source image does not contain any blobs.</exception>
+        /// <exception cref="UnsupportedImageFormat">Unsupported pixel format of the source image.</exception>
+        /// <exception cref="UnsupportedImageFormat">Unsupported pixel format of the original image.</exception>
+        /// <exception cref="InvalidImageProperties">Source and original images must have the same size.</exception>
         ///
         public Bitmap Apply( BitmapData imageData )
         {
             // check pixel format of the source image
-            if ( !FormatTranslations.ContainsKey( imageData.PixelFormat ) )
-                throw new UnsupportedImageFormatException( "Source pixel format is not supported by the filter." );
+            if ( !FormatTransalations.ContainsKey( imageData.PixelFormat ) )
+                throw new UnsupportedImageFormat( "Source pixel format is not supported by the filter." );
 
             // locate blobs in the source image
             BlobCounter blobCounter = new BlobCounter( imageData );
@@ -183,48 +150,32 @@ namespace AForge.Imaging.Filters
                 }
             }
 
-            // check if any blob was found
-            if ( biggestBlob == null )
-            {
-                throw new ArgumentException( "The source image does not contain any blobs." );
-            }
-
-            blobPosition = new IntPoint( biggestBlob.Rectangle.Left, biggestBlob.Rectangle.Top );
-
             // extract biggest blob's image
             if ( originalImage == null )
             {
-                blobCounter.ExtractBlobsImage( new UnmanagedImage( imageData ), biggestBlob, false );
+                blobCounter.ExtractBlobsImage( imageData, biggestBlob, false );
             }
             else
             {
                 // check original image's format
                 if (
                     ( originalImage.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                    ( originalImage.PixelFormat != PixelFormat.Format32bppArgb ) &&
-                    ( originalImage.PixelFormat != PixelFormat.Format32bppRgb ) &&
-                    ( originalImage.PixelFormat != PixelFormat.Format32bppPArgb ) &&
                     ( originalImage.PixelFormat != PixelFormat.Format8bppIndexed )
                     )
                 {
-                    throw new UnsupportedImageFormatException( "Original image may be grayscale (8bpp indexed) or color (24/32bpp) image only." );
+                    throw new UnsupportedImageFormat( "Original image may be grayscale (8bpp indexed) or color (24bpp) image only." );
                 }
 
                 // check its size
                 if ( ( originalImage.Width != imageData.Width ) || ( originalImage.Height != imageData.Height ) )
                 {
-                    throw new InvalidImagePropertiesException( "Original image must have the same size as passed source image." );
+                    throw new InvalidImageProperties( "Original image must have the same size as passed source image." );
                 }
 
                 blobCounter.ExtractBlobsImage( originalImage, biggestBlob, false );
             }
 
-            Bitmap managedImage = biggestBlob.Image.ToManagedImage( );
-
-            // dispose unmanaged image of the biggest blob
-            biggestBlob.Image.Dispose( );
-
-            return managedImage;
+            return biggestBlob.Image;
         }
 
         /// <summary>

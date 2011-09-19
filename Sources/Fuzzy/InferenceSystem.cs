@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -88,7 +91,7 @@ namespace AForge.Fuzzy
     /// // getting outputs
     /// try
     /// {
-    ///     float newAngle = IS.Evaluate( "Angle" );
+    ///     double newAngle = IS.Evaluate( "Angle" );
     /// }
     /// catch ( Exception )
     /// {
@@ -109,7 +112,6 @@ namespace AForge.Fuzzy
         private INorm normOperator;
         // CoNorm operator used in rules
         private ICoNorm conormOperator;
-
 
         /// <summary>
         /// Initializes a new Fuzzy <see cref="InferenceSystem"/>.
@@ -132,9 +134,9 @@ namespace AForge.Fuzzy
         /// <param name="defuzzifier">A defuzzyfier method used to evaluate the numeric otput
         /// of the system.</param>
         /// <param name="normOperator">A <see cref="INorm"/> operator used to evaluate the norms
-        /// in the <see cref="InferenceSystem"/>. For more information of the norm evaluation see <see cref="Rule"/>.</param>
+        /// in the <see cref="InferenceSystem"/>.</param>
         /// <param name="conormOperator">A <see cref="ICoNorm"/> operator used to evaluate the
-        /// conorms in the <see cref="InferenceSystem"/>. For more information of the conorm evaluation see <see cref="Rule"/>.</param>
+        /// conorms in the <see cref="InferenceSystem"/>.</param>
         /// 
         public InferenceSystem( Database database, IDefuzzifier defuzzifier, INorm normOperator, ICoNorm conormOperator )
         {
@@ -172,37 +174,9 @@ namespace AForge.Fuzzy
         /// <exception cref="KeyNotFoundException">The variable indicated in <paramref name="variableName"/>
         /// was not found in the database.</exception>
         /// 
-        public void SetInput( string variableName, float value )
+        public void SetInput( string variableName, double value )
         {
             this.database.GetVariable( variableName ).NumericInput = value;
-        }
-
-        /// <summary>
-        /// Gets one of the <see cref="LinguisticVariable"/> of the <see cref="Database"/>. 
-        /// </summary>
-        /// 
-        /// <param name="variableName">Name of the <see cref="LinguisticVariable"/> to get.</param>
-        /// 
-        /// <exception cref="KeyNotFoundException">The variable indicated in <paramref name="variableName"/>
-        /// was not found in the database.</exception>
-        /// 
-        public LinguisticVariable GetLinguisticVariable( string variableName )
-        {
-           return this.database.GetVariable( variableName );
-        }
-
-        /// <summary>
-        /// Gets one of the Rules of the <see cref="Rulebase"/>. 
-        /// </summary>
-        /// 
-        /// <param name="ruleName">Name of the <see cref="Rule"/> to get.</param>
-        /// 
-        /// <exception cref="KeyNotFoundException">The rule indicated in <paramref name="ruleName"/>
-        /// was not found in the rulebase.</exception>
-        /// 
-        public Rule GetRule( string ruleName )
-        {
-            return this.rulebase.GetRule ( ruleName );
         }
 
         /// <summary>
@@ -216,27 +190,7 @@ namespace AForge.Fuzzy
         /// 
         /// <exception cref="KeyNotFoundException">The variable indicated was not found in the database.</exception>
         /// 
-        public float Evaluate( string variableName )
-        {
-            // call the defuzzification on fuzzy output 
-            FuzzyOutput fuzzyOutput = ExecuteInference( variableName );
-            float res = defuzzifier.Defuzzify( fuzzyOutput, normOperator );
-            return res;
-        }
-
-        /// <summary>
-        /// Executes the fuzzy inference, obtaining the <see cref="FuzzyOutput"/> of the system for the required
-        /// <see cref="LinguisticVariable"/>. 
-        /// </summary>
-        /// 
-        /// <param name="variableName">Name of the <see cref="LinguisticVariable"/> to evaluate.</param>
-        /// 
-        /// <returns>A <see cref="FuzzyOutput"/> containing the fuzzy output of the system for the
-        /// <see cref="LinguisticVariable"/> specified in <paramref name="variableName"/>.</returns>
-        /// 
-        /// <exception cref="KeyNotFoundException">The variable indicated was not found in the database.</exception>
-        /// 
-        public FuzzyOutput ExecuteInference( string variableName )
+        public double Evaluate( string variableName )
         {
             // gets the variable
             LinguisticVariable lingVar = database.GetVariable( variableName );
@@ -251,14 +205,15 @@ namespace AForge.Fuzzy
                 if ( r.Output.Variable.Name == variableName )
                 {
                     string labelName = r.Output.Label.Name;
-                    float firingStrength = r.EvaluateFiringStrength( );
+                    double firingStrength = r.EvaluateFiringStrength( );
                     if ( firingStrength > 0 )
                         fuzzyOutput.AddOutput( labelName, firingStrength );
                 }
             }
 
-            // returns the fuzzy output obtained
-            return fuzzyOutput;
+            // call the defuzzification on fuzzy output 
+            double res = defuzzifier.Defuzzify( fuzzyOutput, normOperator );
+            return res;
         }
     }
 }

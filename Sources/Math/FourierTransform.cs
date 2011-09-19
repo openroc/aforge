@@ -20,7 +20,7 @@ namespace AForge.Math
 	/// <remarks>The class implements one dimensional and two dimensional
 	/// Discrete and Fast Fourier Transformation.</remarks>
 	/// 
-	public static class FourierTransform
+	public class FourierTransform
 	{
 		/// <summary>
 		/// Fourier transformation direction.

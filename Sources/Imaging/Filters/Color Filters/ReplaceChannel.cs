@@ -55,18 +55,18 @@ namespace AForge.Imaging.Filters
         private UnmanagedImage unmanagedChannelImage;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
-        /// ARGB channel to replace.
+        /// RGB channel to replace.
         /// </summary>
         /// 
         /// <remarks><para>Default value is set to <see cref="AForge.Imaging.RGB.R"/>.</para></remarks>
@@ -79,8 +79,9 @@ namespace AForge.Imaging.Filters
             set
             {
                 if (
-                    ( value != RGB.R ) && ( value != RGB.G ) &&
-                    ( value != RGB.B ) && ( value != RGB.A )
+                    ( value != RGB.R ) &&
+                    ( value != RGB.G ) &&
+                    ( value != RGB.B )
                     )
                 {
                     throw new ArgumentException( "Invalid channel is specified." );
@@ -98,7 +99,7 @@ namespace AForge.Imaging.Filters
         /// only one channel image is allowed: managed or unmanaged.</note></para>
         /// </remarks>
         /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image should be 8 bpp indexed or 16 bpp grayscale image.</exception>
+        /// <exception cref="InvalidImageProperties">Channel image should be 8 bpp indexed or 16 bpp grayscale image.</exception>
         ///
         public Bitmap ChannelImage
         {
@@ -111,7 +112,7 @@ namespace AForge.Imaging.Filters
                 // check for valid format
                 if ( ( value.PixelFormat != PixelFormat.Format8bppIndexed ) &&
                      ( value.PixelFormat != PixelFormat.Format16bppGrayScale ) )
-                    throw new InvalidImagePropertiesException( "Channel image should be 8 bpp indexed or 16 bpp grayscale image." );
+                    throw new InvalidImageProperties( "Channel image should be 8 bpp indexed or 16 bpp grayscale image." );
 
                 channelImage = value;
                 unmanagedChannelImage = null;
@@ -127,7 +128,7 @@ namespace AForge.Imaging.Filters
         /// only one channel image is allowed: managed or unmanaged.</note></para>
         /// </remarks>
         /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image should be 8 bpp indexed or 16 bpp grayscale image.</exception>
+        /// <exception cref="InvalidImageProperties">Channel image should be 8 bpp indexed or 16 bpp grayscale image.</exception>
         /// 
         public UnmanagedImage UnmanagedChannelImage
         {
@@ -141,7 +142,7 @@ namespace AForge.Imaging.Filters
                 // check for valid format
                 if ( ( value.PixelFormat != PixelFormat.Format8bppIndexed ) &&
                      ( value.PixelFormat != PixelFormat.Format16bppGrayScale ) )
-                    throw new InvalidImagePropertiesException( "Channel image should be 8 bpp indexed or 16 bpp grayscale image." );
+                    throw new InvalidImageProperties( "Channel image should be 8 bpp indexed or 16 bpp grayscale image." );
 
                 channelImage = null;
                 unmanagedChannelImage = value;
@@ -152,18 +153,18 @@ namespace AForge.Imaging.Filters
         private ReplaceChannel( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format48bppRgb]  = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format48bppRgb]  = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReplaceChannel"/> class.
         /// </summary>
         /// 
-        /// <param name="channel">ARGB channel to replace.</param>
+        /// <param name="channel">RGB channel to replace.</param>
         /// <param name="channelImage">Channel image to use for replacement.</param>
         /// 
         public ReplaceChannel( short channel, Bitmap channelImage ) : this( )
@@ -193,21 +194,13 @@ namespace AForge.Imaging.Filters
         /// <param name="image">Source image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        /// <exception cref="InvalidImagePropertiesException">Channel image size does not match source
+        /// <exception cref="InvalidImageProperties">Channel image size does not match source
         /// image size.</exception>
-        /// <exception cref="InvalidImagePropertiesException">Channel image's format does not correspond to format of the source image.</exception>
+        /// <exception cref="InvalidImageProperties">Channel image's format does not correspond to format of the source image.</exception>
         ///
-        /// <exception cref="InvalidImagePropertiesException">Can not replace alpha channel of none ARGB image. The
-        /// exception is throw, when alpha channel is requested to be replaced in RGB image.</exception>
-        /// 
         protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
         {
             int pixelSize = Image.GetPixelFormatSize( image.PixelFormat ) / 8;
-
-            if ( ( channel == RGB.A ) && ( pixelSize != 4 ) && ( pixelSize != 8 ) )
-            {
-                throw new InvalidImagePropertiesException( "Can not replace alpha channel of none ARGB image." );
-            }
 
             int width   = image.Width;
             int height  = image.Height;
@@ -229,7 +222,7 @@ namespace AForge.Imaging.Filters
             {
                 // check channel's image dimension
                 if ( ( width != channelImage.Width ) || ( height != channelImage.Height ) )
-                    throw new InvalidImagePropertiesException( "Channel image size does not match source image size." );
+                    throw new InvalidImageProperties( "Channel image size does not match source image size." );
 
                 // lock channel image
                 chData = channelImage.LockBits(
@@ -244,7 +237,7 @@ namespace AForge.Imaging.Filters
             {
                 // check channel's image dimension
                 if ( ( width != unmanagedChannelImage.Width ) || ( height != unmanagedChannelImage.Height ) )
-                    throw new InvalidImagePropertiesException( "Channel image size does not match source image size." );
+                    throw new InvalidImageProperties( "Channel image size does not match source image size." );
 
                 ch = (byte*) unmanagedChannelImage.ImageData;
                 chStride = unmanagedChannelImage.Stride;
@@ -255,7 +248,7 @@ namespace AForge.Imaging.Filters
             {
                 // check channel image's format
                 if ( chFormat != PixelFormat.Format8bppIndexed )
-                    throw new InvalidImagePropertiesException( "Channel image's format does not correspond to format of the source image." );
+                    throw new InvalidImageProperties( "Channel image's format does not correspond to format of the source image." );
 
                 int offsetCh = chData.Stride - rect.Width;
 
@@ -282,7 +275,7 @@ namespace AForge.Imaging.Filters
             {
                 // check channel image's format
                 if ( chFormat != PixelFormat.Format16bppGrayScale )
-                    throw new InvalidImagePropertiesException( "Channel image's format does not correspond to format of the source image." );
+                    throw new InvalidImageProperties( "Channel image's format does not correspond to format of the source image." );
 
                 int stride = image.Stride;
 

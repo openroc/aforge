@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging
@@ -142,7 +142,7 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Image to gather statistics about.</param>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
+        /// <exception cref="UnsupportedImageFormat">Source pixel format is not supported.</exception>
         /// 
         public ImageStatisticsYCbCr( Bitmap image )
         {
@@ -156,10 +156,7 @@ namespace AForge.Imaging
             try
             {
                 // gather statistics
-                unsafe
-                {
-                    ProcessImage( new UnmanagedImage( imageData ), null, 0 );
-                }
+                ProcessImage( new UnmanagedImage( imageData ) );
             }
             finally
             {
@@ -172,89 +169,13 @@ namespace AForge.Imaging
         /// Initializes a new instance of the <see cref="ImageStatisticsYCbCr"/> class.
         /// </summary>
         /// 
-        /// <param name="image">Image to gather statistics about.</param>
-        /// <param name="mask">Mask image which specifies areas to collect statistics for.</param>
+        /// <param name="imageData">Image data to gather statistics about.</param>
         /// 
-        /// <remarks><para>The mask image must be a grayscale/binary (8bpp) image of the same size as the
-        /// specified source image, where black pixels (value 0) correspond to areas which should be excluded
-        /// from processing. So statistics is calculated only for pixels, which are none black in the mask image.
-        /// </para></remarks>
+        /// <exception cref="UnsupportedImageFormat">Source pixel format is not supported.</exception>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
-        /// <exception cref="ArgumentException">Mask image must be 8 bpp grayscale image.</exception>
-        /// <exception cref="ArgumentException">Mask must have the same size as the source image to get statistics for.</exception>
-        /// 
-        public ImageStatisticsYCbCr( Bitmap image, Bitmap mask )
+        public ImageStatisticsYCbCr( BitmapData imageData )
         {
-            CheckSourceFormat( image.PixelFormat );
-            CheckMaskProperties( mask.PixelFormat, new Size( mask.Width, mask.Height ), new Size( image.Width, image.Height ) );
-
-            // lock bitmap and mask data
-            BitmapData imageData = image.LockBits(
-                new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, image.PixelFormat );
-            BitmapData maskData = mask.LockBits(
-                new Rectangle( 0, 0, mask.Width, mask.Height ),
-                ImageLockMode.ReadOnly, mask.PixelFormat );
-
-            try
-            {
-                // gather statistics
-                unsafe
-                {
-                    ProcessImage( new UnmanagedImage( imageData ), (byte*) maskData.Scan0.ToPointer( ), maskData.Stride );
-                }
-            }
-            finally
-            {
-                // unlock images
-                image.UnlockBits( imageData );
-                mask.UnlockBits( maskData );
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImageStatisticsYCbCr"/> class.
-        /// </summary>
-        /// 
-        /// <param name="image">Image to gather statistics about.</param>
-        /// <param name="mask">Mask array which specifies areas to collect statistics for.</param>
-        /// 
-        /// <remarks><para>The mask array must be of the same size as the specified source image, where 0 values
-        /// correspond to areas which should be excluded from processing. So statistics is calculated only for pixels,
-        /// which have none zero corresponding value in the mask.
-        /// </para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
-        /// <exception cref="ArgumentException">Mask must have the same size as the source image to get statistics for.</exception>
-        /// 
-        public ImageStatisticsYCbCr( Bitmap image, byte[,] mask )
-        {
-            CheckSourceFormat( image.PixelFormat );
-            CheckMaskProperties( PixelFormat.Format8bppIndexed,
-                new Size( mask.GetLength( 1 ), mask.GetLength( 0 ) ), new Size( image.Width, image.Height ) );
-
-            // lock bitmap data
-            BitmapData imageData = image.LockBits(
-                new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, image.PixelFormat );
-
-            try
-            {
-                // gather statistics
-                unsafe
-                {
-                    fixed ( byte* maskPtr = mask )
-                    {
-                        ProcessImage( new UnmanagedImage( imageData ), maskPtr, mask.GetLength( 1 ) );
-                    }
-                }
-            }
-            finally
-            {
-                // unlock image
-                image.UnlockBits( imageData );
-            }
+            ProcessImage( new UnmanagedImage( imageData ) );
         }
 
         /// <summary>
@@ -263,77 +184,23 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Unmanaged image to gather statistics about.</param>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
+        /// <exception cref="UnsupportedImageFormat">Source pixel format is not supported.</exception>
         /// 
         public ImageStatisticsYCbCr( UnmanagedImage image )
         {
-            CheckSourceFormat( image.PixelFormat );
-            unsafe
-            {
-                ProcessImage( image, null, 0 );
-            }
+            ProcessImage( image );
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageStatisticsYCbCr"/> class.
+        /// Gather statistics about specified image.
         /// </summary>
         /// 
-        /// <param name="image">Image to gather statistics about.</param>
-        /// <param name="mask">Mask image which specifies areas to collect statistics for.</param>
+        /// <param name="image">Unmanaged image to process.</param>
         /// 
-        /// <remarks><para>The mask image must be a grayscale/binary (8bpp) image of the same size as the
-        /// specified source image, where black pixels (value 0) correspond to areas which should be excluded
-        /// from processing. So statistics is calculated only for pixels, which are none black in the mask image.
-        /// </para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
-        /// <exception cref="ArgumentException">Mask image must be 8 bpp grayscale image.</exception>
-        /// <exception cref="ArgumentException">Mask must have the same size as the source image to get statistics for.</exception>
-        /// 
-        public ImageStatisticsYCbCr( UnmanagedImage image, UnmanagedImage mask )
+        private void ProcessImage( UnmanagedImage image )
         {
             CheckSourceFormat( image.PixelFormat );
-            CheckMaskProperties( mask.PixelFormat, new Size( mask.Width, mask.Height ), new Size( image.Width, image.Height ) );
 
-            unsafe
-            {
-                ProcessImage( image, (byte*) mask.ImageData.ToPointer( ), mask.Stride );
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImageStatisticsYCbCr"/> class.
-        /// </summary>
-        /// 
-        /// <param name="image">Image to gather statistics about.</param>
-        /// <param name="mask">Mask array which specifies areas to collect statistics for.</param>
-        /// 
-        /// <remarks><para>The mask array must be of the same size as the specified source image, where 0 values
-        /// correspond to areas which should be excluded from processing. So statistics is calculated only for pixels,
-        /// which have none zero corresponding value in the mask.
-        /// </para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported.</exception>
-        /// <exception cref="ArgumentException">Mask must have the same size as the source image to get statistics for.</exception>
-        /// 
-        public ImageStatisticsYCbCr( UnmanagedImage image, byte[,] mask )
-        {
-            CheckSourceFormat( image.PixelFormat );
-            CheckMaskProperties( PixelFormat.Format8bppIndexed,
-                new Size( mask.GetLength( 1 ), mask.GetLength( 0 ) ), new Size( image.Width, image.Height ) );
-
-            unsafe
-            {
-                fixed ( byte* maskPtr = mask )
-                {
-                    ProcessImage( image, maskPtr, mask.GetLength( 1 ) );
-                }
-            }
-        }
-
-        // Gather statistics for the specified image
-        private unsafe void ProcessImage( UnmanagedImage image, byte* mask, int maskLineSize )
-        {
             // get image dimension
             int width  = image.Width;
             int height = image.Height;
@@ -353,13 +220,12 @@ namespace AForge.Imaging
 
             int pixelSize = ( image.PixelFormat == PixelFormat.Format24bppRgb ) ? 3 : 4;
             int offset = image.Stride - width * pixelSize;
-            int maskOffset = maskLineSize - width;
 
             // do the job
-            byte * p = (byte*) image.ImageData.ToPointer( );
-
-            if ( mask == null )
+            unsafe
             {
+                byte * p = (byte*) image.ImageData.ToPointer( );
+
                 // for each line
                 for ( int y = 0; y < height; y++ )
                 {
@@ -373,7 +239,7 @@ namespace AForge.Imaging
                         // convert to YCbCr color space
                         AForge.Imaging.YCbCr.FromRGB( rgb, ycbcr );
 
-                        yhisto[(int) ( ycbcr.Y * 255 )]++;
+                        yhisto [(int) ( ycbcr.Y * 255 )]++;
                         cbhisto[(int) ( ( ycbcr.Cb + 0.5 ) * 255 )]++;
                         crhisto[(int) ( ( ycbcr.Cr + 0.5 ) * 255 )]++;
 
@@ -381,7 +247,7 @@ namespace AForge.Imaging
 
                         if ( ( ycbcr.Y != 0.0 ) || ( ycbcr.Cb != 0.0 ) || ( ycbcr.Cr != 0.0 ) )
                         {
-                            yhistoWB[(int) ( ycbcr.Y * 255 )]++;
+                            yhistoWB [(int) ( ycbcr.Y * 255 )]++;
                             cbhistoWB[(int) ( ( ycbcr.Cb + 0.5 ) * 255 )]++;
                             crhistoWB[(int) ( ( ycbcr.Cr + 0.5 ) * 255 )]++;
 
@@ -389,54 +255,17 @@ namespace AForge.Imaging
                         }
                     }
                     p += offset;
-                }
-            }
-            else
-            {
-                // for each line
-                for ( int y = 0; y < height; y++ )
-                {
-                    // for each pixel
-                    for ( int x = 0; x < width; x++, p += pixelSize, mask++ )
-                    {
-                        if ( *mask == 0 )
-                            continue;
-
-                        rgb.Red   = p[RGB.R];
-                        rgb.Green = p[RGB.G];
-                        rgb.Blue  = p[RGB.B];
-
-                        // convert to YCbCr color space
-                        AForge.Imaging.YCbCr.FromRGB( rgb, ycbcr );
-
-                        yhisto[(int) ( ycbcr.Y * 255 )]++;
-                        cbhisto[(int) ( ( ycbcr.Cb + 0.5 ) * 255 )]++;
-                        crhisto[(int) ( ( ycbcr.Cr + 0.5 ) * 255 )]++;
-
-                        pixels++;
-
-                        if ( ( ycbcr.Y != 0.0 ) || ( ycbcr.Cb != 0.0 ) || ( ycbcr.Cr != 0.0 ) )
-                        {
-                            yhistoWB[(int) ( ycbcr.Y * 255 )]++;
-                            cbhistoWB[(int) ( ( ycbcr.Cb + 0.5 ) * 255 )]++;
-                            crhistoWB[(int) ( ( ycbcr.Cr + 0.5 ) * 255 )]++;
-
-                            pixelsWithoutBlack++;
-                        }
-                    }
-                    p += offset;
-                    mask += maskOffset;
                 }
             }
 
             // create histograms
-            yHistogram  = new ContinuousHistogram( yhisto,  new Range(  0.0f, 1.0f ) );
-            cbHistogram = new ContinuousHistogram( cbhisto, new Range( -0.5f, 0.5f ) );
-            crHistogram = new ContinuousHistogram( crhisto, new Range( -0.5f, 0.5f ) );
+            yHistogram  = new ContinuousHistogram( yhisto,  new DoubleRange(  0.0, 1.0 ) );
+            cbHistogram = new ContinuousHistogram( cbhisto, new DoubleRange( -0.5, 0.5 ) );
+            crHistogram = new ContinuousHistogram( crhisto, new DoubleRange( -0.5, 0.5 ) );
 
-            yHistogramWithoutBlack  = new ContinuousHistogram( yhistoWB,  new Range(  0.0f, 1.0f ) );
-            cbHistogramWithoutBlack = new ContinuousHistogram( cbhistoWB, new Range( -0.5f, 0.5f ) );
-            crHistogramWithoutBlack = new ContinuousHistogram( crhistoWB, new Range( -0.5f, 0.5f ) );
+            yHistogramWithoutBlack  = new ContinuousHistogram( yhistoWB,  new DoubleRange(  0.0, 1.0 ) );
+            cbHistogramWithoutBlack = new ContinuousHistogram( cbhistoWB, new DoubleRange( -0.5, 0.5 ) );
+            crHistogramWithoutBlack = new ContinuousHistogram( crhistoWB, new DoubleRange( -0.5, 0.5 ) );
         }
 
         // Check pixel format of the source image
@@ -447,20 +276,7 @@ namespace AForge.Imaging
                 ( pixelFormat != PixelFormat.Format32bppRgb ) &&
                 ( pixelFormat != PixelFormat.Format32bppArgb ) )
             {
-                throw new UnsupportedImageFormatException( "Source pixel format is not supported." );
-            }
-        }
-
-        private void CheckMaskProperties( PixelFormat maskFormat, Size maskSize, Size sourceImageSize )
-        {
-            if ( maskFormat != PixelFormat.Format8bppIndexed )
-            {
-                throw new ArgumentException( "Mask image must be 8 bpp grayscale image." );
-            }
-
-            if ( ( maskSize.Width != sourceImageSize.Width ) || ( maskSize.Height != sourceImageSize.Height ) )
-            {
-                throw new ArgumentException( "Mask must have the same size as the source image to get statistics for." );
+                throw new UnsupportedImageFormat( "Source pixel format is not supported." );
             }
         }
     }

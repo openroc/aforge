@@ -32,14 +32,14 @@ namespace AForge.Imaging.Filters
     public class Dilatation3x3 : BaseUsingCopyPartialFilter
     {
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace AForge.Imaging.Filters
         public Dilatation3x3( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
         }
 
         /// <summary>
@@ -60,13 +60,15 @@ namespace AForge.Imaging.Filters
         /// <param name="destinationData">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        /// <exception cref="InvalidImagePropertiesException">Processing rectangle mast be at least 3x3 in size.</exception>
+        /// <exception cref="InvalidImageProperties">Processing rectangle mast be at least 3x3 in size.</exception>
         /// 
         protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData, Rectangle rect )
         {
+            PixelFormat pixelFormat = sourceData.PixelFormat;
+
             if ( ( rect.Width < 3 ) || ( rect.Height < 3 ) )
             {
-                throw new InvalidImagePropertiesException( "Processing rectangle mast be at least 3x3 in size." );
+                throw new InvalidImageProperties( "Processing rectangle mast be at least 3x3 in size." );
             }
 
             // processing start and stop X,Y positions

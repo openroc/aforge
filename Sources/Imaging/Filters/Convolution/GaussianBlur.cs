@@ -71,7 +71,7 @@ namespace AForge.Imaging.Filters
         }
 
         /// <summary>
-        /// Kernel size, [3, 21].
+        /// Kernel size, [3, 5].
         /// </summary>
         /// 
         /// <remarks><para>Size of Gaussian kernel.</para>

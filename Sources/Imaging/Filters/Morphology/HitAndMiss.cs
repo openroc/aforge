@@ -95,14 +95,14 @@ namespace AForge.Imaging.Filters
         private Modes mode = Modes.HitAndMiss;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -126,24 +126,19 @@ namespace AForge.Imaging.Filters
         /// 
         /// <param name="se">Structuring element.</param>
         ///
-        /// <remarks><para>Structuring elemement for the hit-and-miss morphological operator
-        /// must be square matrix with odd size in the range of [3, 99].</para></remarks>
-        /// 
-        /// <exception cref="ArgumentException">Invalid size of structuring element.</exception>
-        /// 
         public HitAndMiss( short[,] se )
         {
             int s = se.GetLength( 0 );
 
             // check structuring element size
-            if ( ( s != se.GetLength( 1 ) ) || ( s < 3 ) || ( s > 99 ) || ( s % 2 == 0 ) )
+            if ( ( s != se.GetLength( 1 ) ) || ( s < 3 ) || ( s > 25 ) || ( s % 2 == 0 ) )
                 throw new ArgumentException( );
 
             this.se = se;
             this.size = s;
 
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
         }
 
         /// <summary>

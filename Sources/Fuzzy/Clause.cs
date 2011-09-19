@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -28,31 +31,12 @@ namespace AForge.Fuzzy
     /// 
     /// <para>Sample usage:</para>
     /// <code>
-    /// // create a linguistic variable to represent temperature
-    /// LinguisticVariable lvTemperature = new LinguisticVariable( "Temperature", 0, 80 );
-    ///
-    /// // create the linguistic labels (fuzzy sets) that compose the temperature 
-    /// TrapezoidalFunction function1 = new TrapezoidalFunction( 10, 15, TrapezoidalFunction.EdgeType.Right );
-    /// FuzzySet fsCold = new FuzzySet( "Cold", function1 );
-    /// TrapezoidalFunction function2 = new TrapezoidalFunction( 10, 15, 20, 25 );
-    /// FuzzySet fsCool = new FuzzySet( "Cool", function2 );
-    /// TrapezoidalFunction function3 = new TrapezoidalFunction( 20, 25, 30, 35 );
-    /// FuzzySet fsWarm = new FuzzySet( "Warm", function3 );
-    /// TrapezoidalFunction function4 = new TrapezoidalFunction( 30, 35, TrapezoidalFunction.EdgeType.Left );
-    /// FuzzySet fsHot  = new FuzzySet( "Hot" , function4 );
-    ///
-    /// // adding labels to the variable
-    /// lvTemperature.AddLabel( fsCold );
-    /// lvTemperature.AddLabel( fsCool );
-    /// lvTemperature.AddLabel( fsWarm );
-    /// lvTemperature.AddLabel( fsHot  );
-    /// 
-    /// // creating the Clause
-    /// Clause fuzzyClause = new Clause( lvTemperature, fsHot );
+    /// // lets consider the existence of a <see cref="LinguisticVariable"/> lvTemperature
+    /// // and a <see cref="FuzzySet"/> hot as its label.
+    /// Clause fuzzyClause = new Clause( lvTemperature, lvTemperature.GetLabel( "Hot" ) );
     /// // setting the numerical input of the variable to evaluate the Clause
     /// lvTemperature.NumericInput = 35;
-    /// float result = fuzzyClause.Evaluate( );
-    /// Console.WriteLine ( result.ToString( ) );
+    /// double result = fuzzyClause.Evaluate( );
     /// </code>    
     /// </remarks>
     /// 
@@ -103,11 +87,24 @@ namespace AForge.Fuzzy
         /// Evaluates the fuzzy clause.
         /// </summary>
         /// 
+        /// <param name="x">Value which membership needs to be calculated.</param>
+        /// 
         /// <returns>Degree of membership [0..1] of the clause.</returns>
         /// 
-        public float Evaluate( )
+        public double Evaluate( double x )
         {
-            return label.GetMembership( variable.NumericInput );
+            return label.GetMembership( x );
+        }
+
+        /// <summary>
+        /// Evaluates the fuzzy clause using the linguistic variable's numeric input.
+        /// </summary>
+        /// 
+        /// <returns>Degree of membership [0..1] of the clause.</returns>
+        /// 
+        public double Evaluate( )
+        {
+            return Evaluate( variable.NumericInput );
         }
 
         /// <summary>

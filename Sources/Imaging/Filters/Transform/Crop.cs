@@ -42,14 +42,14 @@ namespace AForge.Imaging.Filters
         private Rectangle rect;
 
         // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -71,13 +71,13 @@ namespace AForge.Imaging.Filters
         {
             this.rect = rect;
 
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-            formatTranslations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
+            formatTransalations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
         }
 
         /// <summary>
@@ -102,19 +102,21 @@ namespace AForge.Imaging.Filters
         /// 
         protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
         {
-            // validate rectangle
-            Rectangle srcRect = rect;
-            srcRect.Intersect( new Rectangle( 0, 0, sourceData.Width, sourceData.Height ) );
+            // get source image size
+            int width = sourceData.Width;
+            int height = sourceData.Height;
 
-            int xmin = srcRect.Left;
-            int ymin = srcRect.Top;
-            int ymax = srcRect.Bottom - 1;
-            int copyWidth = srcRect.Width;
+            // destination image dimension
+            int xmin = Math.Max( 0, Math.Min( width - 1, rect.Left ) );
+            int ymin = Math.Max( 0, Math.Min( height - 1, rect.Top ) );
+            int xmax = Math.Min( width - 1, xmin + rect.Width - 1 + ( ( rect.Left < 0 ) ? rect.Left : 0 ) );
+            int ymax = Math.Min( height - 1, ymin + rect.Height - 1 + ( ( rect.Top < 0 ) ? rect.Top : 0 ) );
+            int dstWidth = xmax - xmin + 1;
 
             int srcStride = sourceData.Stride;
             int dstStride = destinationData.Stride;
-            int pixelSize = Image.GetPixelFormatSize( sourceData.PixelFormat ) / 8;
-            int copySize  = copyWidth * pixelSize;
+            int pixelSize = Image.GetPixelFormatSize( sourceData.PixelFormat );
+            int copySize  = dstWidth * pixelSize;
 
             // do the job
             byte* src = (byte*) sourceData.ImageData.ToPointer( ) + ymin * srcStride + xmin * pixelSize;

@@ -16,7 +16,7 @@ namespace AForge.Math
     /// 
     /// <remarks>The class contains different utility functions.</remarks>
     /// 
-    public static class Tools
+    public class Tools
     {
         /// <summary>
         /// Calculates power of 2.
@@ -43,7 +43,7 @@ namespace AForge.Math
         /// 
         public static bool IsPowerOf2( int x )
         {
-            return ( x > 0 ) ? ( ( x & ( x - 1 ) ) == 0 ) : false;
+            return ( x & ( x - 1 ) ) == 0;
         }
 
         /// <summary>

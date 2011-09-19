@@ -1,9 +1,8 @@
 // AForge Core Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2007-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2006-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge
@@ -44,8 +43,11 @@ namespace AForge
     /// </code>
     /// </remarks>
     /// 
-    public static class PolishExpression
+    public class PolishExpression
     {
+        // Private constructor to avoid instances of the class
+        private PolishExpression( ) { }
+
         /// <summary>
         /// Evaluates specified expression.
         /// </summary>

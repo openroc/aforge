@@ -61,7 +61,6 @@ namespace AForge.Neuro
         public IActivationFunction ActivationFunction
         {
             get { return function; }
-            set { function = value; }
         }
 
         /// <summary>
