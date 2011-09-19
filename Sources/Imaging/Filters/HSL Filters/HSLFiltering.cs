@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using AForge;
@@ -17,83 +16,32 @@ namespace AForge.Imaging.Filters
     /// Color filtering in HSL color space.
     /// </summary>
     /// 
-    /// <remarks><para>The filter operates in <b>HSL</b> color space and filters
-    /// pixels, which color is inside/outside of the specified HSL range -
-    /// it keeps pixels with colors inside/outside of the specified range and fills the
-    /// rest with <see cref="FillColor">specified color</see>.</para>
+    /// <remarks>The filter operates in <b>HSL</b> color space and filters
+    /// pixels, which color is inside or outside of specified HSL range.</remarks>
     /// 
-    /// <para>The filter accepts 24 and 32 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// HSLFiltering filter = new HSLFiltering( );
-    /// // set color ranges to keep
-    /// filter.Hue = new IntRange( 335, 0 );
-    /// filter.Saturation = new Range( 0.6f, 1 );
-    /// filter.Luminance = new Range( 0.1f, 1 );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/hsl_filtering.jpg" width="480" height="361" />
-    /// 
-    /// <para>Sample usage with saturation update only:</para>
-    /// <code>
-    /// // create filter
-    /// HSLFiltering filter = new HSLFiltering( );
-    /// // configure the filter
-    /// filter.Hue = new IntRange( 340, 20 );
-    /// filter.UpdateLuminance = false;
-    /// filter.UpdateHue = false;
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/hsl_filtering2.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="ColorFiltering"/>
-    /// <seealso cref="YCbCrFiltering"/>
-    /// 
-    public class HSLFiltering : BaseInPlacePartialFilter
+    public class HSLFiltering : FilterColorToColorPartial
     {
-        private IntRange hue = new IntRange( 0, 359 );
-        private Range saturation = new Range( 0.0f, 1.0f );
-        private Range luminance = new Range( 0.0f, 1.0f );
+        private IntRange    hue = new IntRange( 0, 359 );
+        private DoubleRange saturation = new DoubleRange( 0.0, 1.0 );
+        private DoubleRange luminance = new DoubleRange( 0.0, 1.0 );
 
-        private int   fillH = 0;
-        private float fillS = 0.0f;
-        private float fillL = 0.0f;
-        private bool  fillOutsideRange = true;
+        private int     fillH = 0;
+        private double  fillS = 0.0;
+        private double  fillL = 0.0;
+        private bool    fillOutsideRange = true;
 
         private bool updateH = true;
         private bool updateS = true;
         private bool updateL = true;
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
         #region Public properties
 
         /// <summary>
-        /// Range of hue component, [0, 359].
+        /// Range of hue component.
         /// </summary>
         /// 
-        /// <remarks><note>Because of hue values are cycled, the minimum value of the hue
-        /// range may have bigger integer value than the maximum value, for example [330, 30].</note></remarks>
+        /// <remarks>Because of hue values are cycled, the minimum value of the hue
+        /// range may have bigger integer value then the maximum value.</remarks>
         /// 
         public IntRange Hue
         {
@@ -102,18 +50,18 @@ namespace AForge.Imaging.Filters
         }
 
         /// <summary>
-        /// Range of saturation component, [0, 1].
+        /// Range of saturation component.
         /// </summary>
-        public Range Saturation
+        public DoubleRange Saturation
         {
             get { return saturation; }
             set { saturation = value; }
         }
 
         /// <summary>
-        /// Range of luminance component, [0, 1].
+        /// Range of luminance component.
         /// </summary>
-        public Range Luminance
+        public DoubleRange Luminance
         {
             get { return luminance; }
             set { luminance = value; }
@@ -137,10 +85,6 @@ namespace AForge.Imaging.Filters
         /// Determines, if pixels should be filled inside or outside specified
         /// color range.
         /// </summary>
-        /// 
-        /// <remarks><para>Default value is set to <see langword="true"/>, which means
-        /// the filter removes colors outside of the specified range.</para></remarks>
-        /// 
         public bool FillOutsideRange
         {
             get { return fillOutsideRange; }
@@ -151,10 +95,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if hue value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if hue of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateHue
         {
@@ -166,10 +107,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if saturation value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if saturation of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateSaturation
         {
@@ -181,10 +119,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if luminance value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if luminance of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateLuminance
         {
@@ -198,12 +133,7 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="HSLFiltering"/> class.
         /// </summary>
-        public HSLFiltering( )
-        {
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-        }
+        public HSLFiltering( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HSLFiltering"/> class.
@@ -213,31 +143,28 @@ namespace AForge.Imaging.Filters
         /// <param name="saturation">Range of saturation component.</param>
         /// <param name="luminance">Range of luminance component.</param>
         /// 
-        public HSLFiltering( IntRange hue, Range saturation, Range luminance ) :
-            this( )
+        public HSLFiltering( IntRange hue, DoubleRange saturation, DoubleRange luminance )
         {
             this.hue = hue;
             this.saturation = saturation;
             this.luminance = luminance;
         }
 
+
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            // get pixel size
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format24bppRgb ) ? 3 : 4;
-
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+            int offset  = imageData.Stride - rect.Width * 3;
 
             RGB rgb = new RGB( );
             HSL hsl = new HSL( );
@@ -245,24 +172,24 @@ namespace AForge.Imaging.Filters
             bool updated;
 
             // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+            byte* ptr = (byte*) imageData.Scan0.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX * pixelSize );
+            ptr += ( startY * imageData.Stride + startX * 3 );
 
             // for each row
             for ( int y = startY; y < stopY; y++ )
             {
                 // for each pixel
-                for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                for ( int x = startX; x < stopX; x++, ptr += 3 )
                 {
-                    updated   = false;
-                    rgb.Red   = ptr[RGB.R];
+                    updated = false;
+                    rgb.Red = ptr[RGB.R];
                     rgb.Green = ptr[RGB.G];
-                    rgb.Blue  = ptr[RGB.B];
+                    rgb.Blue = ptr[RGB.B];
 
                     // convert to HSL
-                    AForge.Imaging.HSL.FromRGB( rgb, hsl );
+                    AForge.Imaging.ColorConverter.RGB2HSL( rgb, hsl );
 
                     // check HSL values
                     if (
@@ -298,7 +225,7 @@ namespace AForge.Imaging.Filters
                     if ( updated )
                     {
                         // convert back to RGB
-                        AForge.Imaging.HSL.ToRGB( hsl, rgb );
+                        AForge.Imaging.ColorConverter.HSL2RGB( hsl, rgb );
 
                         ptr[RGB.R] = rgb.Red;
                         ptr[RGB.G] = rgb.Green;

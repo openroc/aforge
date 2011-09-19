@@ -14,7 +14,7 @@ namespace AForge.Video.DirectShow.Internals
     /// Some miscellaneous functions.
     /// </summary>
     /// 
-    internal static class Tools
+    internal class Tools
     {
         /// <summary>
         /// Get filter's pin.
@@ -37,28 +37,21 @@ namespace AForge.Video.DirectShow.Internals
                 PinDirection pinDir;
                 int n;
 
-                try
+                // get next pin
+                while ( pinsEnum.Next( 1, pin, out n ) == 0 )
                 {
-                    // get next pin
-                    while ( pinsEnum.Next( 1, pin, out n ) == 0 )
+                    // query pin`s direction
+                    pin[0].QueryDirection( out pinDir );
+
+                    if ( pinDir == dir )
                     {
-                        // query pin`s direction
-                        pin[0].QueryDirection( out pinDir );
-
-                        if ( pinDir == dir )
-                        {
-                            if ( num == 0 )
-                                return pin[0];
-                            num--;
-                        }
-
-                        Marshal.ReleaseComObject( pin[0] );
-                        pin[0] = null;
+                        if ( num == 0 )
+                            return pin[0];
+                        num--;
                     }
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject( pinsEnum );
+
+                    Marshal.ReleaseComObject( pin[0] );
+                    pin[0] = null;
                 }
             }
             return null;

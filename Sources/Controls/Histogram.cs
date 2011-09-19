@@ -13,7 +13,7 @@ namespace AForge.Controls
     using System.Drawing;
     using System.Data;
     using System.Windows.Forms;
-
+    
     /// <summary>
     /// Arguments of histogram events.
     /// </summary>
@@ -87,7 +87,6 @@ namespace AForge.Controls
     /// <remarks><para>The control displays histograms represented with integer arrays,
     /// where each array's element keeps occurrence number of the corresponding element.
     /// </para>
-    /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create array with histogram values
@@ -95,9 +94,8 @@ namespace AForge.Controls
     /// // set values to histogram control
     /// histogram.Values = histogramValues;
     /// </code>
-    /// 
     /// <para><b>Sample control's look:</b></para>
-    /// <img src="img/controls/histogram.jpg" width="324" height="77" />
+    /// <img src="histogram.jpg" width="324" height="77" />
     /// </remarks>
     /// 
     public class Histogram : System.Windows.Forms.Control
@@ -119,8 +117,8 @@ namespace AForge.Controls
         // set of pens
         private Pen blackPen = new Pen( Color.Black, 1 );
         private Pen whitePen = new Pen( Color.White, 1 );
-        private Pen drawPen  = new Pen( Color.Black );
-
+        private Pen drawPen = new Pen( Color.Black );
+        
         // width and height of histogram's area
         private int width;
         private int height;
@@ -169,13 +167,11 @@ namespace AForge.Controls
         /// Logarithmic view or not.
         /// </summary>
         /// 
-        /// <remarks><para>In the case if logarihmic view is selected, then the control
-        /// will display base 10 logarithm of values.</para>
-        /// 
-        /// <para>By default the property is set to <b>false</b> - none logarithmic view.</para></remarks>
+        /// <remarks>In the case if logarihmic view is selected, then the control
+        /// will display base 10 logarithm of values.</remarks>
         /// 
         [DefaultValue( false )]
-        public bool IsLogarithmicView
+        public bool LogarithmicView
         {
             get { return logarithmic; }
             set
@@ -189,13 +185,12 @@ namespace AForge.Controls
         /// Vertical view or not.
         /// </summary>
         ///
-        /// <remarks><para>The property determines if histogram should be displayed vertically or
+        /// <remarks><para>The property determines if histogram should be displayed vertical or
         /// not (horizontally).</para>
-        /// 
         /// <para>By default the property is set to <b>false</b> - horizontal view.</para></remarks>
         ///
         [DefaultValue( false )]
-        public bool IsVertical
+        public bool Vertical
         {
             get { return vertical; }
             set
@@ -211,7 +206,7 @@ namespace AForge.Controls
         /// 
         /// <remarks>Non-negative histogram values.</remarks>
         /// 
-        /// <exception cref="ArgumentException">Histogram values should be non-negative.</exception>
+        /// <exception cref="ArgumentException">Histogram has negative values.</exception>
         /// 
         [Browsable( false )]
         public int[] Values
@@ -230,7 +225,7 @@ namespace AForge.Controls
                         // value chould non-negative
                         if ( v < 0 )
                         {
-                            throw new ArgumentException( "Histogram values should be non-negative." );
+                            throw new ArgumentException( "Histogram values should be non-negative" );
                         }
 
                         if ( v > max )
@@ -300,10 +295,10 @@ namespace AForge.Controls
             // 
             // Histogram
             // 
-            this.MouseUp    += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseUp );
-            this.MouseMove  += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseMove );
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseUp );
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseMove );
             this.MouseLeave += new System.EventHandler( this.Histogram_MouseLeave );
-            this.MouseDown  += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseDown );
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler( this.Histogram_MouseDown );
         }
 
         /// <summary>
@@ -316,7 +311,7 @@ namespace AForge.Controls
         {
             Graphics g = pe.Graphics;
             // drawing area's width and height
-            width = ( ( values == null ) || ( vertical == true ) ) ?
+            width  = ( ( values == null ) || ( vertical == true ) ) ?
                 ClientRectangle.Width - 2 :
                 Math.Min( values.Length, ClientRectangle.Width - 2 );
 
@@ -352,40 +347,37 @@ namespace AForge.Controls
                     brush.Dispose( );
                 }
 
-                if ( max != 0 )
-                {
-                    // scaling factor
-                    double factor = (double) ( ( vertical ) ? width : height ) /
-                        ( ( logarithmic ) ? maxLogarithmic : max );
+                // scaling factor
+                double factor = (double) ( ( vertical ) ? width : height ) /
+                    ( ( logarithmic ) ? maxLogarithmic : max );
 
-                    // draw histogram
-                    for ( int i = 0, len = ( vertical ) ? height : width; i < len; i++ )
+                // draw histogram
+                for ( int i = 0, len = ( vertical ) ? height : width; i < len; i++ )
+                {
+                    if ( logarithmic )
                     {
-                        if ( logarithmic )
+                        value = ( values[i] == 0 ) ? 0 : (int) ( Math.Log10( values[i] ) * factor );
+                    }
+                    else
+                    {
+                        value = (int) ( values[i] * factor );
+                    }
+
+                    if ( value != 0 )
+                    {
+                        if ( vertical )
                         {
-                            value = ( values[i] == 0 ) ? 0 : (int) ( Math.Log10( values[i] ) * factor );
+                            g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
+                                new Point( x, y + i ),
+                                new Point( x + value, y + i )
+                                );
                         }
                         else
                         {
-                            value = (int) ( values[i] * factor );
-                        }
-
-                        if ( value != 0 )
-                        {
-                            if ( vertical )
-                            {
-                                g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
-                                    new Point( x, y + i ),
-                                    new Point( x + value, y + i )
-                                    );
-                            }
-                            else
-                            {
-                                g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
-                                    new Point( x + i, y + height - 1 ),
-                                    new Point( x + i, y + height - value )
-                                    );
-                            }
+                            g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
+                                new Point( x + i, y + height - 1 ),
+                                new Point( x + i, y + height - value )
+                                );
                         }
                     }
                 }
