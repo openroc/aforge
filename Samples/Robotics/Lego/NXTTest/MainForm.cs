@@ -1,9 +1,8 @@
-// Lego Mindstorm NXT test application
 // AForge.NET Framework
-// http://www.aforgenet.com/framework/
+// Lego Mindstorm NXT test application
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -14,7 +13,6 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-using AForge;
 using AForge.Robotics.Lego;
 
 namespace NXTTest
@@ -62,21 +60,6 @@ namespace NXTTest
             inputPortCombo.SelectedIndex = 0;
             sensorTypeCombo.SelectedIndex = 0;
             sensorModeCombo.SelectedIndex = 0;
-
-            nxt.MessageSent += new MessageTransferHandler( nxt_MessageSent );
-            nxt.MessageRead += new MessageTransferHandler( nxt_MessageRead );
-        }
-
-        // On message sent by NXT brick
-        private void nxt_MessageSent( object sender, CommunicationBufferEventArgs eventArgs )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( ">> [ {0} ]", eventArgs.GetMessageString( ) ) );
-        }
-
-        // On message received by NXT brick
-        private void nxt_MessageRead( object sender, CommunicationBufferEventArgs eventArgs )
-        {
-            System.Diagnostics.Debug.WriteLine( string.Format( "<< [ {0} ]", eventArgs.GetMessageString( ) ) );
         }
 
         // On "Connect" button click
@@ -97,8 +80,6 @@ namespace NXTTest
 
                 connectButton.Enabled    = false;
                 disconnectButton.Enabled = true;
-
-                nxt.PlayTone( 100, 200, false );
             }
             else
             {
@@ -221,7 +202,7 @@ namespace NXTTest
         // On motor "Reset" button click
         private void resetMotorButton_Click( object sender, EventArgs e )
         {
-            if ( nxt.ResetMotorPosition( GetSelectedMotor( ), false, false ) != true )
+            if ( nxt.ResetMotorPosition( GetSelectedMotor( ) ) != true )
             {
                 System.Diagnostics.Debug.WriteLine( "Failed reseting motor" );
             }
@@ -252,7 +233,7 @@ namespace NXTTest
             }
 
             // set motor's state
-            if ( nxt.SetMotorState( GetSelectedMotor( ), motorState, false ) != true )
+            if ( nxt.SetMotorState( GetSelectedMotor( ), motorState ) != true )
             {
                 System.Diagnostics.Debug.WriteLine( "Failed setting motor state" );
             }
@@ -304,7 +285,7 @@ namespace NXTTest
         {
             if ( nxt.SetSensorMode( GetSelectedSensor( ),
                 sensorTypes[sensorTypeCombo.SelectedIndex],
-                sensorModes[sensorModeCombo.SelectedIndex], false ) != true )
+                sensorModes[sensorModeCombo.SelectedIndex] ) != true )
             {
                 System.Diagnostics.Debug.WriteLine( "Failed setting input mode" );
             }

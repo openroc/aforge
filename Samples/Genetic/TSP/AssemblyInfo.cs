@@ -7,11 +7,11 @@ using System.Runtime.CompilerServices;
 // associated with an assembly.
 //
 [assembly: AssemblyTitle( "Genetic TSP" )]
-[assembly: AssemblyDescription( "Genetic TSP sample" )]
+[assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "AForge" )]
-[assembly: AssemblyProduct( "AForge.NET" )]
-[assembly: AssemblyCopyright( "AForge © 2008" )]
+[assembly: AssemblyProduct( "Genetic TSP" )]
+[assembly: AssemblyCopyright( "AForge.NET © 2008" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 

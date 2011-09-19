@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -18,9 +17,7 @@ namespace AForge.Imaging.Filters
     /// </summary>
     /// 
     /// <remarks><para>The class implements image resizing filter using bicubic
-    /// interpolation algorithm. It uses bicubic kernel W(x) as described on
-    /// <a href="http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm">Wikipedia</a>
-    /// (coefficient <b>a</b> is set to <b>-0.5</b>).</para>
+    /// interpolation algorithm.</para>
     /// 
     /// <para>The filter accepts 8 grayscale images and 24 bpp
     /// color images for processing.</para>
@@ -45,14 +42,14 @@ namespace AForge.Imaging.Filters
     public class ResizeBicubic : BaseResizeFilter
     {
         // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
         
         /// <summary>
@@ -65,8 +62,8 @@ namespace AForge.Imaging.Filters
 		public ResizeBicubic( int newWidth, int newHeight ) :
             base( newWidth, newHeight )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>
@@ -149,7 +146,7 @@ namespace AForge.Imaging.Filters
                                 g += k2 * src[oy2 * srcStride + ox2];
                             }
                         }
-                        *dst = (byte) Math.Max( 0, Math.Min( 255, g ) );
+                        *dst = (byte) g;
                     }
                     dst += dstOffset;
                 }
@@ -205,9 +202,9 @@ namespace AForge.Imaging.Filters
                             }
                         }
 
-                        dst[RGB.R] = (byte) Math.Max( 0, Math.Min( 255, r ) );
-                        dst[RGB.G] = (byte) Math.Max( 0, Math.Min( 255, g ) );
-                        dst[RGB.B] = (byte) Math.Max( 0, Math.Min( 255, b ) );
+                        dst[RGB.R] = (byte) r;
+                        dst[RGB.G] = (byte) g;
+                        dst[RGB.B] = (byte) b;
                     }
                     dst += dstOffset;
                 }

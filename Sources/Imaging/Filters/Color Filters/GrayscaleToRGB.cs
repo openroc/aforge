@@ -35,14 +35,14 @@ namespace AForge.Imaging.Filters
     public sealed class GrayscaleToRGB : BaseFilter
     {
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace AForge.Imaging.Filters
         public GrayscaleToRGB( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>

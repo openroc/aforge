@@ -1,8 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -57,14 +57,14 @@ namespace AForge.Imaging.Filters
         private UnmanagedImage unmanagedChannelImage;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
         
         /// <summary>
@@ -153,9 +153,9 @@ namespace AForge.Imaging.Filters
         private YCbCrReplaceChannel( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>
@@ -264,15 +264,15 @@ namespace AForge.Imaging.Filters
                     switch ( channel )
                     {
                         case YCbCr.YIndex:
-                            ycbcr.Y = (float) *ch / 255;
+                            ycbcr.Y = (double) *ch / 255;
                             break;
 
                         case YCbCr.CbIndex:
-                            ycbcr.Cb = (float) *ch / 255 - 0.5f;
+                            ycbcr.Cb = (double) *ch / 255 - 0.5;
                             break;
 
                         case YCbCr.CrIndex:
-                            ycbcr.Cr = (float) *ch / 255 - 0.5f;
+                            ycbcr.Cr = (double) *ch / 255 - 0.5;
                             break;
                     }
 

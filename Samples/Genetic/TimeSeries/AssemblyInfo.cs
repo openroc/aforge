@@ -7,11 +7,11 @@ using System.Runtime.CompilerServices;
 // associated with an assembly.
 //
 [assembly: AssemblyTitle( "Genetic Time Series" )]
-[assembly: AssemblyDescription( "Genetic Time Series sample" )]
+[assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "AForge" )]
-[assembly: AssemblyProduct( "AForge.NET" )]
-[assembly: AssemblyCopyright( "AForge © 2009" )]
+[assembly: AssemblyProduct( "Genetic Time Series" )]
+[assembly: AssemblyCopyright( "AForge.NET © 2009" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 

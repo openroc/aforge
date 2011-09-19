@@ -58,14 +58,14 @@ namespace AForge.Imaging.Filters
         private int size = 3;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace AForge.Imaging.Filters
         public Erosion( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace AForge.Imaging.Filters
         /// <param name="se">Structuring element.</param>
         /// 
         /// <remarks><para>Structuring elemement for the erosion morphological operator
-        /// must be square matrix with odd size in the range of [3, 99].</para></remarks>
+        /// must be square matrix with odd size in the range of [3, 25].</para></remarks>
         /// 
         /// <exception cref="ArgumentException">Invalid size of structuring element.</exception>
         /// 
@@ -102,7 +102,7 @@ namespace AForge.Imaging.Filters
             int s = se.GetLength( 0 );
 
             // check structuring element size
-            if ( ( s != se.GetLength( 1 ) ) || ( s < 3 ) || ( s > 99 ) || ( s % 2 == 0 ) )
+            if ( ( s != se.GetLength( 1 ) ) || ( s < 3 ) || ( s > 25 ) || ( s % 2 == 0 ) )
                 throw new ArgumentException( "Invalid size of structuring element." );
 
             this.se = se;

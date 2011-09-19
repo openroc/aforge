@@ -2,10 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2010
+// andrew.kirillov@aforgenet.com
 //
-
+// Copyright © Fabio L. Caversan, 2008-2010
+// fabio.caversan@gmail.com
+//
 namespace AForge.Fuzzy
 {
     using System;
@@ -24,11 +26,11 @@ namespace AForge.Fuzzy
     /// FuzzySet fsCool = new FuzzySet( "Cool", function1 );
     /// 
     /// // getting membership
-    /// float m1 = fsCool.GetMembership( 15 );
+    /// double m1 = fsCool.GetMembership( 15 );
     /// 
     /// // computing the membership of "NOT Cool"
     /// NotOperator NOT = new NotOperator( );
-    /// float result = NOT.Evaluate( m1 );
+    /// double result = NOT.Evaluate( m1 );
     ///              
     /// // show result
     /// Console.WriteLine( result );
@@ -48,7 +50,7 @@ namespace AForge.Fuzzy
         /// 
         /// <returns>The numerical result of the unary operation NOT applied to <paramref name="membership"/>.</returns>
         /// 
-        public float Evaluate( float membership )
+        public double Evaluate( double membership )
         {
             return ( 1 - membership );
         }

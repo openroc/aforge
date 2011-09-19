@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -101,7 +104,7 @@ namespace AForge.Fuzzy
             // The label of a fuzzy output
             private string label;
             // The firing strength of a fuzzy rule, to be applied to the label
-            private float firingStrength;
+            private double firingStrength;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="OutputConstraint"/> class.
@@ -110,7 +113,7 @@ namespace AForge.Fuzzy
             /// <param name="label">A string representing the output label of a <see cref="Rule"/>.</param>
             /// <param name="firingStrength">The firing strength of a <see cref="Rule"/>, to be applied to its output label.</param>
             /// 
-            internal OutputConstraint( string label, float firingStrength )
+            internal OutputConstraint( string label, double firingStrength )
             {
                 this.label          = label;
                 this.firingStrength = firingStrength;
@@ -129,7 +132,7 @@ namespace AForge.Fuzzy
             /// The firing strength of a <see cref="Rule"/>, to be applied to its output label.
             /// </summary>
             /// 
-            public float FiringStrength
+            public double FiringStrength
             {
                 get { return firingStrength; }
             }
@@ -187,7 +190,7 @@ namespace AForge.Fuzzy
         /// 
         /// <exception cref="KeyNotFoundException">The label indicated was not found in the linguistic variable.</exception>
         /// 
-        internal void AddOutput( string labelName, float firingStrength )
+        internal void AddOutput( string labelName, double firingStrength )
         {
             // check if the label exists in the linguistic variable
             this.outputVar.GetLabel( labelName );

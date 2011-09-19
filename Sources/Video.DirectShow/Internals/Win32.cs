@@ -1,9 +1,8 @@
 // AForge Video for Windows Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video.DirectShow.Internals
@@ -60,10 +59,10 @@ namespace AForge.Video.DirectShow.Internals
         /// 
         /// <returns>Return's the value of <b>dst</b> - pointer to destination.</returns>
         /// 
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
-        public static unsafe extern int memcpy(
-            byte* dst,
-            byte* src,
+        [DllImport( "ntdll.dll" )]
+        public static extern int memcpy(
+            int dst,
+            int src,
             int count );
 
         /// <summary>

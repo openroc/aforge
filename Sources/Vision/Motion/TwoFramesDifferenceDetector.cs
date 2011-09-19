@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Vision.Motion
@@ -75,9 +75,6 @@ namespace AForge.Vision.Motion
         // binary erosion filter
         private BinaryErosion3x3 erosionFilter = new BinaryErosion3x3( );
 
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
         /// <summary>
         /// Difference threshold value, [1, 255].
         /// </summary>
@@ -93,7 +90,7 @@ namespace AForge.Vision.Motion
             get { return differenceThreshold; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     differenceThreshold = Math.Max( 1, Math.Min( 255, value ) );
                     differenceThresholdNeg = -differenceThreshold;
@@ -114,7 +111,7 @@ namespace AForge.Vision.Motion
         {
             get
             {
-                lock ( sync )
+                lock ( this )
                 {
                     return (float) pixelsChanged / ( width * height );
                 }
@@ -137,7 +134,7 @@ namespace AForge.Vision.Motion
         {
             get
             {
-                lock ( sync )
+                lock ( this )
                 {
                     return motionFrame;
                 }
@@ -162,7 +159,7 @@ namespace AForge.Vision.Motion
             get { return suppressNoise; }
             set
             {
-                lock ( sync )
+                lock ( this )
                 {
                     suppressNoise = value;
 
@@ -213,7 +210,7 @@ namespace AForge.Vision.Motion
         /// 
         public unsafe void ProcessFrame( UnmanagedImage videoFrame )
         {
-            lock ( sync )
+            lock ( this )
             {
                 // check previous frame
                 if ( previousFrame == null )
@@ -235,7 +232,7 @@ namespace AForge.Vision.Motion
                     }
 
                     // convert source frame to grayscale
-                    Tools.ConvertToGrayscale( videoFrame, previousFrame );
+                    Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, previousFrame );
 
                     return;
                 }
@@ -245,7 +242,7 @@ namespace AForge.Vision.Motion
                     return;
 
                 // convert current image to grayscale
-                Tools.ConvertToGrayscale( videoFrame, motionFrame );
+                Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, motionFrame );
 
                 // pointers to previous and current frames
                 byte* prevFrame = (byte*) previousFrame.ImageData.ToPointer( );
@@ -295,7 +292,7 @@ namespace AForge.Vision.Motion
         /// 
         public void Reset( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( previousFrame != null )
                 {

@@ -53,14 +53,14 @@ namespace AForge.Imaging.Filters
         private BlobCounter blobCounter = new BlobCounter( );
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
         
         /// <summary>
@@ -117,34 +117,13 @@ namespace AForge.Imaging.Filters
         }
 
         /// <summary>
-        /// Custom blobs' filter to use.
-        /// </summary>
-        /// 
-        /// <remarks><para>See <see cref="BlobCounterBase.BlobsFilter"/> for information
-        /// about custom blobs' filtering routine.</para></remarks>
-        /// 
-        public IBlobsFilter BlobsFilter
-        {
-            get { return blobCounter.BlobsFilter; }
-            set { blobCounter.BlobsFilter = value; }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="BlobsFiltering"/> class.
         /// </summary>
         /// 
         public BlobsFiltering( )
+            : this( 1, 1, int.MaxValue, int.MaxValue, false )
         {
             blobCounter.FilterBlobs = true;
-            blobCounter.MinWidth    = 1;
-            blobCounter.MinHeight   = 1;
-            blobCounter.MaxWidth    = int.MaxValue;
-            blobCounter.MaxHeight   = int.MaxValue;
-
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb] = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format32bppPArgb] = PixelFormat.Format32bppPArgb;
         }
         
         /// <summary>
@@ -177,25 +156,18 @@ namespace AForge.Imaging.Filters
         /// class.</para></remarks>
         /// 
         public BlobsFiltering( int minWidth, int minHeight, int maxWidth, int maxHeight, bool coupledSizeFiltering )
-            : this( )
         {
+            blobCounter.FilterBlobs = true;
             blobCounter.MinWidth  = minWidth;
             blobCounter.MinHeight = minHeight;
             blobCounter.MaxWidth  = maxWidth;
             blobCounter.MaxHeight = maxHeight;
             blobCounter.CoupledSizeFiltering = coupledSizeFiltering;
-        }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlobsFiltering"/> class.
-        /// </summary>
-        /// 
-        /// <param name="blobsFilter">Custom blobs' filtering routine to use
-        /// (see <see cref="BlobCounterBase.BlobsFilter"/>).</param>
-        ///
-        public BlobsFiltering( IBlobsFilter blobsFilter ) : this( )
-        {
-            blobCounter.BlobsFilter = blobsFilter;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format32bppPArgb]  = PixelFormat.Format32bppPArgb;
         }
 
         /// <summary>
