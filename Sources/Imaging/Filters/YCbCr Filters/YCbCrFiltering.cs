@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
     using AForge;
@@ -17,86 +16,57 @@ namespace AForge.Imaging.Filters
     /// Color filtering in YCbCr color space.
     /// </summary>
     /// 
-    /// <remarks><para>The filter operates in <b>YCbCr</b> color space and filters
-    /// pixels, which color is inside/outside of the specified YCbCr range - 
-    /// it keeps pixels with colors inside/outside of the specified range and fills the
-    /// rest with <see cref="FillColor">specified color</see>.</para>
+    /// <remarks>The filter operates in <b>YCbCr</b> color space and filters
+    /// pixels, which color is inside or outside of specified YCbCr range.</remarks>
     /// 
-    /// <para>The filter accepts 24 and 32 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// YCbCrFiltering filter = new YCbCrFiltering( );
-    /// // set color ranges to keep
-    /// filter.Cb = new Range( -0.2f, 0.0f );
-    /// filter.Cr = new Range( 0.26f, 0.5f );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/ycbcr_filtering.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="ColorFiltering"/>
-    /// <seealso cref="HSLFiltering"/>
-    /// 
-    public class YCbCrFiltering : BaseInPlacePartialFilter
+    public class YCbCrFiltering : FilterColorToColorPartial
     {
-        private Range yRange  = new Range( 0.0f, 1.0f );
-        private Range cbRange = new Range( -0.5f, 0.5f );
-        private Range crRange = new Range( -0.5f, 0.5f );
+        private DoubleRange yRange = new DoubleRange( 0.0, 1.0 );
+        private DoubleRange cbRange = new DoubleRange( -0.5, 0.5 );
+        private DoubleRange crRange = new DoubleRange( -0.5, 0.5 );
 
-        private float fillY  = 0.0f;
-        private float fillCb = 0.0f;
-        private float fillCr = 0.0f;
-        private bool  fillOutsideRange = true;
+        private double  fillY = 0.0;
+        private double  fillCb = 0.0;
+        private double  fillCr = 0.0;
+        private bool    fillOutsideRange = true;
 
         private bool updateY = true;
         private bool updateCb = true;
         private bool updateCr = true;
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
         #region Public properties
 
         /// <summary>
-        /// Range of Y component, [0, 1].
+        /// Range of Y component.
         /// </summary>
         /// 
-        public Range Y
+        /// <remarks>Y component is measured in the range of [0, 1].</remarks>
+        /// 
+        public DoubleRange Y
         {
             get { return yRange; }
             set { yRange = value; }
         }
 
         /// <summary>
-        /// Range of Cb component, [-0.5, 0.5].
+        /// Range of Cb component.
         /// </summary>
         /// 
-        public Range Cb
+        /// <remarks>Cb component is measured in the range of [-0.5, 0.5].</remarks>
+        /// 
+        public DoubleRange Cb
         {
             get { return cbRange; }
             set { cbRange = value; }
         }
 
         /// <summary>
-        /// Range of Cr component, [-0.5, 0.5].
+        /// Range of Cr component.
         /// </summary>
         /// 
-        public Range Cr
+        /// <remarks>Cr component is measured in the range of [-0.5, 0.5].</remarks>
+        /// 
+        public DoubleRange Cr
         {
             get { return crRange; }
             set { crRange = value; }
@@ -120,10 +90,6 @@ namespace AForge.Imaging.Filters
         /// Determines, if pixels should be filled inside or outside specified
         /// color range.
         /// </summary>
-        /// 
-        /// <remarks><para>Default value is set to <see langword="true"/>, which means
-        /// the filter removes colors outside of the specified range.</para></remarks>
-        /// 
         public bool FillOutsideRange
         {
             get { return fillOutsideRange; }
@@ -134,10 +100,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if Y value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if Y channel of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateY
         {
@@ -149,10 +112,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if Cb value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if Cb channel of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateCb
         {
@@ -164,10 +124,7 @@ namespace AForge.Imaging.Filters
         /// Determines, if Cr value of filtered pixels should be updated.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies if Cr channel of filtered pixels should be
-        /// updated with value from <see cref="FillColor">fill color</see> or not.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para></remarks>
+        /// <remarks><b>True</b> by default.</remarks>
         /// 
         public bool UpdateCr
         {
@@ -181,12 +138,7 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="YCbCrFiltering"/> class.
         /// </summary>
-        public YCbCrFiltering( )
-        {
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-        }
+        public YCbCrFiltering( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="YCbCrFiltering"/> class.
@@ -196,31 +148,28 @@ namespace AForge.Imaging.Filters
         /// <param name="cbRange">Range of Cb component.</param>
         /// <param name="crRange">Range of Cr component.</param>
         /// 
-        public YCbCrFiltering( Range yRange, Range cbRange, Range crRange ) :
-            this( )
+        public YCbCrFiltering( DoubleRange yRange, DoubleRange cbRange, DoubleRange crRange )
         {
-            this.yRange  = yRange;
+            this.yRange = yRange;
             this.cbRange = cbRange;
             this.crRange = crRange;
         }
+
 
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            // get pixel size
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format24bppRgb ) ? 3 : 4;
-
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+            int offset  = imageData.Stride - rect.Width * 3;
 
             RGB rgb = new RGB( );
             YCbCr ycbcr = new YCbCr( );
@@ -228,35 +177,35 @@ namespace AForge.Imaging.Filters
             bool updated;
 
             // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+            byte* ptr = (byte*) imageData.Scan0.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX * pixelSize );
+            ptr += ( startY * imageData.Stride + startX * 3 );
 
             // for each row
             for ( int y = startY; y < stopY; y++ )
             {
                 // for each pixel
-                for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                for ( int x = startX; x < stopX; x++, ptr += 3 )
                 {
-                    updated   = false;
-                    rgb.Red   = ptr[RGB.R];
-                    rgb.Green = ptr[RGB.G];
-                    rgb.Blue  = ptr[RGB.B];
+                    updated     = false;
+                    rgb.Red     = ptr[RGB.R];
+                    rgb.Green   = ptr[RGB.G];
+                    rgb.Blue    = ptr[RGB.B];
 
                     // convert to YCbCr
-                    AForge.Imaging.YCbCr.FromRGB( rgb, ycbcr );
+                    AForge.Imaging.ColorConverter.RGB2YCbCr( rgb, ycbcr );
 
                     // check YCbCr values
                     if (
-                        ( ycbcr.Y >= yRange.Min )   && ( ycbcr.Y <= yRange.Max ) &&
+                        ( ycbcr.Y >= yRange.Min ) && ( ycbcr.Y <= yRange.Max ) &&
                         ( ycbcr.Cb >= cbRange.Min ) && ( ycbcr.Cb <= cbRange.Max ) &&
                         ( ycbcr.Cr >= crRange.Min ) && ( ycbcr.Cr <= crRange.Max )
                         )
                     {
                         if ( !fillOutsideRange )
                         {
-                            if ( updateY ) ycbcr.Y   = fillY;
+                            if ( updateY ) ycbcr.Y = fillY;
                             if ( updateCb ) ycbcr.Cb = fillCb;
                             if ( updateCr ) ycbcr.Cr = fillCr;
 
@@ -267,7 +216,7 @@ namespace AForge.Imaging.Filters
                     {
                         if ( fillOutsideRange )
                         {
-                            if ( updateY ) ycbcr.Y   = fillY;
+                            if ( updateY ) ycbcr.Y = fillY;
                             if ( updateCb ) ycbcr.Cb = fillCb;
                             if ( updateCr ) ycbcr.Cr = fillCr;
 
@@ -278,7 +227,7 @@ namespace AForge.Imaging.Filters
                     if ( updated )
                     {
                         // convert back to RGB
-                        AForge.Imaging.YCbCr.ToRGB( ycbcr, rgb );
+                        AForge.Imaging.ColorConverter.YCbCr2RGB( ycbcr, rgb );
 
                         ptr[RGB.R] = rgb.Red;
                         ptr[RGB.G] = rgb.Green;

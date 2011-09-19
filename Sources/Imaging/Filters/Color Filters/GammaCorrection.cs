@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
@@ -16,47 +15,18 @@ namespace AForge.Imaging.Filters
     /// Gamma correction filter.
     /// </summary>
     /// 
-    /// <remarks><para>The filter performs <a href="http://en.wikipedia.org/wiki/Gamma_correction">gamma correction</a>
-    /// of specified image in RGB color space. Each pixels' value is converted using the V<sub>out</sub>=V<sub>in</sub><sup>g</sup>
-    /// equation, where <b>g</b> is <see cref="Gamma">gamma value</see>.</para>
+    /// <remarks></remarks>
     /// 
-    /// <para>The filter accepts 8 bpp grayscale and 24 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// GammaCorrection filter = new GammaCorrection( 0.5 );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/gamma.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    public class GammaCorrection : BaseInPlacePartialFilter
+    public class GammaCorrection : FilterAnyToAnyPartial
     {
         private double gamma;
         private byte[] table = new byte[256];
 
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
         /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-
-        /// <summary>
-        /// Gamma value, [0.1, 5.0].
+        /// Gamma value.
         /// </summary>
         /// 
-        /// <remarks>Default value is set to <b>2.2</b>.</remarks>
+        /// <remarks>Default value is 2.2</remarks>
         /// 
         public double Gamma
         {
@@ -79,8 +49,9 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="GammaCorrection"/> class.
         /// </summary>
-        public GammaCorrection( ) : this ( 2.2 )
+        public GammaCorrection( )
         {
+            Gamma = 2.2;
         }
 
         /// <summary>
@@ -92,9 +63,6 @@ namespace AForge.Imaging.Filters
         public GammaCorrection( double gamma )
         {
             Gamma = gamma;
-
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
 
@@ -102,25 +70,25 @@ namespace AForge.Imaging.Filters
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
+            int pixelSize = ( imageData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
 
             // processing start and stop X,Y positions
             int startX  = rect.Left * pixelSize;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width * pixelSize;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+            int offset  = imageData.Stride - rect.Width * pixelSize;
 
             // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+            byte* ptr = (byte*) imageData.Scan0.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX );
+            ptr += ( startY * imageData.Stride + startX );
 
             // gamma correction
             for ( int y = startY; y < stopY; y++ )

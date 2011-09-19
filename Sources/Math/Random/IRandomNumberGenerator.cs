@@ -1,9 +1,7 @@
 // AForge Math Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Math.Random
@@ -11,40 +9,36 @@ namespace AForge.Math.Random
     using System;
 
     /// <summary>
-    /// Interface for random numbers generators.
+    /// Interface for random numbers generators
     /// </summary>
-    /// 
-    /// <remarks><para>The interface defines set of methods and properties, which should
-    /// be implemented by different algorithms for random numbers generatation.</para>
-    /// </remarks>
     /// 
     public interface IRandomNumberGenerator
     {
         /// <summary>
-        /// Mean value of generator.
+        /// Mean value of generator
         /// </summary>
         /// 
-        float Mean { get; }
+        double Mean { get; }
 
         /// <summary>
-        /// Variance value of generator.
+        /// Variance value of generator
         /// </summary>
         /// 
-        float Variance { get; }
+        double Variance { get; }
 
         /// <summary>
-        /// Generate next random number.
+        /// Generate next random number
         /// </summary>
         /// 
-        /// <returns>Returns next random number.</returns>
+        /// <returns>Returns next random number</returns>
         /// 
-        float Next( );
+        double Next( );
 
         /// <summary>
-        /// Set seed of the random numbers generator.
+        /// Set seed of the random numbers generator
         /// </summary>
         /// 
-        /// <param name="seed">Seed value.</param>
+        /// <param name="seed">Seed value</param>
         /// 
         void SetSeed( int seed );
     }

@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2007
 // andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
@@ -18,10 +17,6 @@ namespace AForge.Imaging.Filters
     /// 
     /// <remarks><para>The filter mirrors image around X and/or Y axis (horizontal and vertical
     /// mirroring).</para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24 bpp
-    /// color images for processing.</para>
-    /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
@@ -29,28 +24,16 @@ namespace AForge.Imaging.Filters
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
-    /// 
     /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
+    /// <img src="sample1.jpg" width="480" height="361" />
     /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/mirror.jpg" width="480" height="361" />
+    /// <img src="mirror.jpg" width="480" height="361" />
     /// </remarks>
     /// 
-    public class Mirror : BaseInPlacePartialFilter
+    public class Mirror : FilterAnyToAnyPartial
     {
         private bool mirrorX = false;
         private bool mirrorY = false;
-
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
 
         /// <summary>
         /// Specifies if mirroring should be done for X axis (horizontal mirroring).
@@ -83,22 +66,18 @@ namespace AForge.Imaging.Filters
         {
             this.mirrorX = mirrorX;
             this.MirrorY = mirrorY;
-
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
-            int pixelSize = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
+            int pixelSize = ( imageData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
 
             int width   = rect.Width;
             int height  = rect.Height;
@@ -111,16 +90,16 @@ namespace AForge.Imaging.Filters
             int startXInBytes = startX * pixelSize;
             int stopXInBytes  = stopX * pixelSize;
 
-            int stride = image.Stride;
+            int stride = imageData.Stride;
 
             // perform Y mirroring
             if ( mirrorY )
             {
                 // first pointer - points to the first pixel in line
-                byte* ptr1 = (byte*) image.ImageData.ToPointer( );
+                byte* ptr1 = (byte*) imageData.Scan0.ToPointer( );
                 ptr1 += ( startY * stride + startX * pixelSize );
                 // second pointer - points to the last pixel in line
-                byte* ptr2 = (byte*) image.ImageData.ToPointer( );
+                byte* ptr2 = (byte*) imageData.Scan0.ToPointer( );
                 ptr2 += ( startY * stride + ( stopX - 1 ) * pixelSize );
 
                 // offsets
@@ -130,7 +109,7 @@ namespace AForge.Imaging.Filters
                 // temporary value for swapping
                 byte v;
 
-                if ( image.PixelFormat == PixelFormat.Format8bppIndexed )
+                if ( imageData.PixelFormat == PixelFormat.Format8bppIndexed )
                 {
                     // grayscale mirroring
 
@@ -186,10 +165,10 @@ namespace AForge.Imaging.Filters
                 int offset = stride - rect.Width * pixelSize;
 
                 // first pointer - points to the first line
-                byte* ptr1 = (byte*) image.ImageData.ToPointer( );
+                byte* ptr1 = (byte*) imageData.Scan0.ToPointer( );
                 ptr1 += ( startY * stride + startX * pixelSize );
                 // second pointer - points to the last line
-                byte* ptr2 = (byte*) image.ImageData.ToPointer( );
+                byte* ptr2 = (byte*) imageData.Scan0.ToPointer( );
                 ptr2 += ( ( stopY - 1 ) * stride + startX * pixelSize );
 
                 // temporary value for swapping

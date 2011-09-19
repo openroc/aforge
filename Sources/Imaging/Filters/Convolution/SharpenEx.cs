@@ -1,10 +1,10 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
-// Original idea of the SharpenEx found in Paint.NET project
+// Original idea found in Paint.NET project
 // http://www.eecs.wsu.edu/paint.net/
 //
 namespace AForge.Imaging.Filters
@@ -14,52 +14,24 @@ namespace AForge.Imaging.Filters
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Gaussian sharpen filter.
+    /// Extended sharpen filter.
     /// </summary>
     /// 
-    /// <remarks><para>The filter performs <see cref="Convolution">convolution filter</see> using
-    /// the kernel, which is calculate with the help of <see cref="AForge.Math.Gaussian.Kernel2D"/>
-    /// method and then converted to integer sharpening kernel. First of all the integer kernel
-    /// is calculated from <see cref="AForge.Math.Gaussian.Kernel2D"/> by dividing all elements by
-    /// the element with the smallest value. Then the integer kernel is converted to sharpen kernel by
-    /// negating all kernel's elements (multiplying with <b>-1</b>), but the central kernel's element
-    /// is calculated as <b>2 * sum - centralElement</b>, where <b>sum</b> is the sum off elements
-    /// in the integer kernel before negating.</para>
+    /// <break></break>
     /// 
-    /// <para>For the list of supported pixel formats, see the documentation to <see cref="Convolution"/>
-    /// filter.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter with kernel size equal to 11
-    /// // and Gaussia sigma value equal to 4.0
-    /// GaussianSharpen filter = new GaussianSharpen( 4, 11 );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    ///
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/gaussian_sharpen.jpg" width="480" height="361" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="Convolution"/>
-    ///
-    public class GaussianSharpen : Convolution
+    public class SharpenEx : IFilter, IInPlaceFilter, IInPlacePartialFilter
     {
+        private Correlation filter;
         private double      sigma = 1.4;
         private int         size = 5;
 
         /// <summary>
-        /// Gaussian sigma value, [0.5, 5.0].
+        /// Gaussian sigma value.
         /// </summary>
         /// 
-        /// <remarks><para>Sigma value for Gaussian function used to calculate
-        /// the kernel.</para>
-        /// 
-        /// <para>Default value is set to <b>1.4</b>.</para>
-        /// </remarks>
+        /// <remarks>Sigma value for Gaussian function used to calculate
+        /// the kernel. Default value is 1.4. Minimum value is 0.5. Maximum
+        /// value is 5.0.</remarks>
         /// 
         public double Sigma
         {
@@ -73,15 +45,13 @@ namespace AForge.Imaging.Filters
             }
         }
 
-         /// <summary>
-        /// Kernel size, [3, 5].
+        /// <summary>
+        /// Kernel size.
         /// </summary>
         /// 
-        /// <remarks><para>Size of Gaussian kernel.</para>
+        /// <remarks>Size of Gaussian kernel. Default value is 5. Minimum value is 3.
+        /// Maximum value is 21. The value should be odd.</remarks>
         /// 
-        /// <para>Default value is set to <b>5</b>.</para>
-        /// </remarks>
-        ///
         public int Size
         {
             get { return size; }
@@ -93,36 +63,129 @@ namespace AForge.Imaging.Filters
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GaussianSharpen"/> class.
+        /// Initializes a new instance of the <see cref="SharpenEx"/> class.
         /// </summary>
         /// 
-        public GaussianSharpen( )
+        public SharpenEx( )
         {
             CreateFilter( );
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GaussianSharpen"/> class.
+        /// Initializes a new instance of the <see cref="SharpenEx"/> class.
         /// </summary>
         /// 
         /// <param name="sigma">Gaussian sigma value.</param>
         /// 
-        public GaussianSharpen( double sigma )
+        public SharpenEx( double sigma )
         {
             Sigma = sigma;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GaussianSharpen"/> class.
+        /// Initializes a new instance of the <see cref="SharpenEx"/> class.
         /// </summary>
         /// 
         /// <param name="sigma">Gaussian sigma value.</param>
         /// <param name="size">Kernel size.</param>
         /// 
-        public GaussianSharpen( double sigma, int size )
+        public SharpenEx( double sigma, int size )
         {
             Sigma = sigma;
             Size = size;
+        }
+
+        /// <summary>
+        /// Apply filter to an image.
+        /// </summary>
+        /// 
+        /// <param name="image">Source image to apply filter to.</param>
+        /// 
+        /// <returns>Returns filter's result obtained by applying the filter to
+        /// the source image.</returns>
+        /// 
+        /// <remarks>The method keeps the source image unchanged and returns the
+        /// the result of image processing filter as new image.</remarks> 
+        ///
+        public Bitmap Apply( Bitmap image )
+        {
+            return filter.Apply( image );
+        }
+
+        /// <summary>
+        /// Apply filter to an image.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Source image to apply filter to.</param>
+        /// 
+        /// <returns>Returns filter's result obtained by applying the filter to
+        /// the source image.</returns>
+        /// 
+        /// <remarks>The filter accepts bitmap data as input and returns the result
+        /// of image processing filter as new image. The source image data are kept
+        /// unchanged.</remarks>
+        /// 
+        public Bitmap Apply( BitmapData imageData )
+        {
+            return filter.Apply( imageData );
+        }
+
+        /// <summary>
+        /// Apply filter to an image.
+        /// </summary>
+        /// 
+        /// <param name="image">Image to apply filter to.</param>
+        /// 
+        /// <remarks>The method applies the filter directly to the provided
+        /// image.</remarks>
+        /// 
+        public void ApplyInPlace( Bitmap image )
+        {
+            filter.ApplyInPlace( image );
+        }
+
+        /// <summary>
+        /// Apply filter to an image.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Image to apply filter to.</param>
+        /// 
+        /// <remarks>The method applies the filter directly to the provided
+        /// image data.</remarks>
+        /// 
+        public void ApplyInPlace( BitmapData imageData )
+        {
+            filter.ApplyInPlace( imageData );
+        }
+
+        /// <summary>
+        /// Apply filter to an image or its part.
+        /// </summary>
+        /// 
+        /// <param name="image">Image to apply filter to.</param>
+        /// <param name="rect">Image rectangle for processing by the filter.</param>
+        /// 
+        /// <remarks>The method applies the filter directly to the provided
+        /// image.</remarks>
+        /// 
+        public void ApplyInPlace( Bitmap image, Rectangle rect )
+        {
+            filter.ApplyInPlace( image, rect );
+        }
+
+        /// <summary>
+        /// Apply filter to an image or its part.
+        /// </summary>
+        /// 
+        /// <param name="imageData">Image to apply filter to.</param>
+        /// <param name="rect">Image rectangle for processing by the filter.</param>
+        /// 
+        /// <remarks>The method applies the filter directly to the provided
+        /// image data.</remarks>
+        /// 
+        public void ApplyInPlace( BitmapData imageData, Rectangle rect )
+        {
+            filter.ApplyInPlace( imageData, rect );
         }
 
         // Private members
@@ -133,29 +196,18 @@ namespace AForge.Imaging.Filters
         {
             // create Gaussian function
             AForge.Math.Gaussian gaus = new AForge.Math.Gaussian( sigma );
-            // create kernel
-            double[,] kernel = gaus.Kernel2D( size );
-            double min = kernel[0, 0];
-            // integer kernel
-            int[,] intKernel = new int[size, size];
-            int sum = 0;
-            int divisor = 0;
 
-            // calculate integer kernel
+            // create Gaussian kernel
+            int[,] kernel = gaus.KernelDiscret2D( size );
+
+            // calculte sum of the kernel
+            int sum = 0;
+
             for ( int i = 0; i < size; i++ )
             {
                 for ( int j = 0; j < size; j++ )
                 {
-                    double v = kernel[i, j] / min;
-
-                    if ( v > ushort.MaxValue )
-                    {
-                        v = ushort.MaxValue;
-                    }
-                    intKernel[i, j] = (int) v;
-
-                    // collect sum
-                    sum += intKernel[i, j];
+                    sum += kernel[i, j];
                 }
             }
 
@@ -169,22 +221,18 @@ namespace AForge.Imaging.Filters
                     if ( ( i == c ) && ( j == c ) )
                     {
                         // calculate central value
-                        intKernel[i, j] = 2 * sum - intKernel[i, j];
+                        kernel[i, j] = 2 * sum - kernel[i, j];
                     }
                     else
                     {
                         // invert value
-                        intKernel[i, j] = -intKernel[i, j];
+                        kernel[i, j] = -kernel[i, j];
                     }
-
-                    // collect divisor
-                    divisor += intKernel[i, j];
                 }
             }
 
-            // update filter
-            this.Kernel = intKernel;
-            this.Divisor = divisor;
+            // create filter
+            filter = new Correlation( kernel );
         }
         #endregion
     }
