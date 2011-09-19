@@ -1,9 +1,8 @@
+// AForge Framework
 // 1D Optimization using Genetic Algorithms
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -21,7 +20,7 @@ using AForge.Controls;
 namespace Optimization1D
 {
 	/// <summary>
-	/// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -485,7 +484,7 @@ namespace Optimization1D
 		{
 			try
 			{
-				userFunction.Range = new Range( float.Parse( minXBox.Text ), userFunction.Range.Max );
+				userFunction.Range = new DoubleRange( double.Parse( minXBox.Text ), userFunction.Range.Max );
 				UpdateChart( );
 			}
 			catch
@@ -498,7 +497,7 @@ namespace Optimization1D
 		{
 			try
 			{
-				userFunction.Range = new Range( userFunction.Range.Min, float.Parse( maxXBox.Text ) );
+				userFunction.Range = new DoubleRange( userFunction.Range.Min, double.Parse( maxXBox.Text ) );
 				UpdateChart( );
 			}
 			catch
@@ -621,14 +620,14 @@ namespace Optimization1D
 				// show current solution
 				if ( showOnlyBest )
 				{
-					data[0, 0] = userFunction.Translate( population.BestChromosome );
+					data[0, 0] = userFunction.TranslateNative( population.BestChromosome );
 					data[0, 1] = userFunction.OptimizationFunction( data[0, 0] );
 				}
 				else
 				{
 					for ( int j = 0; j < populationSize; j++ )
 					{
-						data[j, 0] = userFunction.Translate( population[j] );
+						data[j, 0] = userFunction.TranslateNative( population[j] );
 						data[j, 1] = userFunction.OptimizationFunction( data[j, 0] );
 					}
 				}
@@ -636,7 +635,7 @@ namespace Optimization1D
 
 				// set current iteration's info
                 SetText( currentIterationBox, i.ToString( ) );
-                SetText( currentValueBox, userFunction.Translate( population.BestChromosome ).ToString( "F3" ) );
+                SetText( currentValueBox, userFunction.TranslateNative( population.BestChromosome ).ToString( "F3" ) );
 
 				// increase current iteration
 				i++;
@@ -654,7 +653,7 @@ namespace Optimization1D
 	// Function to optimize
 	public class UserFunction : OptimizationFunction1D
 	{
-		public UserFunction( ) : base( new Range( 0, 255 ) ) { }
+		public UserFunction( ) : base( new DoubleRange( 0, 255 ) ) { }
 
 		public override double OptimizationFunction( double x )
 		{

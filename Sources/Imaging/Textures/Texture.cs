@@ -1,52 +1,38 @@
 // AForge Image Processing Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2010
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Textures
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
 
     /// <summary>
-    /// Texture tools.
+    /// Texture tools
     /// </summary>
     /// 
-    /// <remarks><para>The class represents collection of different texture tools, like
-    /// converting a texture to/from grayscale image.</para>
+    /// <remarks>The class represents collection of different texture tools.</remarks>
     /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create texture generator
-    /// WoodTexture textureGenerator = new WoodTexture( );
-    /// // generate new texture
-    /// float[,] texture = textureGenerator.Generate( 320, 240 );
-    /// // convert it to image to visualize
-    /// Bitmap textureImage = TextureTools.ToBitmap( texture );
-    /// </code>
-    /// </remarks>
-    /// 
-    public class TextureTools
+    public class Texture
     {
-        // Avoid class instantiation
-        private TextureTools( ) { }
+		// Avoid class instantiation
+        private Texture( ) { }
 
         /// <summary>
-        /// Convert texture to grayscale bitmap.
+        /// Convert texture to grayscale bitmap
         /// </summary>
         /// 
-        /// <param name="texture">Texture to convert to bitmap.</param>
+        /// <param name="texture">Texture to convert to bitmap</param>
         /// 
-        /// <returns>Returns bitmap of the texture.</returns>
+        /// <returns>Returns bitmap of the texture</returns>
         /// 
         public static Bitmap ToBitmap( float[,] texture )
         {
             // get texture dimension
-            int width  = texture.GetLength( 1 );
+            int width = texture.GetLength( 1 );
             int height = texture.GetLength( 0 );
 
             // create new grawscale image
@@ -82,21 +68,21 @@ namespace AForge.Imaging.Textures
         }
 
         /// <summary>
-        /// Convert grayscale bitmap to texture.
+        /// Convert grayscale bitmap to texture
         /// </summary>
         /// 
-        /// <param name="image">Image to convert to texture.</param>
+        /// <param name="image">Image to convert to texture</param>
         /// 
         /// <returns>Returns texture as 2D float array.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
+        /// <remarks>Only 8 bit per pixel indexed images are supported.</remarks>
         /// 
         public static float[,] FromBitmap( Bitmap image )
         {
             // lock source bitmap data
             BitmapData imageData = image.LockBits(
                 new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, image.PixelFormat );
+                ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
 
             // process the image
             float[,] texture = FromBitmap( imageData );
@@ -115,32 +101,17 @@ namespace AForge.Imaging.Textures
         /// 
         /// <returns>Returns texture as 2D float array.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
+        /// <remarks>Only 8 bit per pixel indexed images are supported.</remarks>
         /// 
         public static float[,] FromBitmap( BitmapData imageData )
         {
-            return FromBitmap( new UnmanagedImage( imageData ) );
-        }
-
-        /// <summary>
-        /// Convert grayscale bitmap to texture.
-        /// </summary>
-        /// 
-        /// <param name="image">Image data to convert to texture.</param>
-        /// 
-        /// <returns>Returns texture as 2D float array.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Only grayscale (8 bpp indexed images) are supported.</exception>
-        /// 
-        public static float[,] FromBitmap( UnmanagedImage image )
-        {
             // check source image
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-                throw new UnsupportedImageFormatException( "Only grayscale (8 bpp indexed images) are supported." );
+            if ( imageData.PixelFormat != PixelFormat.Format8bppIndexed )
+                throw new ArgumentException( "8 bit per pixel indexed image expected" );
 
             // get source image dimension
-            int width  = image.Width;
-            int height = image.Height;
+            int width = imageData.Width;
+            int height = imageData.Height;
 
             // create texture array
             float[,] texture = new float[height, width];
@@ -148,8 +119,8 @@ namespace AForge.Imaging.Textures
             // do the job
             unsafe
             {
-                byte* src = (byte*) image.ImageData.ToPointer( );
-                int offset = image.Stride - width;
+                byte* src = (byte*) imageData.Scan0.ToPointer( );
+                int offset = imageData.Stride - width;
 
                 // for each line
                 for ( int y = 0; y < height; y++ )

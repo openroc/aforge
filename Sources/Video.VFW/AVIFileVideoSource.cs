@@ -1,11 +1,9 @@
 // AForge Video for Windows Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
-
 namespace AForge.Video.VFW
 {
     using System;
@@ -20,8 +18,7 @@ namespace AForge.Video.VFW
 	/// AVI file video source.
 	/// </summary>
     /// 
-    /// <remarks><para>The video source reads AVI files using Video for Windows.</para>
-    /// 
+    /// <remarks><para>The video source read AVI files using Video for Windows.</para>
     /// <para>Sample usage:</para>
     /// <code>
     /// // create AVI file video source
@@ -33,14 +30,6 @@ namespace AForge.Video.VFW
     /// // ...
     /// // signal to stop
     /// source.SignalToStop( );
-    /// 
-    /// // New frame event handler, which is invoked on each new available video frame
-    /// private void video_NewFrame( object sender, NewFrameEventArgs eventArgs )
-    /// {
-    ///     // get new frame
-    ///     Bitmap bitmap = eventArgs.Frame;
-    ///     // process the frame
-    /// }
     /// </code>
     /// </remarks>
     /// 
@@ -48,12 +37,14 @@ namespace AForge.Video.VFW
 	{
         // video file name
 		private string source;
+        // user data associated with the video source
+		private object userData = null;
         // received frames count
 		private int framesReceived;
         // frame interval in milliseconds
         private int frameInterval = 0;
         // get frame interval from source or use manually specified
-        private bool frameIntervalFromSource = true;
+        private bool frameIntervalFromSource = false;
 
 		private Thread thread = null;
 		private ManualResetEvent stopEvent = null;
@@ -62,12 +53,7 @@ namespace AForge.Video.VFW
         /// New frame event.
         /// </summary>
         /// 
-        /// <remarks><para>Notifies clients about new available frame from video source.</para>
-        /// 
-        /// <para><note>Since video source may have multiple clients, each client is responsible for
-        /// making a copy (cloning) of the passed video frame, because the video source disposes its
-        /// own original copy after notifying of clients.</note></para>
-        /// </remarks>
+        /// <remarks>Notifies client about new available frame from video source.</remarks>
         /// 
         public event NewFrameEventHandler NewFrame;
 
@@ -75,32 +61,18 @@ namespace AForge.Video.VFW
         /// Video source error event.
         /// </summary>
         /// 
-        /// <remarks>This event is used to notify clients about any type of errors occurred in
-        /// video source object, for example internal exceptions.</remarks>
+        /// <remarks>The event is used to notify client about any type error occurred in
+        /// video source object, for example exceptions.</remarks>
         /// 
         public event VideoSourceErrorEventHandler VideoSourceError;
-
-        /// <summary>
-        /// Video playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>This event is used to notify clients that the video playing has finished.</para>
-        /// </remarks>
-        /// 
-        public event PlayingFinishedEventHandler PlayingFinished;
 
         /// <summary>
         /// Frame interval.
         /// </summary>
         /// 
-        /// <remarks><para>The property sets the interval in milliseconds between frames. If the property is
-        /// set to 100, then the desired frame rate will be 10 frames per second.</para>
-        /// 
-        /// <para><note>Setting this property to 0 leads to no delay between video frames - frames
-        /// are read as fast as possible.</note></para>
-        /// 
-        /// <para>Default value is set to <b>0</b>.</para>
-        /// </remarks>
+        /// <remarks>The property sets the interval in milliseconds betwen frames. If the property is
+        /// set to 100, then the dóûired frame rate will be 10 frames per second. Default value is 0 -
+        /// get new frames as fast as possible.</remarks>
         /// 
         public int FrameInterval
         {
@@ -112,15 +84,6 @@ namespace AForge.Video.VFW
         /// Get frame interval from source or use manually specified.
         /// </summary>
         /// 
-        /// <remarks><para>The property specifies which frame rate to use for video playing.
-        /// If the property is set to <see langword="true"/>, then video is played
-        /// with original frame rate, which is set in source AVI file. If the property is
-        /// set to <see langword="false"/>, then custom frame rate is used, which is
-        /// calculated based on the manually specified <see cref="FrameInterval">frame interval</see>.</para>
-        /// 
-        /// <para>Default value is set to <see langword="true"/>.</para>
-        /// </remarks>
-        /// 
         public bool FrameIntervalFromSource
         {
             get { return frameIntervalFromSource; }
@@ -131,7 +94,7 @@ namespace AForge.Video.VFW
         /// Video source.
         /// </summary>
         /// 
-        /// <remarks><para>Video file name to play.</para></remarks>
+        /// <remarks>Video file name.</remarks>
         /// 
         public virtual string Source
 		{
@@ -161,7 +124,7 @@ namespace AForge.Video.VFW
         /// Received bytes count.
         /// </summary>
         /// 
-        /// <remarks>The property is not supported by this class. It always equals to 0.</remarks>
+        /// <remarks>The property is not supported by the class. It always equals to 0.</remarks>
         /// 
         public int BytesReceived
 		{
@@ -169,10 +132,22 @@ namespace AForge.Video.VFW
 		}
 
         /// <summary>
+        /// User data.
+        /// </summary>
+        /// 
+        /// <remarks>The property allows to associate user data with video source object.</remarks>
+        /// 
+        public object UserData
+		{
+			get { return userData; }
+			set { userData = value; }
+		}
+
+        /// <summary>
         /// State of the video source.
         /// </summary>
         /// 
-        /// <remarks>Current state of video source object - running or not.</remarks>
+        /// <remarks>Current state of video source object.</remarks>
         /// 
         public bool IsRunning
 		{
@@ -212,19 +187,17 @@ namespace AForge.Video.VFW
         /// Start video source.
         /// </summary>
         /// 
-        /// <remarks>Starts video source and return execution to caller. Video source
+        /// <remarks>Start video source and return execution to caller. Video source
         /// object creates background thread and notifies about new frames with the
         /// help of <see cref="NewFrame"/> event.</remarks>
         /// 
-        /// <exception cref="ArgumentException">Video source is not specified.</exception>
-        /// 
         public void Start( )
 		{
-            if ( !IsRunning )
+			if ( thread == null )
 			{
                 // check source
-                if ( string.IsNullOrEmpty( source ) )
-                    throw new ArgumentException( "Video source is not specified." );
+                if ( ( source == null ) || ( source == string.Empty ) )
+                    throw new ArgumentException( "Video source is not specified" );
                 
                 framesReceived = 0;
 
@@ -277,13 +250,7 @@ namespace AForge.Video.VFW
         /// Stop video source.
         /// </summary>
         /// 
-        /// <remarks><para>Stops video source aborting its thread.</para>
-        /// 
-        /// <para><note>Since the method aborts background thread, its usage is highly not preferred
-        /// and should be done only if there are no other options. The correct way of stopping camera
-        /// is <see cref="SignalToStop">signaling it stop</see> and then
-        /// <see cref="WaitForStop">waiting</see> for background thread's completion.</note></para>
-        /// </remarks>
+        /// <remarks>Stops video source aborting its thread.</remarks>
         /// 
         public void Stop( )
 		{
@@ -311,9 +278,8 @@ namespace AForge.Video.VFW
         /// Worker thread.
         /// </summary>
         /// 
-        private void WorkerThread( )
+        public void WorkerThread( )
 		{
-            ReasonToFinishPlaying reasonToStop = ReasonToFinishPlaying.StoppedByUser;
             // AVI reader
 			AVIReader aviReader = new AVIReader( );
 
@@ -328,7 +294,7 @@ namespace AForge.Video.VFW
                 // frame interval
                 int interval = ( frameIntervalFromSource ) ? (int) ( 1000 / aviReader.FrameRate ) : frameInterval;
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+				while ( true )
 				{
 					// start time
 					DateTime start = DateTime.Now;
@@ -338,6 +304,10 @@ namespace AForge.Video.VFW
 
 					framesReceived++;
 
+					// need to stop ?
+					if ( stopEvent.WaitOne( 0, false ) )
+						break;
+
 					if ( NewFrame != null )
 						NewFrame( this, new NewFrameEventArgs( bitmap ) );
 
@@ -346,10 +316,7 @@ namespace AForge.Video.VFW
 
                     // check current position
                     if ( aviReader.Position >= stopPosition )
-                    {
-                        reasonToStop = ReasonToFinishPlaying.EndOfStreamReached;
                         break;
-                    }
 
                     // wait for a while ?
                     if ( interval > 0 )
@@ -360,8 +327,12 @@ namespace AForge.Video.VFW
                         // miliseconds to sleep
                         int msec = interval - (int) span.TotalMilliseconds;
 
-                        if ( ( msec > 0 ) && ( stopEvent.WaitOne( msec, false ) ) )
-                            break;
+                        while ( ( msec > 0 ) && ( stopEvent.WaitOne( 0, true ) == false ) )
+                        {
+                            // sleeping ...
+                            Thread.Sleep( ( msec < 100 ) ? msec : 100 );
+                            msec -= 100;
+                        }
                     }
 				}
 			}
@@ -376,11 +347,6 @@ namespace AForge.Video.VFW
 
 			aviReader.Dispose( );
 			aviReader = null;
-
-            if ( PlayingFinished != null )
-            {
-                PlayingFinished( this, reasonToStop );
-            } 
 		}
 	}
 }

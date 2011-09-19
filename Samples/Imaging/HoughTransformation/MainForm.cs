@@ -1,9 +1,8 @@
-// Hough line and circle transformation demo
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
+// AForge Framework
+// Hough line transformation demo
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -11,11 +10,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 
-using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 
@@ -23,10 +20,14 @@ namespace HoughTransform
 {
     public partial class MainForm : Form
     {
+        private Bitmap sourceImage;
+        private Bitmap houghLineImage;
+        private Bitmap houghCirlceImage;
+
         // binarization filtering sequence
         private FiltersSequence filter = new FiltersSequence(
-            Grayscale.CommonAlgorithms.BT709,
-            new Threshold( 64 )
+            new GrayscaleBT709( ),
+            new Threshold( )
         );
 
         HoughLineTransformation lineTransform = new HoughLineTransformation( );
@@ -36,9 +37,6 @@ namespace HoughTransform
         public MainForm( )
         {
             InitializeComponent( );
-
-            lineTransform.MinLineIntensity = 10;
-            circleTransform.MinCircleIntensity = 20;
         }
 
         // Exit from application
@@ -56,83 +54,31 @@ namespace HoughTransform
                 if ( openFileDialog.ShowDialog( ) == DialogResult.OK )
                 {
                     // load image
-                    Bitmap tempImage = (Bitmap) Bitmap.FromFile( openFileDialog.FileName );
-                    Bitmap image = AForge.Imaging.Image.Clone( tempImage, PixelFormat.Format24bppRgb );
-                    tempImage.Dispose( );
+                    Bitmap image = (Bitmap) Bitmap.FromFile( openFileDialog.FileName );
                     // format image
                     AForge.Imaging.Image.FormatImage( ref image );
-                    // lock the source image
-                    BitmapData sourceData = image.LockBits(
-                        new Rectangle( 0, 0, image.Width, image.Height ),
-                        ImageLockMode.ReadOnly, image.PixelFormat );
                     // binarize the image
-                    UnmanagedImage binarySource = filter.Apply( new UnmanagedImage( sourceData ) );
+                    sourceImage = filter.Apply( image );
                     
                     // apply Hough line transofrm
-                    lineTransform.ProcessImage( binarySource );
+                    lineTransform.ProcessImage( sourceImage );
+                    houghLineImage = lineTransform.ToBitmap( );
                     // get lines using relative intensity
-                    HoughLine[] lines = lineTransform.GetLinesByRelativeIntensity( 0.2 );
+                    HoughLine[] lines = lineTransform.GetLinesByRelativeIntensity( 0.5 );
 
                     foreach ( HoughLine line in lines )
                     {
                         string s = string.Format( "Theta = {0}, R = {1}, I = {2} ({3})", line.Theta, line.Radius, line.Intensity, line.RelativeIntensity );
                         System.Diagnostics.Debug.WriteLine( s );
-
-                        // uncomment to highlight detected lines
-                        /*
-                        // get line's radius and theta values
-                        int    r = line.Radius;
-                        double t = line.Theta;
-
-                        // check if line is in lower part of the image
-                        if ( r < 0 )
-                        {
-                            t += 180;
-                            r = -r;
-                        }
-
-                        // convert degrees to radians
-                        t = ( t / 180 ) * Math.PI;
-
-                        // get image centers (all coordinate are measured relative
-                        // to center)
-                        int w2 = image.Width /2;
-                        int h2 = image.Height / 2;
-
-                        double x0 = 0, x1 = 0, y0 = 0, y1 = 0;
-
-                        if ( line.Theta != 0 )
-                        {
-                            // none vertical line
-                            x0 = -w2; // most left point
-                            x1 = w2;  // most right point
-
-                            // calculate corresponding y values
-                            y0 = ( -Math.Cos( t ) * x0 + r ) / Math.Sin( t );
-                            y1 = ( -Math.Cos( t ) * x1 + r ) / Math.Sin( t );
-                        }
-                        else
-                        {
-                            // vertical line
-                            x0 = line.Radius;
-                            x1 = line.Radius;
-
-                            y0 = h2;
-                            y1 = -h2;
-                        }
-
-                        // draw line on the image
-                        Drawing.Line( sourceData,
-                            new IntPoint( (int) x0 + w2, h2 - (int) y0 ),
-                            new IntPoint( (int) x1 + w2, h2 - (int) y1 ),
-                            Color.Red ); */
                     }
 
                     System.Diagnostics.Debug.WriteLine( "Found lines: " + lineTransform.LinesCount );
                     System.Diagnostics.Debug.WriteLine( "Max intensity: " + lineTransform.MaxIntensity );
 
                     // apply Hough circle transform
-                    circleTransform.ProcessImage( binarySource );
+                    circleTransform.ProcessImage( sourceImage );
+                    houghCirlceImage = circleTransform.ToBitmap( );
+
                     // get circles using relative intensity
                     HoughCircle[] circles = circleTransform.GetCirclesByRelativeIntensity( 0.5 );
 
@@ -144,16 +90,11 @@ namespace HoughTransform
 
                     System.Diagnostics.Debug.WriteLine( "Found circles: " + circleTransform.CirclesCount );
                     System.Diagnostics.Debug.WriteLine( "Max intensity: " + circleTransform.MaxIntensity );
-                    
-                    // unlock source image
-                    image.UnlockBits( sourceData );
-                    // dispose temporary binary source image
-                    binarySource.Dispose( );
 
                     // show images
-                    sourcePictureBox.Image = image;
-                    houghLinePictureBox.Image = lineTransform.ToBitmap( );
-                    houghCirclePictureBox.Image = circleTransform.ToBitmap( );
+                    sourcePictureBox.Image = sourceImage;
+                    houghLinePictureBox.Image = houghLineImage;
+                    houghCirclePictureBox.Image = houghCirlceImage;
                 }
             }
             catch

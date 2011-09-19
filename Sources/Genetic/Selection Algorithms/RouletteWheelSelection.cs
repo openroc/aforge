@@ -1,55 +1,50 @@
 // AForge Genetic Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2006-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Genetic
 {
 	using System;
 	using System.Collections;
-    using System.Collections.Generic;
 
 	/// <summary>
-	/// Roulette wheel selection method.
+	/// Roulette Wheel selection method
 	/// </summary>
 	/// 
-	/// <remarks><para>The algorithm selects chromosomes to the new generation according to
+	/// <remarks>The algorithm selects chromosomes to the new generation according to
 	/// their fitness values - the more fitness value chromosome has, the more chances
 	/// it has to become member of new generation. Each chromosome can be selected
-    /// several times to the new generation.</para>
-    /// 
-    /// <para>The "roulette's wheel" is divided into sectors, which size is proportional to
-    /// the fitness values of chromosomes - the  size of the wheel is the sum of all fitness
-    /// values, size of each sector equals to fitness value of chromosome.</para>
-    /// </remarks>
+	/// several times to the new generation. The "roulette's wheel" is divided into
+	/// sectors, which size is proportional to the fitness values of chromosomes - the
+	/// size of the wheel is the sum of all fitness values, size of each sector equals
+	/// to fitness value of chromosome.</remarks>
 	/// 
 	public class RouletteWheelSelection : ISelectionMethod
 	{
 		// random number generator
-		private static Random rand = new Random( );
+		private static Random rand = new Random( (int) DateTime.Now.Ticks );
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="RouletteWheelSelection"/> class.
+		/// Initializes a new instance of the <see cref="RouletteWheelSelection"/> class
 		/// </summary>
 		public RouletteWheelSelection( ) { }
 
 		/// <summary>
-        /// Apply selection to the specified population.
+		/// Apply selection to the population
 		/// </summary>
 		/// 
-		/// <param name="chromosomes">Population, which should be filtered.</param>
-		/// <param name="size">The amount of chromosomes to keep.</param>
+		/// <param name="chromosomes">Population, which should be filtered</param>
+		/// <param name="size">The amount of chromosomes to keep</param>
 		/// 
-        /// <remarks>Filters specified population keeping only those chromosomes, which
-        /// won "roulette" game.</remarks>
+		/// <remarks>Filters specified population according to the implemented
+		/// algorithm</remarks>
 		/// 
-        public void ApplySelection( List<IChromosome> chromosomes, int size )
+		public void ApplySelection( ArrayList chromosomes, int size )
 		{
 			// new population, initially empty
-            List<IChromosome> newPopulation = new List<IChromosome>( );
+			ArrayList newPopulation = new ArrayList( );
 			// size of current population
 			int currentSize = chromosomes.Count;
 
@@ -93,7 +88,12 @@ namespace AForge.Genetic
 			chromosomes.Clear( );
 
 			// move elements from new to current population
-            chromosomes.AddRange( newPopulation );
+			// !!! moving is done to reduce objects cloning
+			for ( int i = 0; i < size; i++ )
+			{
+				chromosomes.Add( newPopulation[0] );
+				newPopulation.RemoveAt( 0 );
+			}
 		}
 	}
 }

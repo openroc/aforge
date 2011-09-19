@@ -1,7 +1,7 @@
 // AForge Video Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2007-2008
+// Copyright © Andrew Kirillov, 2007
 // andrew.kirillov@gmail.com
 //
 
@@ -13,10 +13,10 @@ namespace AForge.Video
     /// Some internal utilities for handling arrays.
     /// </summary>
     /// 
-    internal static class ByteArrayUtils
+    internal class ByteArrayUtils
     {
         /// <summary>
-        /// Check if the array contains needle at specified position.
+        /// Check if the array contains needle on specified position.
         /// </summary>
         /// 
         /// <param name="array">Source array to check for needle.</param>
