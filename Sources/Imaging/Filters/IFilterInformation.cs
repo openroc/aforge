@@ -49,14 +49,14 @@ namespace AForge.Imaging.Filters
         /// // get filter's IFilterInformation interface
         /// IFilterInformation info = (IFilterInformation) filter;
         /// // check if the filter supports our image's format
-        /// if ( info.FormatTranslations.ContainsKey( image.PixelFormat )
+        /// if ( info.FormatTransalations.ContainsKey( image.PixelFormat )
         /// {
         ///     // format is supported, check what will be result of image processing
-        ///     PixelFormat resultingFormat = info.FormatTranslations[image.PixelFormat];
+        ///     PixelFormat resultingFormat = info.FormatTransalations[image.PixelFormat];
         /// }
         /// /// </code>
         /// </remarks>
         /// 
-        Dictionary<PixelFormat, PixelFormat> FormatTranslations { get; }
+        Dictionary<PixelFormat, PixelFormat> FormatTransalations { get; }
     }
 }

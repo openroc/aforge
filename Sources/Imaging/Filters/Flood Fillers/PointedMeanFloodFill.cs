@@ -52,14 +52,14 @@ namespace AForge.Imaging.Filters
     /// 
     /// <seealso cref="PointedColorFloodFill"/>
     /// 
-    public unsafe class PointedMeanFloodFill : BaseInPlacePartialFilter
+    public class PointedMeanFloodFill : BaseInPlacePartialFilter
     {
         // map of pixels, which are already checked by the flood fill algorithm
         private bool[,] checkedPixels;
 
         // set of variables (which describe image property and min/max color) to avoid passing them
         // recursively as parameters
-        byte* scan0;      // pointer to first image line
+        int scan0;      // pointer to first image line
         int stride;     // size of image's line
         int startX;     // X1 of bounding rectangle
         int stopX;      // Y1 of bounding rectangle
@@ -81,18 +81,18 @@ namespace AForge.Imaging.Filters
         private Color tolerance = Color.FromArgb( 16, 16, 16 );
 
         // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
         /// 
-        /// <remarks><para>See <see cref="IFilterInformation.FormatTranslations"/>
+        /// <remarks><para>See <see cref="IFilterInformation.FormatTransalations"/>
         /// documentation for additional information.</para></remarks>
         /// 
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -141,8 +141,8 @@ namespace AForge.Imaging.Filters
         public PointedMeanFloodFill( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace AForge.Imaging.Filters
             stopY  = rect.Bottom - 1;
 
             // save image properties
-            scan0 = (byte*) image.ImageData.ToPointer( );
+            scan0 = image.ImageData.ToInt32( );
             stride = image.Stride;
 
             // create map of visited pixels
@@ -393,13 +393,13 @@ namespace AForge.Imaging.Filters
         }
 
         // Convert image coordinate to pointer for Grayscale images
-        private byte* CoordsToPointerGray( int x, int y )
+        private int CoordsToPointerGray( int x, int y )
         {
             return scan0 + ( stride * y ) + x;
         }
 
         // Convert image coordinate to pointer for RGB images
-        private byte* CoordsToPointerRGB( int x, int y )
+        private int CoordsToPointerRGB( int x, int y )
         {
             return scan0 + ( stride * y ) + x * 3;
         }

@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Random
@@ -25,7 +25,7 @@ namespace AForge.Math.Random
     /// // create instance of random generator
     /// IRandomNumberGenerator generator = new ExponentialGenerator( 5 );
     /// // generate random number
-    /// float randomNumber = generator.Next( );
+    /// double randomNumber = generator.Next( );
     /// </code>
     /// </remarks>
     /// 
@@ -33,7 +33,7 @@ namespace AForge.Math.Random
     {
         private UniformOneGenerator rand = null;
 
-        private float rate = 0;
+        private double rate = 0;
 
         /// <summary>
         /// Rate value (inverse mean).
@@ -41,7 +41,7 @@ namespace AForge.Math.Random
         /// 
         /// <remarks>The rate value should be positive and non zero.</remarks>
         /// 
-        public float Rate
+        public double Rate
         {
             get { return rate; }
         }
@@ -50,18 +50,18 @@ namespace AForge.Math.Random
         /// Mean value of the generator.
         /// </summary>
         /// 
-        public float Mean
+        public double Mean
         {
-            get { return 1.0f / rate; }
+            get { return 1 / rate; }
         }
 
         /// <summary>
         /// Variance value of the generator.
         /// </summary>
         ///
-        public float Variance
+        public double Variance
         {
-            get { return 1f / ( rate * rate ); }
+            get { return 1 / ( rate * rate ); }
         }
         
         /// <summary>
@@ -72,7 +72,7 @@ namespace AForge.Math.Random
         /// 
         /// <exception cref="ArgumentException">Rate value should be greater than zero.</exception>
         /// 
-        public ExponentialGenerator( float rate ) :
+        public ExponentialGenerator( double rate ) :
             this( rate, 0 )
         {
         }
@@ -86,7 +86,7 @@ namespace AForge.Math.Random
         /// 
         /// <exception cref="ArgumentException">Rate value should be greater than zero.</exception>
         /// 
-        public ExponentialGenerator( float rate, int seed )
+        public ExponentialGenerator( double rate, int seed )
         {
             // check rate value
             if ( rate <= 0 )
@@ -102,9 +102,9 @@ namespace AForge.Math.Random
         /// 
         /// <returns>Returns next random number.</returns>
         /// 
-        public float Next( )
+        public double Next( )
         {
-            return - (float) Math.Log( rand.Next( ) ) / rate;
+            return - Math.Log( rand.Next( ) ) / rate;
         }
 
         /// <summary>

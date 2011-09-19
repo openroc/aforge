@@ -57,9 +57,9 @@
             this.directControlRadio = new System.Windows.Forms.RadioButton( );
             this.predefinedCommandsRadio = new System.Windows.Forms.RadioButton( );
             this.aboutButton = new System.Windows.Forms.Button( );
-            this.turnControl = new AForge.Controls.SliderControl( );
+            this.turnControl = new QwerkRobotCar.TurnControl( );
             this.srvDriverControl = new SVSTest.SrvDriverControl( );
-            this.manipulatorControl = new AForge.Controls.ManipulatorControl( );
+            this.manipulatorControl = new QwerkRobotCar.ManipulatorControl( );
             this.groupBox1.SuspendLayout( );
             this.statusStrip.SuspendLayout( );
             this.groupBox2.SuspendLayout( );
@@ -413,7 +413,7 @@
             this.turnControl.TabIndex = 3;
             this.turnControl.Text = "turnControl1";
             this.turnControl.Visible = false;
-            this.turnControl.PositionChanged += new AForge.Controls.SliderControl.PositionChangedHandler( this.turnControl_PositionChanged );
+            this.turnControl.PositionChanged += new QwerkRobotCar.TurnControl.PositionChangedHandler( this.turnControl_PositionChanged );
             // 
             // srvDriverControl
             // 
@@ -431,7 +431,7 @@
             this.manipulatorControl.TabIndex = 1;
             this.manipulatorControl.Text = "manipulatorControl1";
             this.manipulatorControl.Visible = false;
-            this.manipulatorControl.PositionChanged += new AForge.Controls.ManipulatorControl.PositionChangedHandler( this.manipulatorControl_PositionChanged );
+            this.manipulatorControl.PositionChanged += new QwerkRobotCar.ManipulatorControl.PositionChangedHandler( this.manipulatorControl_PositionChanged );
             // 
             // MainForm
             // 
@@ -492,10 +492,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.GroupBox groupBox5;
         private SrvDriverControl srvDriverControl;
-        private AForge.Controls.ManipulatorControl manipulatorControl;
+        private QwerkRobotCar.ManipulatorControl manipulatorControl;
         private System.Windows.Forms.RadioButton directControlRadio;
         private System.Windows.Forms.RadioButton predefinedCommandsRadio;
-        private AForge.Controls.SliderControl turnControl;
+        private QwerkRobotCar.TurnControl turnControl;
         private System.Windows.Forms.NumericUpDown maxPowerUpDown;
         private System.Windows.Forms.NumericUpDown minPowerUpDown;
         private System.Windows.Forms.Label maxPowerLabel;

@@ -63,6 +63,12 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ManipulatorControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ManipulatorControl.Designer.cs">
+      <DependentUpon>ManipulatorControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="SrvDriverControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -80,6 +86,9 @@
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ManipulatorControl.resx">
+      <DependentUpon>ManipulatorControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SrvDriverControl.resx">
       <DependentUpon>SrvDriverControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -93,6 +102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="StereoViewForm.resx">
       <DependentUpon>StereoViewForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TurnControl.resx">
+      <DependentUpon>TurnControl.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -113,6 +125,12 @@
     </Compile>
     <Compile Include="StereoViewForm.Designer.cs">
       <DependentUpon>StereoViewForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TurnControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TurnControl.Designer.cs">
+      <DependentUpon>TurnControl.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

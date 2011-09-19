@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -64,34 +64,32 @@ namespace AForge.Imaging.Filters
         /// source images and which pixel format will be used for resulting image.
         /// </para>
         /// 
-        /// <para>See <see cref="IFilterInformation.FormatTranslations"/> for more information.</para>
+        /// <para>See <see cref="IFilterInformation.FormatTransalations"/> for more information.</para>
         /// </remarks>
         ///
-        public Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
             get
             {
-                Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+                Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
                 // initialize format translation dictionary
                 if ( originalImage == null )
                 {
-                    formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-                    formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-                    formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
-                    formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-                    formatTranslations[PixelFormat.Format32bppPArgb]  = PixelFormat.Format32bppPArgb;
+                    formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+                    formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+                    formatTransalations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+                    formatTransalations[PixelFormat.Format32bppPArgb]  = PixelFormat.Format32bppPArgb;
                 }
                 else
                 {
-                    formatTranslations[PixelFormat.Format8bppIndexed] = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format24bppRgb]    = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppArgb]   = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppRgb]    = originalImage.PixelFormat;
-                    formatTranslations[PixelFormat.Format32bppPArgb]  = originalImage.PixelFormat;
+                    formatTransalations[PixelFormat.Format8bppIndexed] = originalImage.PixelFormat;
+                    formatTransalations[PixelFormat.Format24bppRgb]    = originalImage.PixelFormat;
+                    formatTransalations[PixelFormat.Format32bppArgb]   = originalImage.PixelFormat;
+                    formatTransalations[PixelFormat.Format32bppPArgb]  = originalImage.PixelFormat;
                 }
 
-                return formatTranslations;
+                return formatTransalations;
             }
         }
 
@@ -161,7 +159,7 @@ namespace AForge.Imaging.Filters
         public Bitmap Apply( BitmapData imageData )
         {
             // check pixel format of the source image
-            if ( !FormatTranslations.ContainsKey( imageData.PixelFormat ) )
+            if ( !FormatTransalations.ContainsKey( imageData.PixelFormat ) )
                 throw new UnsupportedImageFormatException( "Source pixel format is not supported by the filter." );
 
             // locate blobs in the source image
@@ -194,7 +192,7 @@ namespace AForge.Imaging.Filters
             // extract biggest blob's image
             if ( originalImage == null )
             {
-                blobCounter.ExtractBlobsImage( new UnmanagedImage( imageData ), biggestBlob, false );
+                blobCounter.ExtractBlobsImage( imageData, biggestBlob, false );
             }
             else
             {
@@ -202,7 +200,6 @@ namespace AForge.Imaging.Filters
                 if (
                     ( originalImage.PixelFormat != PixelFormat.Format24bppRgb ) &&
                     ( originalImage.PixelFormat != PixelFormat.Format32bppArgb ) &&
-                    ( originalImage.PixelFormat != PixelFormat.Format32bppRgb ) &&
                     ( originalImage.PixelFormat != PixelFormat.Format32bppPArgb ) &&
                     ( originalImage.PixelFormat != PixelFormat.Format8bppIndexed )
                     )
@@ -219,12 +216,7 @@ namespace AForge.Imaging.Filters
                 blobCounter.ExtractBlobsImage( originalImage, biggestBlob, false );
             }
 
-            Bitmap managedImage = biggestBlob.Image.ToManagedImage( );
-
-            // dispose unmanaged image of the biggest blob
-            biggestBlob.Image.Dispose( );
-
-            return managedImage;
+            return biggestBlob.Image;
         }
 
         /// <summary>

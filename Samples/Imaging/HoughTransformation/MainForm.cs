@@ -1,9 +1,8 @@
+// AForge.NET Framework
 // Hough line and circle transformation demo
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -15,7 +14,6 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 
-using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 
@@ -56,9 +54,7 @@ namespace HoughTransform
                 if ( openFileDialog.ShowDialog( ) == DialogResult.OK )
                 {
                     // load image
-                    Bitmap tempImage = (Bitmap) Bitmap.FromFile( openFileDialog.FileName );
-                    Bitmap image = AForge.Imaging.Image.Clone( tempImage, PixelFormat.Format24bppRgb );
-                    tempImage.Dispose( );
+                    Bitmap image = (Bitmap) Bitmap.FromFile( openFileDialog.FileName );
                     // format image
                     AForge.Imaging.Image.FormatImage( ref image );
                     // lock the source image
@@ -123,8 +119,8 @@ namespace HoughTransform
 
                         // draw line on the image
                         Drawing.Line( sourceData,
-                            new IntPoint( (int) x0 + w2, h2 - (int) y0 ),
-                            new IntPoint( (int) x1 + w2, h2 - (int) y1 ),
+                            new Point( (int) x0 + w2, h2 - (int) y0 ),
+                            new Point( (int) x1 + w2, h2 - (int) y1 ),
                             Color.Red ); */
                     }
 

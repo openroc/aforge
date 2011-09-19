@@ -1,9 +1,8 @@
+// AForge Framework
 // Kohonen SOM 2D Organizing
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -666,7 +665,7 @@ namespace SOMOrganizing
 		void SearchSolution( )
 		{
 			// set random generators range
-			Neuron.RandRange = new Range( 0, Math.Max( pointsPanel.ClientRectangle.Width, pointsPanel.ClientRectangle.Height ) );
+			Neuron.RandRange = new DoubleRange( 0, Math.Max( pointsPanel.ClientRectangle.Width, pointsPanel.ClientRectangle.Height ) );
 
 			// create network
 			DistanceNetwork network = new DistanceNetwork( 2, networkSize * networkSize );

@@ -307,11 +307,8 @@ namespace AForge.Imaging
                 }
             }
 
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-            {
-                // free grayscale image
-                grayImage.Dispose( );
-            }
+            // free grayscale image
+            grayImage.Dispose( );
 
             // collect interesting points - only those points, which are local maximums
             List<IntPoint> cornersList = new List<IntPoint>( );

@@ -17,8 +17,7 @@ namespace AForge.Imaging.Filters
     /// Base class for error diffusion dithering.
     /// </summary>
     /// 
-    /// <remarks><para>The class is the base class for binarization algorithms based on
-    /// <a href="http://en.wikipedia.org/wiki/Error_diffusion">error diffusion</a>.</para>
+    /// <remarks><para>The class is the base class for binarization algorithms based on error diffusion.</para>
     /// 
     /// <para>Binarization with error diffusion in its idea is similar to binarization based on thresholding
     /// of pixels' cumulative value (see <see cref="ThresholdWithCarry"/>). Each pixel is binarized based not only
@@ -84,14 +83,14 @@ namespace AForge.Imaging.Filters
         protected int stride;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -101,7 +100,7 @@ namespace AForge.Imaging.Filters
         protected ErrorDiffusionDithering( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
         }
 
         /// <summary>

@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -42,14 +41,14 @@ namespace AForge.Imaging.Filters
         private int hue = 0;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
         
         /// <summary>
@@ -70,10 +69,9 @@ namespace AForge.Imaging.Filters
         /// 
         public HueModifier( )
         {
-            formatTranslations[PixelFormat.Format24bppRgb]   = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]   = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]  = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format32bppPArgb] = PixelFormat.Format32bppPArgb;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>
@@ -96,13 +94,11 @@ namespace AForge.Imaging.Filters
         ///
         protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
         {
-            int pixelSize = Bitmap.GetPixelFormatSize( image.PixelFormat ) / 8;
-
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width * pixelSize;
+            int offset  = image.Stride - rect.Width * 3;
 
             RGB rgb = new RGB( );
             HSL hsl = new HSL( );
@@ -111,13 +107,13 @@ namespace AForge.Imaging.Filters
             byte* ptr = (byte*) image.ImageData.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX * pixelSize );
+            ptr += ( startY * image.Stride + startX * 3 );
 
             // for each row
             for ( int y = startY; y < stopY; y++ )
             {
                 // for each pixel
-                for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                for ( int x = startX; x < stopX; x++, ptr += 3 )
                 {
                     rgb.Red     = ptr[RGB.R];
                     rgb.Green   = ptr[RGB.G];

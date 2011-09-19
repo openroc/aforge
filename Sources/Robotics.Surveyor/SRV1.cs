@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Robotics.Surveyor
@@ -64,9 +64,6 @@ namespace AForge.Robotics.Surveyor
     ///
     public class SRV1
     {
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
         /// <summary>
         /// Enumeration of predefined motors' commands.
         /// </summary>
@@ -291,7 +288,7 @@ namespace AForge.Robotics.Surveyor
         {
             Disconnect( );
 
-            lock ( sync )
+            lock ( this )
             {
                 try
                 {
@@ -340,7 +337,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public void Disconnect( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( thread != null )
                 {
@@ -465,7 +462,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public SRV1Camera GetCamera( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( socket == null )
                 {
@@ -537,7 +534,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public int SendAndReceive( byte[] request, byte[] responseBuffer )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( socket == null )
                 {
@@ -781,7 +778,7 @@ namespace AForge.Robotics.Surveyor
         /// using 6<sup>th</sup> and 7<sup>th</sup> timers.</note></para>
         /// </remarks>
         /// 
-        public void ControlServos( int leftServo, int rightServo )
+        public void ControlServos( byte leftServo, byte rightServo )
         {
             // check limts
             if ( leftServo > 100 )
@@ -789,7 +786,7 @@ namespace AForge.Robotics.Surveyor
             if ( rightServo > 100 )
                 rightServo = 100;
 
-            Send( new byte[] { (byte) 's', (byte) leftServo, (byte) rightServo } );
+            Send( new byte[] { (byte) 's', leftServo, rightServo } );
         }
 
         /// <summary>
@@ -1058,12 +1055,12 @@ namespace AForge.Robotics.Surveyor
         {
             bool lastRequestFailed = false;
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+            while ( !stopEvent.WaitOne( 0, true ) )
             {
                 // wait for any request
                 requestIsAvailable.WaitOne( );
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+                while ( !stopEvent.WaitOne( 0, true ) )
                 {
                     // get next communication request from queue
                     CommunicationRequest cr = null;
@@ -1121,7 +1118,7 @@ namespace AForge.Robotics.Surveyor
                                 }
 
                                 // read the rest
-                                while ( !stopEvent.WaitOne( 0, false ) )
+                                while ( !stopEvent.WaitOne( 0, true ) )
                                 {
                                     int read = socket.Receive( cr.ResponseBuffer, cr.BytesRead,
                                         Math.Min( readSize, bytesToRead ), SocketFlags.None );
@@ -1163,7 +1160,7 @@ namespace AForge.Robotics.Surveyor
                                             }
                                         }
 
-                                        if ( ( endLineWasFound ) || stopEvent.WaitOne( 0, false ) )
+                                        if ( ( endLineWasFound ) || stopEvent.WaitOne( 0, true ) )
                                             break;
 
                                         // read more
@@ -1212,7 +1209,7 @@ namespace AForge.Robotics.Surveyor
                     finally
                     {
                         // signal about available response to the waiting caller
-                        if ( ( stopEvent != null ) && ( !stopEvent.WaitOne( 0, false ) ) && ( cr.ResponseBuffer != null ) )
+                        if ( ( !stopEvent.WaitOne( 0, true ) ) && ( cr.ResponseBuffer != null ) )
                         {
                             lastRequestWithReply = cr;
                             replyIsAvailable.Set( );
@@ -1226,7 +1223,7 @@ namespace AForge.Robotics.Surveyor
         {
             byte[] buffer = new byte[100];
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+            while ( !stopEvent.WaitOne( 0, true ) )
             {
                 int read = socket.Receive( buffer, 0, 100, SocketFlags.None );
 

@@ -58,14 +58,14 @@ namespace AForge.Imaging.Filters
         private bool fillOutsideRange = true;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         #region Public properties
@@ -115,10 +115,6 @@ namespace AForge.Imaging.Filters
         /// Determines, if pixels should be filled inside or outside of specified
         /// color ranges.
         /// </summary>
-        /// 
-        /// <remarks><para>Default value is set to <see langword="true"/>, which means
-        /// the filter removes colors outside of the specified range.</para></remarks>
-        /// 
         public bool FillOutsideRange
         {
             get { return fillOutsideRange; }
@@ -133,9 +129,9 @@ namespace AForge.Imaging.Filters
         /// 
         public ColorFiltering( )
         {
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>

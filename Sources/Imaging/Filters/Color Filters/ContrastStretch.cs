@@ -1,9 +1,10 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright ©
+//   Andrew Kirillov (andrew.kirillov@aforgenet.com),
+//   Mladen Prajdic  (spirit1_fe@yahoo.com)
+// 2005-2009
 //
 
 namespace AForge.Imaging.Filters
@@ -19,7 +20,7 @@ namespace AForge.Imaging.Filters
     /// 
     /// <remarks><para>Contrast stretching (or as it is often called normalization) is a simple image enhancement
     /// technique that attempts to improve the contrast in an image by 'stretching' the range of intensity values
-    /// it contains to span a desired range of values, e.g. the full range of pixel values that the image type
+    /// it contains to span a desired range of values, e.g. the the full range of pixel values that the image type
     /// concerned allows. It differs from the more sophisticated <see cref="HistogramEqualization">histogram equalization</see>
     /// in that it can only apply a linear scaling function to the image pixel values.</para>
     /// 
@@ -46,14 +47,14 @@ namespace AForge.Imaging.Filters
     public class ContrastStretch : BaseInPlacePartialFilter
     {
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>   
@@ -61,10 +62,10 @@ namespace AForge.Imaging.Filters
         /// </summary>
         public ContrastStretch( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]    = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]   = PixelFormat.Format32bppArgb;
         }
 
         /// <summary>
