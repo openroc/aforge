@@ -24,16 +24,16 @@ namespace AForge.Imaging
     /// <para><note>Due to limitations of Moravec corners detector (anisotropic response, etc.) its usage is limited
     /// to certain cases only.</note></para>
     /// 
-    /// <para>The class processes only grayscale 8 bpp and color 24/32 bpp images.</para>
+    /// <para>The class processes only grayscale 8 bpp and color 24 bpp images.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
     /// // create corner detector's instance
     /// MoravecCornersDetector mcd = new MoravecCornersDetector( );
     /// // process image searching for corners
-    /// List&lt;IntPoint&gt; corners = scd.ProcessImage( image );
+    /// Point[] corners = mcd.ProcessImage( image );
     /// // process points
-    /// foreach ( IntPoint corner in corners )
+    /// foreach ( Point corner in corners )
     /// {
     ///     // ... 
     /// }
@@ -131,14 +131,12 @@ namespace AForge.Imaging
         /// 
         /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( Bitmap image )
+        public Point[] ProcessImage( Bitmap image )
         {
             // check image format
             if (
                 ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
-                ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppArgb )
+                ( image.PixelFormat != PixelFormat.Format24bppRgb )
                 )
             {
                 throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
@@ -149,7 +147,7 @@ namespace AForge.Imaging
                 new Rectangle( 0, 0, image.Width, image.Height ),
                 ImageLockMode.ReadOnly, image.PixelFormat );
 
-            List<IntPoint> corners;
+            Point[] corners;
 
             try
             {
@@ -175,7 +173,7 @@ namespace AForge.Imaging
         /// 
         /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( BitmapData imageData )
+        public Point[] ProcessImage( BitmapData imageData )
         {
             return ProcessImage( new UnmanagedImage( imageData ) );
         }
@@ -190,14 +188,12 @@ namespace AForge.Imaging
         ///
         /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( UnmanagedImage image )
+        public Point[] ProcessImage( UnmanagedImage image )
         {
             // check image format
             if (
                 ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
-                ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppArgb )
+                ( image.PixelFormat != PixelFormat.Format24bppRgb )
                 )
             {
                 throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
@@ -207,7 +203,7 @@ namespace AForge.Imaging
             int width  = image.Width;
             int height = image.Height;
             int stride = image.Stride;
-            int pixelSize = Bitmap.GetPixelFormatSize( image.PixelFormat ) / 8;
+            int pixelSize = ( image.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
             // window radius
             int windowRadius = windowSize / 2;
 
@@ -284,7 +280,7 @@ namespace AForge.Imaging
             }
 
             // collect interesting points - only those points, which are local maximums
-            List<IntPoint> cornersList = new List<IntPoint>( );
+            List<Point> cornersList = new List<Point>( );
 
             // for each row
             for ( int y = windowRadius, maxY = height - windowRadius; y < maxY; y++ )
@@ -311,12 +307,16 @@ namespace AForge.Imaging
                     // check if this point is really interesting
                     if ( currentValue != 0 )
                     {
-                        cornersList.Add( new IntPoint( x, y ) );
+                        cornersList.Add( new Point( x, y ) );
                     }
                 }
             }
 
-            return cornersList;
+            // convert list to array
+            Point[] corners = new Point[cornersList.Count];
+            cornersList.CopyTo( corners );
+
+            return corners;
         }
     }
 }

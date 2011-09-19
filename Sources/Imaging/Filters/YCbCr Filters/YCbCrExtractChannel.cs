@@ -38,14 +38,14 @@ namespace AForge.Imaging.Filters
 		private short channel = YCbCr.YIndex;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
 		/// <summary>
@@ -80,9 +80,9 @@ namespace AForge.Imaging.Filters
 		public YCbCrExtractChannel( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
         }
 
 		/// <summary>

@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 namespace AForge.Fuzzy
 {
@@ -28,15 +31,15 @@ namespace AForge.Fuzzy
     /// <para>Sample usage:</para>
     /// <code>
     /// // creating an array of points representing a typical trapezoidal function /-\
-    /// Point [] points = new Point[4];
+    /// DoublePoint [] points = new DoublePoint[4];
     /// // point where membership starts to rise
-    /// points[0] = new Point( 10, 0 );
+    /// points[0] = new DoublePoint( 10, 0 );
     /// // maximum membership (1) reached at the second point 
-    /// points[1] = new Point( 20, 1 );
+    /// points[1] = new DoublePoint( 20, 1 );
     /// // membership starts to fall at the third point 
-    /// points[2] = new Point( 30, 1 );
+    /// points[2] = new DoublePoint( 30, 1 );
     /// // membership gets to zero at the last point 
-    /// points[3] = new Point( 40, 0 );
+    /// points[3] = new DoublePoint( 40, 0 );
     /// // creating the instance
     /// PiecewiseLinearFunction membershipFunction = new PiecewiseLinearFunction( points );
     /// // getting membership for several points
@@ -50,7 +53,7 @@ namespace AForge.Fuzzy
         /// <summary>
         /// Vector of (X,Y) coordinates for end/start of each line.
         /// </summary>
-        protected Point[] points;
+        protected DoublePoint[] points;
 
         /// <summary>
         /// The leftmost x value of the membership function, given by the first (X,Y) coordinate.
@@ -58,7 +61,7 @@ namespace AForge.Fuzzy
         /// 
         /// <exception cref="NullReferenceException">Points of the membership function are not initialized.</exception>
         ///
-        public float LeftLimit
+        public double LeftLimit
         {
             get
             {
@@ -72,7 +75,7 @@ namespace AForge.Fuzzy
         /// 
         /// <exception cref="NullReferenceException">Points of the membership function are not initialized.</exception>
         ///
-        public float RightLimit
+        public double RightLimit
         {
             get
             {
@@ -104,7 +107,7 @@ namespace AForge.Fuzzy
         /// <exception cref="ArgumentException">Points must be in crescent order on X axis.</exception>
         /// <exception cref="ArgumentException">Y value of points must be in the range of [0, 1].</exception>
         /// 
-        public PiecewiseLinearFunction( Point[] points )
+        public PiecewiseLinearFunction( DoublePoint[] points )
         {
             this.points = points;
 
@@ -132,11 +135,11 @@ namespace AForge.Fuzzy
         /// 
         /// <exception cref="NullReferenceException">Points of the membership function are not initialized.</exception>
         ///
-        public float GetMembership( float x )
+        public double GetMembership( double x )
         {
             // no values belong to the fuzzy set, if there are no points in the piecewise function
             if ( points.Length == 0 )
-                return 0.0f;
+                return 0.0;
 
             // if X value is less than the first point, so first point's Y will be returned as membership
             if ( x < points[0].X )
@@ -149,12 +152,12 @@ namespace AForge.Fuzzy
                 if ( x < points[i].X )
                 {
                     // points to calculate line's equation
-                    float y1 = points[i].Y;
-                    float y0 = points[i - 1].Y;
-                    float x1 = points[i].X;
-                    float x0 = points[i - 1].X;
+                    double y1 = points[i].Y;
+                    double y0 = points[i - 1].Y;
+                    double x1 = points[i].X;
+                    double x0 = points[i - 1].X;
                     // angular coefficient
-                    float m = ( y1 - y0 ) / ( x1 - x0 );
+                    double m = ( y1 - y0 ) / ( x1 - x0 );
                     // returning the membership - the Y value for this X
                     return m * ( x - x0 ) + y0;
                 }

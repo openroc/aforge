@@ -43,7 +43,7 @@ namespace AForge.Math
         /// 
         public static bool IsPowerOf2( int x )
         {
-            return ( x > 0 ) ? ( ( x & ( x - 1 ) ) == 0 ) : false;
+            return ( x & ( x - 1 ) ) == 0;
         }
 
         /// <summary>

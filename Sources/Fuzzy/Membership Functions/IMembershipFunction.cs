@@ -2,10 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
 //
-
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
+//
 namespace AForge.Fuzzy
 {
     using System;
@@ -29,17 +31,17 @@ namespace AForge.Fuzzy
         /// 
         /// <returns>Degree of membership [0..1] of the value to the fuzzy set.</returns>
         /// 
-        float GetMembership( float x );
+        double GetMembership( double x );
 
         /// <summary>
         /// The leftmost x value of the membership function.
         /// </summary>
-        float LeftLimit { get; }
+        double LeftLimit { get; }
 
         /// <summary>
         /// The rightmost x value of the membership function.
         /// </summary>
-        float RightLimit { get; }
+        double RightLimit { get; }
     }
 }
 

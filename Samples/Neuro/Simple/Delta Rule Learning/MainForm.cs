@@ -1,9 +1,8 @@
+// AForge Framework
 // Classifier using Delta Rule Learning 
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -990,7 +989,7 @@ namespace Classifier
 					errors[i, 1] = (double) errorsList[i];
 				}
 
-				errorChart.RangeX = new Range( 0, errorsList.Count - 1 );
+				errorChart.RangeX = new DoubleRange( 0, errorsList.Count - 1 );
 				errorChart.UpdateDataSeries( "error", errors );
 			}
 			catch ( IOException )

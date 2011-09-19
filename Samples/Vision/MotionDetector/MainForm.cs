@@ -2,8 +2,8 @@
 // AForge.NET Framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -16,7 +16,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using AForge;
 using AForge.Imaging;
 using AForge.Video;
 using AForge.Video.VFW;
@@ -51,13 +50,11 @@ namespace MotionDetectorSample
         private float motionAlarmLevel = 0.015f;
 
         private List<float> motionHistory = new List<float>( );
-        private int detectedObjectsCount = -1;
 
         // Constructor
         public MainForm( )
         {
             InitializeComponent( );
-            Application.Idle += new EventHandler( Application_Idle );
         }
 
         // Application's main form is closing
@@ -173,7 +170,7 @@ namespace MotionDetectorSample
             CloseVideoSource( );
 
             // start new video source
-            videoSourcePlayer.VideoSource = new AsyncVideoSource( source );
+            videoSourcePlayer.VideoSource = source;
             videoSourcePlayer.Start( );
 
             // reset statistics
@@ -238,11 +235,11 @@ namespace MotionDetectorSample
                     if ( detector.MotionProcessingAlgorithm is BlobCountingObjectsProcessing )
                     {
                         BlobCountingObjectsProcessing countingDetector = (BlobCountingObjectsProcessing) detector.MotionProcessingAlgorithm;
-                        detectedObjectsCount = countingDetector.ObjectsCount;
+                        objectsCountLabel.Text = "Objects: " + countingDetector.ObjectsCount.ToString( );
                     }
                     else
                     {
-                        detectedObjectsCount = -1;
+                        objectsCountLabel.Text = "";
                     }
 
                     // accumulate history
@@ -256,12 +253,6 @@ namespace MotionDetectorSample
                         DrawMotionHistory( image );
                 }
             }
-        }
-
-        // Update some UI elements
-        private void Application_Idle( object sender, EventArgs e )
-        {
-            objectsCountLabel.Text = ( detectedObjectsCount < 0 ) ? string.Empty : "Objects: " + detectedObjectsCount;
         }
 
         // Draw motion history
@@ -288,23 +279,23 @@ namespace MotionDetectorSample
                     motionBarLength = 50;
 
                 Drawing.Line( bitmapData,
-                    new IntPoint( image.Width - i, image.Height - 1 ),
-                    new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
+                    new Point( image.Width - i, image.Height - 1 ),
+                    new Point( image.Width - i, image.Height - 1 - motionBarLength ),
                     greenColor );
 
                 if ( motionBarLength > t1 )
                 {
                     Drawing.Line( bitmapData,
-                        new IntPoint( image.Width - i, image.Height - 1 - t1 ),
-                        new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
+                        new Point( image.Width - i, image.Height - 1 - t1 ),
+                        new Point( image.Width - i, image.Height - 1 - motionBarLength ),
                         yellowColor );
                 }
 
                 if ( motionBarLength > t2 )
                 {
                     Drawing.Line( bitmapData,
-                        new IntPoint( image.Width - i, image.Height - 1 - t2 ),
-                        new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
+                        new Point( image.Width - i, image.Height - 1 - t2 ),
+                        new Point( image.Width - i, image.Height - 1 - motionBarLength ),
                         redColor );
                 }
             }
@@ -404,7 +395,7 @@ namespace MotionDetectorSample
         {
             lock ( this )
             {
-                detector.MotionDetectionAlgorithm = detectionAlgorithm;
+                detector.MotionDetectionAlgorthm = detectionAlgorithm;
                 motionHistory.Clear( );
 
                 if ( detectionAlgorithm is TwoFramesDifferenceDetector )

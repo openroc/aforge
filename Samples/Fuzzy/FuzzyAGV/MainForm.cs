@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 using System;
@@ -474,9 +474,9 @@ namespace FuzzyAGV
             // Going Straight (if can go anywhere)
             IS.NewRule( "Rule 2", "IF FrontalDistance IS Far AND RightDistance IS Far AND LeftDistance IS Far THEN Angle IS Zero" );
             // Near right wall
-            IS.NewRule( "Rule 3", "IF RightDistance IS Near AND LeftDistance IS Not Near THEN Angle IS LittleNegative" );
+            IS.NewRule( "Rule 3", "IF RightDistance IS Near AND LeftDistance IS Medium THEN Angle IS LittleNegative" );
             // Near left wall
-            IS.NewRule("Rule 4", "IF RightDistance IS Not Near AND LeftDistance IS Near THEN Angle IS LittlePositive");
+            IS.NewRule( "Rule 4", "IF RightDistance IS Medium AND LeftDistance IS Near THEN Angle IS LittlePositive" );
             // Near front wall - room at right
             IS.NewRule( "Rule 5", "IF RightDistance IS Far AND FrontalDistance IS Near THEN Angle IS Positive" );
             // Near front wall - room at left
@@ -489,9 +489,9 @@ namespace FuzzyAGV
         private void DoInference( )
         {
             // Setting inputs
-            IS.SetInput( "RightDistance", Convert.ToSingle( txtRight.Text ) );
-            IS.SetInput( "LeftDistance", Convert.ToSingle( txtLeft.Text ) );
-            IS.SetInput( "FrontalDistance", Convert.ToSingle( txtFront.Text ) );
+            IS.SetInput( "RightDistance", Convert.ToDouble( txtRight.Text ) );
+            IS.SetInput( "LeftDistance", Convert.ToDouble( txtLeft.Text ) );
+            IS.SetInput( "FrontalDistance", Convert.ToDouble( txtFront.Text ) );
 
             // Setting outputs
             try

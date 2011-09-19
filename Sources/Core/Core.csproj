@@ -38,19 +38,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Delegates.cs" />
     <Compile Include="DoublePoint.cs" />
     <Compile Include="DoubleRange.cs" />
-    <Compile Include="EventArgs.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="IntPoint.cs" />
     <Compile Include="IntRange.cs" />
     <Compile Include="Parallel.cs" />
-    <Compile Include="Point.cs" />
     <Compile Include="PolishExpression.cs" />
-    <Compile Include="Range.cs" />
     <Compile Include="SystemTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

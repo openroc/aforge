@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 
 namespace AForge.Fuzzy
@@ -37,6 +40,6 @@ namespace AForge.Fuzzy
         /// 
         /// <returns>The numerical representation of the fuzzy output.</returns>
         /// 
-        float Defuzzify( FuzzyOutput fuzzyOutput, INorm normOperator );
+        double Defuzzify( FuzzyOutput fuzzyOutput, INorm normOperator );
     }
 }

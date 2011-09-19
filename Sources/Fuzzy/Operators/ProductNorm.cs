@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2009
+// andrew.kirillov@aforgenet.com
+//
+// Copyright © Fabio L. Caversan, 2008-2009
+// fabio.caversan@gmail.com
 //
 namespace AForge.Fuzzy
 {
@@ -19,19 +22,19 @@ namespace AForge.Fuzzy
     /// 
     /// <para>Sample usage:</para>
     /// <code>
-    /// // creating 2 fuzzy sets to represent Cool (Temperature) and Near (Distance)
+    /// // creating 2 fuzzy sets to represent Cool (Temperatura) and Near (Distance)
     /// TrapezoidalFunction function1 = new TrapezoidalFunction( 13, 18, 23, 28 );
     /// FuzzySet fsCool = new FuzzySet( "Cool", function1 );
     /// TrapezoidalFunction function2 = new TrapezoidalFunction( 23, 28, 33, 38 );
     /// FuzzySet fsNear = new FuzzySet( "Near", function2 );
     /// 
     /// // getting memberships
-    /// float m1 = fsCool.GetMembership( 15 );
-    /// float m2 = fsNear.GetMembership( 35 );
+    /// double m1 = fsCool.GetMembership( 15 );
+    /// double m2 = fsNear.GetMembership( 35 );
     /// 
     /// // computing the membership of "Cool AND Near"
     /// ProductNorm AND = new ProductNorm( );
-    /// float result = AND.Evaluate( m1, m2 );
+    /// double result = AND.Evaluate( m1, m2 );
     ///              
     /// // show result
     /// Console.WriteLine( result );
@@ -53,7 +56,7 @@ namespace AForge.Fuzzy
         /// <returns>The numerical result of the AND operation applied to <paramref name="membershipA"/>
         /// and <paramref name="membershipB"/>.</returns>
         /// 
-        public float Evaluate( float membershipA, float membershipB )
+        public double Evaluate( double membershipA, double membershipB )
         {
             return membershipA * membershipB;
         }

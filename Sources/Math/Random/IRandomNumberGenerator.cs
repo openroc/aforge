@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Random
@@ -24,13 +24,13 @@ namespace AForge.Math.Random
         /// Mean value of generator.
         /// </summary>
         /// 
-        float Mean { get; }
+        double Mean { get; }
 
         /// <summary>
         /// Variance value of generator.
         /// </summary>
         /// 
-        float Variance { get; }
+        double Variance { get; }
 
         /// <summary>
         /// Generate next random number.
@@ -38,7 +38,7 @@ namespace AForge.Math.Random
         /// 
         /// <returns>Returns next random number.</returns>
         /// 
-        float Next( );
+        double Next( );
 
         /// <summary>
         /// Set seed of the random numbers generator.

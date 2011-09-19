@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -131,14 +130,14 @@ namespace AForge.Imaging.Filters
         public readonly double BlueCoefficient;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -156,11 +155,11 @@ namespace AForge.Imaging.Filters
             BlueCoefficient  = cb;
 
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format48bppRgb]  = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format24bppRgb]  = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format32bppRgb]  = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format32bppArgb] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format48bppRgb]  = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
         }
 
         /// <summary>
@@ -205,8 +204,8 @@ namespace AForge.Imaging.Filters
             else
             {
                 int pixelSize = ( srcPixelFormat == PixelFormat.Format48bppRgb ) ? 3 : 4;
-                byte* srcBase = (byte*) sourceData.ImageData.ToPointer( );
-                byte* dstBase = (byte*) destinationData.ImageData.ToPointer( );
+                int srcBase   = (int) sourceData.ImageData.ToPointer( );
+                int dstBase   = (int) destinationData.ImageData.ToPointer( );
                 int srcStride = sourceData.Stride;
                 int dstStride = destinationData.Stride;
 
