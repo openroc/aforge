@@ -2,8 +2,11 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright � Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
+//
+// Resolution of device's video capabilities was contributed by
+// Yves Vander Haeghen 2009, based on code by Brian Low on CodeProject
 //
 
 namespace AForge.Video.DirectShow
@@ -21,11 +24,8 @@ namespace AForge.Video.DirectShow
     /// Video source for local video capture device (for example USB webcam).
     /// </summary>
     /// 
-    /// <remarks><para>This video source class captures video data from local video capture device,
-    /// like USB web camera (or internal), frame grabber, capture board - anything which
-    /// supports <b>DirectShow</b> interface. For devices which has a shutter button or
-    /// support external software triggering, the class also allows to do snapshots. Both
-    /// video size and snapshot size can be configured.</para>
+    /// <remarks><para>The video source captures video data from local video capture device.
+    /// DirectShow is used for capturing.</para>
     /// 
     /// <para>Sample usage:</para>
     /// <code>
@@ -38,7 +38,7 @@ namespace AForge.Video.DirectShow
     /// // start the video source
     /// videoSource.Start( );
     /// // ...
-    /// // signal to stop when you no longer need capturing
+    /// // signal to stop
     /// videoSource.SignalToStop( );
     /// // ...
     /// 
@@ -59,57 +59,18 @@ namespace AForge.Video.DirectShow
         private int framesReceived;
         // recieved byte count
         private int bytesReceived;
-        // specifies desired size of captured video frames
+        // specifies desired size of captured frames
         private Size desiredFrameSize = new Size( 0, 0 );
-        // specifies desired video capture frame rate
+        // specifies desired capture frame rate
         private int desiredFrameRate = 0;
-        // specifies desired size of captured snapshot frames
-        private Size desiredSnapshotSize = new Size( 0, 0 );
-        // provide snapshots or not
-        private bool provideSnapshots = false;
 
         private Thread thread = null;
         private ManualResetEvent stopEvent = null;
 
         private VideoCapabilities[] videoCapabilities;
-        private VideoCapabilities[] snapshotCapabilities;
 
-        private bool needToSimulateTrigger = false;
         private bool needToDisplayPropertyPage = false;
         private IntPtr parentWindowForPropertyPage = IntPtr.Zero;
-
-        // video capture source object
-        private object sourceObject = null;
-        
-        // time of starting the DirectX graph
-        private DateTime startTime = new DateTime( );
-
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
-        /// <summary>
-        /// Specifies if snapshots should be provided or not.
-        /// </summary>
-        /// 
-        /// <remarks><para>Some USB cameras/devices may have a shutter button, which may result into snapshot if it
-        /// is pressed. So the property specifies if the video source will try providing snapshots or not - it will
-        /// check if the camera supports providing still image snapshots. If camera supports snapshots and the property
-        /// is set to <see langword="true"/>, then snapshots will be provided through <see cref="SnapshotFrame"/>
-        /// event.</para>
-        /// 
-        /// <para>Check supported sizes of snapshots using <see cref="SnapshotCapabilities"/> property and set the
-        /// desired size using <see cref="DesiredSnapshotSize"/> property.</para>
-        /// 
-        /// <para><note>The property must be set before running the video source to take effect.</note></para>
-        /// 
-        /// <para>Default value of the property is set to <see langword="false"/>.</para>
-        /// </remarks>
-        ///
-        public bool ProvideSnapshots
-        {
-            get { return provideSnapshots; }
-            set { provideSnapshots = value; }
-        }
 
         /// <summary>
         /// New frame event.
@@ -123,24 +84,6 @@ namespace AForge.Video.DirectShow
         /// </remarks>
         /// 
         public event NewFrameEventHandler NewFrame;
-
-        /// <summary>
-        /// Snapshot frame event.
-        /// </summary>
-        /// 
-        /// <remarks><para>Notifies clients about new available snapshot frame - the one which comes when
-        /// camera's snapshot/shutter button is pressed.</para>
-        /// 
-        /// <para>See documentation to <see cref="ProvideSnapshots"/> for additional information.</para>
-        /// 
-        /// <para><note>Since video source may have multiple clients, each client is responsible for
-        /// making a copy (cloning) of the passed snapshot frame, because the video source disposes its
-        /// own original copy after notifying of clients.</note></para>
-        /// </remarks>
-        /// 
-        /// <seealso cref="ProvideSnapshots"/>
-        /// 
-        public event NewFrameEventHandler SnapshotFrame;
 
         /// <summary>
         /// Video source error event.
@@ -232,15 +175,15 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Desired size of captured video frames.
+        /// Desired size of captured frames.
         /// </summary>
         /// 
-        /// <remarks><para>The property sets desired video frame size. However capture
-        /// device may not always provide video frames of configured size due to the fact
+        /// <remarks><para>The property sets desired frame size. However capture
+        /// device may not always provide frame with configured size due to the fact
         /// that the size is not supported by it.</para>
         /// 
         /// <para>If the property is set to size (0, 0), then capture device uses its own
-        /// default video frame size configuration.</para>
+        /// default frame size configuration.</para>
         /// 
         /// <para>Default value of the property is set to (0, 0).</para>
         /// 
@@ -251,32 +194,6 @@ namespace AForge.Video.DirectShow
         {
             get { return desiredFrameSize; }
             set { desiredFrameSize = value; }
-        }
-
-        /// <summary>
-        /// Desired size of captured snapshot frames.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property sets desired snapshot size. However capture
-        /// device may not always provide snapshots of configured size due to the fact
-        /// that the size is not supported by it.</para>
-        /// 
-        /// <para>If the property is set to size (0, 0), then capture device uses its own
-        /// default snapshot size configuration.</para>
-        /// 
-        /// <para>See documentation to <see cref="ProvideSnapshots"/> for additional information.</para>
-        /// 
-        /// <para>Default value of the property is set to (0, 0).</para>
-        /// 
-        /// <para><note>The property should be configured before video source is started
-        /// to take effect.</note></para></remarks>
-        /// 
-        /// <seealso cref="ProvideSnapshots"/>
-        /// 
-        public Size DesiredSnapshotSize
-        {
-            get { return desiredSnapshotSize; }
-            set { desiredSnapshotSize = value; }
         }
 
         /// <summary>
@@ -302,10 +219,10 @@ namespace AForge.Video.DirectShow
         }
 
         /// <summary>
-        /// Video capabilities of the device.
+        /// Capabilities of the video device.
         /// </summary>
         /// 
-        /// <remarks><para>The property provides list of device's video capabilities.</para>
+        /// <remarks><para>The property provides list of video device's capabilities.</para>
         /// 
         /// <para><note>Do not call this property immediately after <see cref="Start"/> method, since
         /// device may not start yet and provide its information. It is better to call the property
@@ -320,79 +237,13 @@ namespace AForge.Video.DirectShow
                 {
                     if ( !IsRunning )
                     {
-                        // create graph without playing to get the video/snapshot capabilities only.
-                        // not very clean but it works
+                        // create graph without playing, this will set the video capabilities
+                        // not very clean but it will do
                         WorkerThread( false );
-                    }
-                    else
-                    {
-                        for ( int i = 0; ( i < 500 ) && ( videoCapabilities == null ); i++ )
-                        {
-                            Thread.Sleep( 10 );
-                        }
                     }
                 }
                 return videoCapabilities;
             }
-        }
-
-        /// <summary>
-        /// Snapshot capabilities of the device.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property provides list of device's snapshot capabilities.</para>
-        /// 
-        /// <para>If the array has zero length, then it means that this device does not support making
-        /// snapshots.</para>
-        /// 
-        /// <para>See documentation to <see cref="ProvideSnapshots"/> for additional information.</para>
-        /// 
-        /// <para><note>Do not call this property immediately after <see cref="Start"/> method, since
-        /// device may not start yet and provide its information. It is better to call the property
-        /// before starting device or a bit after (but not immediately after).</note></para>
-        /// </remarks>
-        /// 
-        /// <seealso cref="ProvideSnapshots"/>
-        /// 
-        public VideoCapabilities[] SnapshotCapabilities
-        {
-            get
-            {
-                if ( snapshotCapabilities == null )
-                {
-                    if ( !IsRunning )
-                    {
-                        // create graph without playing to get the video/snapshot capabilities only.
-                        // not very clean but it works
-                        WorkerThread( false );
-                    }
-                    else
-                    {
-                        for ( int i = 0; ( i < 500 ) && ( snapshotCapabilities == null ); i++ )
-                        {
-                            Thread.Sleep( 10 );
-                        }
-                    }
-                }
-                return snapshotCapabilities;
-            }
-        }
-
-        /// <summary>
-        /// Source COM object of camera capture device.
-        /// </summary>
-        /// 
-        /// <remarks><para>The source COM object of camera capture device is exposed for the
-        /// case when user may need get direct access to the object for making some custom
-        /// configuration of camera through DirectShow interface, for example.
-        /// </para>
-        /// 
-        /// <para>If camera is not running, the property is set to <see langword="null"/>.</para>
-        /// </remarks>
-        /// 
-        public object SourceObject
-        {
-            get { return sourceObject; }
         }
 
         /// <summary>
@@ -422,7 +273,7 @@ namespace AForge.Video.DirectShow
         /// 
         public void Start( )
         {
-            if ( !IsRunning )
+            if ( thread == null )
             {
                 // check source
                 if ( ( deviceMoniker == null ) || ( deviceMoniker == string.Empty ) )
@@ -434,7 +285,7 @@ namespace AForge.Video.DirectShow
                 // create events
                 stopEvent = new ManualResetEvent( false );
 
-                lock ( sync )
+                lock ( this )
                 {
                     // create and start new thread
                     thread = new Thread( new ThreadStart( WorkerThread ) );
@@ -535,35 +386,44 @@ namespace AForge.Video.DirectShow
             if ( ( deviceMoniker == null ) || ( deviceMoniker == string.Empty ) )
                 throw new ArgumentException( "Video source is not specified" );
 
-            lock ( sync )
+            lock ( this )
             {
-                if ( IsRunning )
-                {
-                    // pass the request to backgroud thread if video source is running
-                    parentWindowForPropertyPage = parentWindow;
-                    needToDisplayPropertyPage = true;
-                    return;
-                }
-
-                object tempSourceObject = null;
-
+                object sourceObject = null;
                 // create source device's object
                 try
                 {
-                    tempSourceObject = FilterInfo.CreateFilter( deviceMoniker );
+                    sourceObject = FilterInfo.CreateFilter( deviceMoniker );
                 }
                 catch
                 {
-                    throw new ApplicationException( "Failed creating device object for moniker." );
                 }
 
-                if ( !( tempSourceObject is ISpecifyPropertyPages ) )
+                if ( sourceObject == null )
+                {
+                    if ( IsRunning )
+                    {
+                        // if we can not create instance of video source object and video is already
+                        // running, then it seems that we deal with those rare camera drivers, which
+                        // do not allow creating more than one instance of source object.
+
+                        // try to pass the request to backgroud thread in this case
+                        parentWindowForPropertyPage = parentWindow;
+                        needToDisplayPropertyPage = true;
+                        return;
+                    }
+                    else
+                    {
+                        throw new ApplicationException( "Failed creating device object for moniker." );
+                    }
+                }
+
+                if ( !( sourceObject is ISpecifyPropertyPages ) )
                 {
                     throw new NotSupportedException( "The video source does not support configuration property page." );
                 }
 
                 // retrieve ISpecifyPropertyPages interface of the device
-                ISpecifyPropertyPages pPropPages = (ISpecifyPropertyPages) tempSourceObject;
+                ISpecifyPropertyPages pPropPages = (ISpecifyPropertyPages) sourceObject;
 
                 // get property pages from the property bag
                 CAUUID caGUID;
@@ -573,29 +433,12 @@ namespace AForge.Video.DirectShow
                 FilterInfo filterInfo = new FilterInfo( deviceMoniker );
 
                 // create and display the OlePropertyFrame form
-                Win32.OleCreatePropertyFrame( parentWindow, 0, 0, filterInfo.Name, 1, ref tempSourceObject, caGUID.cElems, caGUID.pElems, 0, 0, IntPtr.Zero );
+                Win32.OleCreatePropertyFrame( parentWindow, 0, 0, filterInfo.Name, 1, ref sourceObject, caGUID.cElems, caGUID.pElems, 0, 0, IntPtr.Zero );
 
                 // release COM objects
                 Marshal.FreeCoTaskMem( caGUID.pElems );
-                Marshal.ReleaseComObject( tempSourceObject );
+                Marshal.ReleaseComObject( sourceObject );
             }
-        }
-
-        /// <summary>
-        /// Simulates an external trigger.
-        /// </summary>
-        /// 
-        /// <remarks><para>The method simulates external trigger for video cameras, which support
-        /// providing still image snapshots. The effect is equivalent as pressing camera's shutter
-        /// button - a snapshot will be provided through <see cref="SnapshotFrame"/> event.</para>
-        /// 
-        /// <para><note>The <see cref="ProvideSnapshots"/> property must be set to <see langword="true"/>
-        /// to enable receiving snapshots.</note></para>
-        /// </remarks>
-        /// 
-        public void SimulateTrigger( )
-        {
-            needToSimulateTrigger = true;
         }
 
         /// <summary>
@@ -609,31 +452,22 @@ namespace AForge.Video.DirectShow
 
         private void WorkerThread( bool runGraph )
         {
-            ReasonToFinishPlaying reasonToStop = ReasonToFinishPlaying.StoppedByUser;
-            bool isSapshotSupported = false;
-
             // grabber
-            Grabber videoGrabber = new Grabber( this, false );
-            Grabber snapshotGrabber = new Grabber( this, true );
+            Grabber grabber = new Grabber( this );
 
             // objects
             object captureGraphObject = null;
             object graphObject = null;
-            object videoGrabberObject = null;
-            object snapshotGrabberObject = null;
+            object sourceObject = null;
+            object grabberObject = null;
 
             // interfaces
             ICaptureGraphBuilder2 captureGraph = null;
             IFilterGraph2   graph = null;
             IBaseFilter     sourceBase = null;
-            IBaseFilter     videoGrabberBase = null;
-            IBaseFilter     snapshotGrabberBase = null;
-            ISampleGrabber  videoSampleGrabber = null;
-            ISampleGrabber  snapshotSampleGrabber = null;
+            IBaseFilter     grabberBase = null;
+            ISampleGrabber  sampleGrabber = null;
             IMediaControl   mediaControl = null;
-            IAMVideoControl videoControl = null;
-            IMediaEventEx   mediaEvent = null;
-            IPin            pinStillImage = null;
 
             try
             {
@@ -666,155 +500,127 @@ namespace AForge.Video.DirectShow
                 // get base filter interface of source device
                 sourceBase = (IBaseFilter) sourceObject;
 
-                // get video control interface of the device
-                try
-                {
-                    videoControl = (IAMVideoControl) sourceObject;
-                }
-                catch
-                {
-                    // some camera drivers may not support IAMVideoControl interface
-                }
-
                 // get type of sample grabber
                 type = Type.GetTypeFromCLSID( Clsid.SampleGrabber );
                 if ( type == null )
                     throw new ApplicationException( "Failed creating sample grabber" );
 
-                // create sample grabber used for video capture
-                videoGrabberObject = Activator.CreateInstance( type );
-                videoSampleGrabber = (ISampleGrabber) videoGrabberObject;
-                videoGrabberBase = (IBaseFilter) videoGrabberObject;
-                // create sample grabber used for snapshot capture
-                snapshotGrabberObject = Activator.CreateInstance( type );
-                snapshotSampleGrabber = (ISampleGrabber) snapshotGrabberObject;
-                snapshotGrabberBase = (IBaseFilter) snapshotGrabberObject;
+                // create sample grabber
+                grabberObject = Activator.CreateInstance( type );
+                sampleGrabber = (ISampleGrabber) grabberObject;
+                grabberBase = (IBaseFilter) grabberObject;
 
                 // add source and grabber filters to graph
                 graph.AddFilter( sourceBase, "source" );
-                graph.AddFilter( videoGrabberBase, "grabber_video" );
-                graph.AddFilter( snapshotGrabberBase, "grabber_snapshot" );
+                graph.AddFilter( grabberBase, "grabber" );
 
                 // set media type
                 AMMediaType mediaType = new AMMediaType( );
                 mediaType.MajorType = MediaType.Video;
                 mediaType.SubType   = MediaSubType.RGB24;
 
-                videoSampleGrabber.SetMediaType( mediaType );
-                snapshotSampleGrabber.SetMediaType( mediaType );
+                sampleGrabber.SetMediaType( mediaType );
 
-                if ( videoControl != null )
+                // configure sample grabber
+                sampleGrabber.SetBufferSamples( false );
+                sampleGrabber.SetOneShot( false );
+                sampleGrabber.SetCallback( grabber, 1 );
+
+                // check if it is required to change capture settings
+                if ( ( desiredFrameRate != 0 ) || ( ( desiredFrameSize.Width != 0 ) && ( desiredFrameSize.Height != 0 ) ) )
                 {
-                    // find Still Image output pin of the vedio device
-                    captureGraph.FindPin( sourceObject, PinDirection.Output,
-                        PinCategory.StillImage, MediaType.Video, false, 0, out pinStillImage );
-                    // check if it support trigger mode
-                    if ( pinStillImage != null )
+                    object streamConfigObject;
+                    // get stream configuration object
+                    captureGraph.FindInterface( PinCategory.Capture, MediaType.Video, sourceBase, typeof( IAMStreamConfig ).GUID, out streamConfigObject );
+
+                    if ( streamConfigObject != null )
                     {
-                        VideoControlFlags caps;
-                        videoControl.GetCaps( pinStillImage, out caps );
-                        isSapshotSupported = ( ( caps & VideoControlFlags.ExternalTriggerEnable ) != 0 );
+                        IAMStreamConfig streamConfig = (IAMStreamConfig) streamConfigObject;
+
+                        if ( videoCapabilities == null )
+                        {
+                            // get all video capabilities
+                            try
+                            {
+                                videoCapabilities = AForge.Video.DirectShow.VideoCapabilities.FromStreamConfig( streamConfig );
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        // get current format
+                        streamConfig.GetFormat( out mediaType );
+                        VideoInfoHeader infoHeader = (VideoInfoHeader) Marshal.PtrToStructure( mediaType.FormatPtr, typeof( VideoInfoHeader ) );
+
+                        // change frame size if required
+                        if ( ( desiredFrameSize.Width != 0 ) && ( desiredFrameSize.Height != 0 ) )
+                        {
+                            infoHeader.BmiHeader.Width = desiredFrameSize.Width;
+                            infoHeader.BmiHeader.Height = desiredFrameSize.Height;
+                        }
+                        // change frame rate if required
+                        if ( desiredFrameRate != 0 )
+                        {
+                            infoHeader.AverageTimePerFrame = 10000000 / desiredFrameRate;
+                        }
+
+                        // copy the media structure back
+                        Marshal.StructureToPtr( infoHeader, mediaType.FormatPtr, false );
+
+                        // set the new format
+                        streamConfig.SetFormat( mediaType );
+
+                        mediaType.Dispose( );
                     }
-                }
-
-                // configure video sample grabber
-                videoSampleGrabber.SetBufferSamples( false );
-                videoSampleGrabber.SetOneShot( false );
-                videoSampleGrabber.SetCallback( videoGrabber, 1 );
-
-                // configure snapshot sample grabber
-                snapshotSampleGrabber.SetBufferSamples( true );
-                snapshotSampleGrabber.SetOneShot( false );
-                snapshotSampleGrabber.SetCallback( snapshotGrabber, 1 );
-
-                // configure pins
-                GetPinCapabilitiesAndConfigureSizeAndRate( captureGraph, sourceBase,
-                    PinCategory.Capture, desiredFrameSize, desiredFrameRate, ref videoCapabilities );
-                if ( isSapshotSupported )
-                {
-                    GetPinCapabilitiesAndConfigureSizeAndRate( captureGraph, sourceBase,
-                        PinCategory.StillImage, desiredSnapshotSize, 0, ref snapshotCapabilities );
                 }
                 else
                 {
-                    snapshotCapabilities = new VideoCapabilities[0];
+                    if ( videoCapabilities == null )
+                    {
+                        object streamConfigObject;
+                        // get stream configuration object
+                        captureGraph.FindInterface( PinCategory.Capture, MediaType.Video, sourceBase, typeof( IAMStreamConfig ).GUID, out streamConfigObject );
+
+                        if ( streamConfigObject != null )
+                        {
+                            IAMStreamConfig streamConfig = (IAMStreamConfig) streamConfigObject;
+                            // get all video capabilities
+                            try
+                            {
+                                videoCapabilities = AForge.Video.DirectShow.VideoCapabilities.FromStreamConfig( streamConfig );
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
                 }
 
                 if ( runGraph )
                 {
-                    // render capture pin
-                    captureGraph.RenderStream( PinCategory.Capture, MediaType.Video, sourceBase, null, videoGrabberBase );
+                    // render source device on sample grabber
+                    captureGraph.RenderStream( PinCategory.Capture, MediaType.Video, sourceBase, null, grabberBase );
 
-                    if ( videoSampleGrabber.GetConnectedMediaType( mediaType ) == 0 )
+                    // get media type
+                    if ( sampleGrabber.GetConnectedMediaType( mediaType ) == 0 )
                     {
                         VideoInfoHeader vih = (VideoInfoHeader) Marshal.PtrToStructure( mediaType.FormatPtr, typeof( VideoInfoHeader ) );
 
-                        videoGrabber.Width = vih.BmiHeader.Width;
-                        videoGrabber.Height = vih.BmiHeader.Height;
-                        
+                        grabber.Width = vih.BmiHeader.Width;
+                        grabber.Height = vih.BmiHeader.Height;
                         mediaType.Dispose( );
-                    }
-
-                    if ( ( isSapshotSupported ) && ( provideSnapshots ) )
-                    {
-                        // render snapshot pin
-                        captureGraph.RenderStream( PinCategory.StillImage, MediaType.Video, sourceBase, null, snapshotGrabberBase );
-
-                        if ( snapshotSampleGrabber.GetConnectedMediaType( mediaType ) == 0 )
-                        {
-                            VideoInfoHeader vih = (VideoInfoHeader) Marshal.PtrToStructure( mediaType.FormatPtr, typeof( VideoInfoHeader ) );
-
-                            snapshotGrabber.Width  = vih.BmiHeader.Width;
-                            snapshotGrabber.Height = vih.BmiHeader.Height;
-
-                            mediaType.Dispose( );
-                        }
                     }
 
                     // get media control
                     mediaControl = (IMediaControl) graphObject;
 
-                    // get media events' interface
-                    mediaEvent = (IMediaEventEx) graphObject;
-                    IntPtr p1, p2;
-                    DsEvCode code;
-
                     // run
                     mediaControl.Run( );
 
-                    if ( ( isSapshotSupported ) && ( provideSnapshots ) )
-                    {
-                        startTime = DateTime.Now;
-                        videoControl.SetMode( pinStillImage, VideoControlFlags.ExternalTriggerEnable );
-                    }
-
-                    while ( !stopEvent.WaitOne( 0, false ) )
+                    while ( !stopEvent.WaitOne( 0, true ) )
                     {
                         Thread.Sleep( 100 );
-
-                        if ( mediaEvent != null )
-                        {
-                            if ( mediaEvent.GetEvent( out code, out p1, out p2, 0 ) >= 0 )
-                            {
-                                mediaEvent.FreeEventParams( code, p1, p2 );
-
-                                if ( code == DsEvCode.DeviceLost )
-                                {
-                                    reasonToStop = ReasonToFinishPlaying.DeviceLost;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if ( needToSimulateTrigger )
-                        {
-                            needToSimulateTrigger = false;
-
-                            if ( ( isSapshotSupported ) && ( provideSnapshots ) )
-                            {
-                                videoControl.SetMode( pinStillImage, VideoControlFlags.Trigger );
-                            }
-                        }
 
                         if ( needToDisplayPropertyPage )
                         {
@@ -843,7 +649,7 @@ namespace AForge.Video.DirectShow
                             }
                         }
                     }
-                    mediaControl.Stop( );
+                    mediaControl.StopWhenReady( );
                 }
             }
             catch ( Exception exception )
@@ -860,15 +666,9 @@ namespace AForge.Video.DirectShow
                 captureGraph    = null;
                 graph           = null;
                 sourceBase      = null;
+                grabberBase     = null;
+                sampleGrabber   = null;
                 mediaControl    = null;
-                videoControl    = null;
-                mediaEvent      = null;
-                pinStillImage   = null;
-
-                videoGrabberBase      = null;
-                snapshotGrabberBase   = null;
-                videoSampleGrabber    = null;
-                snapshotSampleGrabber = null;
 
                 if ( graphObject != null )
                 {
@@ -880,15 +680,10 @@ namespace AForge.Video.DirectShow
                     Marshal.ReleaseComObject( sourceObject );
                     sourceObject = null;
                 }
-                if ( videoGrabberObject != null )
+                if ( grabberObject != null )
                 {
-                    Marshal.ReleaseComObject( videoGrabberObject );
-                    videoGrabberObject = null;
-                }
-                if ( snapshotGrabberObject != null )
-                {
-                    Marshal.ReleaseComObject( snapshotGrabberObject );
-                    snapshotGrabberObject = null;
+                    Marshal.ReleaseComObject( grabberObject );
+                    grabberObject = null;
                 }
                 if ( captureGraphObject != null )
                 {
@@ -899,150 +694,21 @@ namespace AForge.Video.DirectShow
 
             if ( PlayingFinished != null )
             {
-                PlayingFinished( this, reasonToStop );
-            }
-        }
-
-        // Set frame's size and rate for the specified stream configuration
-        private void SetFrameSizeAndRate( IAMStreamConfig streamConfig, Size size, int frameRate )
-        {
-            bool sizeSet = false;
-            AMMediaType mediaType;
-
-            // get current format
-            streamConfig.GetFormat( out mediaType );
-
-            // change frame size if required
-            if ( ( size.Width != 0 ) && ( size.Height != 0 ) )
-            {
-                // iterate through device's capabilities to find mediaType for desired resolution
-                int capabilitiesCount = 0, capabilitySize = 0;
-                AMMediaType newMediaType = null;
-                VideoStreamConfigCaps caps = new VideoStreamConfigCaps( );
-
-                streamConfig.GetNumberOfCapabilities( out capabilitiesCount, out capabilitySize );
-
-                for ( int i = 0; i < capabilitiesCount; i++ )
-                {
-                    if ( streamConfig.GetStreamCaps( i, out newMediaType, caps ) == 0 )
-                    {
-                        if ( caps.InputSize == size )
-                        {
-                            mediaType.Dispose( );
-                            mediaType = newMediaType;
-                            sizeSet = true;
-                            break;
-                        }
-                        else
-                        {
-                            newMediaType.Dispose( );
-                        }
-                    }
-                }
-            }
-
-            VideoInfoHeader infoHeader = (VideoInfoHeader) Marshal.PtrToStructure( mediaType.FormatPtr, typeof( VideoInfoHeader ) );
-
-            // try changing size manually if failed finding mediaType before
-            if ( ( size.Width != 0 ) && ( size.Height != 0 ) && ( !sizeSet ) )
-            {
-                infoHeader.BmiHeader.Width  = size.Width;
-                infoHeader.BmiHeader.Height = size.Height;
-            }
-            // change frame rate if required
-            if ( frameRate != 0 )
-            {
-                infoHeader.AverageTimePerFrame = 10000000 / frameRate;
-            }
-
-            // copy the media structure back
-            Marshal.StructureToPtr( infoHeader, mediaType.FormatPtr, false );
-
-            // set the new format
-            streamConfig.SetFormat( mediaType );
-
-            mediaType.Dispose( );
-        }
-
-        // Configure specified pin and collect its capabilities if required
-        private void GetPinCapabilitiesAndConfigureSizeAndRate( ICaptureGraphBuilder2 graphBuilder, IBaseFilter baseFilter,
-            Guid pinCategory, Size size, int frameRate, ref VideoCapabilities[] capabilities )
-        {
-            object streamConfigObject;
-            graphBuilder.FindInterface( pinCategory, MediaType.Video, baseFilter, typeof( IAMStreamConfig ).GUID, out streamConfigObject );
-
-            if ( streamConfigObject != null )
-            {
-                IAMStreamConfig streamConfig = null;
-
-                try
-                {
-                    streamConfig = (IAMStreamConfig) streamConfigObject;
-                }
-                catch ( InvalidCastException )
-                {
-                }
-
-                if ( streamConfig != null )
-                {
-                    if ( capabilities == null )
-                    {
-                        try
-                        {
-                            // get all video capabilities
-                            capabilities = AForge.Video.DirectShow.VideoCapabilities.FromStreamConfig( streamConfig );
-                        }
-                        catch
-                        {
-                        }
-                    }
-
-                    // check if it is required to change capture settings
-                    if ( ( frameRate != 0 ) || ( ( size.Width != 0 ) && ( size.Height != 0 ) ) )
-                    {
-                        SetFrameSizeAndRate( streamConfig, size, frameRate );
-                    }
-                }
-            }
-
-            // if failed resolving capabilities, then just create empty capabilities array,
-            // so we don't try again
-            if ( capabilities == null )
-            {
-                capabilities = new VideoCapabilities[0];
+                PlayingFinished( this, ReasonToFinishPlaying.StoppedByUser );
             }
         }
 
         /// <summary>
-        /// Notifies clients about new frame.
+        /// Notifies client about new frame.
         /// </summary>
         /// 
         /// <param name="image">New frame's image.</param>
         /// 
-        private void OnNewFrame( Bitmap image )
+        protected void OnNewFrame( Bitmap image )
         {
             framesReceived++;
-            if ( ( !stopEvent.WaitOne( 0, false ) ) && ( NewFrame != null ) )
+            if ( ( !stopEvent.WaitOne( 0, true ) ) && ( NewFrame != null ) )
                 NewFrame( this, new NewFrameEventArgs( image ) );
-        }
-
-        /// <summary>
-        /// Notifies clients about new snapshot frame.
-        /// </summary>
-        /// 
-        /// <param name="image">New snapshot's image.</param>
-        /// 
-        private void OnSnapshotFrame( Bitmap image )
-        {
-            TimeSpan timeSinceStarted = DateTime.Now - startTime;
-
-            // TODO: need to find better way to ignore the first snapshot, which is sent
-            // automatically (or better disable it)
-            if ( timeSinceStarted.TotalSeconds >= 4 )
-            {
-                if ( ( !stopEvent.WaitOne( 0, false ) ) && ( SnapshotFrame != null ) )
-                    SnapshotFrame( this, new NewFrameEventArgs( image ) );
-            }
         }
 
         //
@@ -1051,7 +717,6 @@ namespace AForge.Video.DirectShow
         private class Grabber : ISampleGrabberCB
         {
             private VideoCaptureDevice parent;
-            private bool snapshotMode;
             private int width, height;
 
             // Width property
@@ -1068,10 +733,9 @@ namespace AForge.Video.DirectShow
             }
 
             // Constructor
-            public Grabber( VideoCaptureDevice parent, bool snapshotMode )
+            public Grabber( VideoCaptureDevice parent )
             {
                 this.parent = parent;
-                this.snapshotMode = snapshotMode;
             }
 
             // Callback to receive samples
@@ -1098,31 +762,21 @@ namespace AForge.Video.DirectShow
                     int srcStride = imageData.Stride;
                     int dstStride = imageData.Stride;
 
-                    unsafe
-                    {
-                        byte* dst = (byte*) imageData.Scan0.ToPointer( ) + dstStride * ( height - 1 );
-                        byte* src = (byte*) buffer.ToPointer( );
+                    int dst = imageData.Scan0.ToInt32( ) + dstStride * ( height - 1 );
+                    int src = buffer.ToInt32( );
 
-                        for ( int y = 0; y < height; y++ )
-                        {
-                            Win32.memcpy( dst, src, srcStride );
-                            dst -= dstStride;
-                            src += srcStride;
-                        }
+                    for ( int y = 0; y < height; y++ )
+                    {
+                        Win32.memcpy( dst, src, srcStride );
+                        dst -= dstStride;
+                        src += srcStride;
                     }
 
                     // unlock bitmap data
                     image.UnlockBits( imageData );
 
                     // notify parent
-                    if ( snapshotMode )
-                    {
-                        parent.OnSnapshotFrame( image );
-                    }
-                    else
-                    {
-                        parent.OnNewFrame( image );
-                    }
+                    parent.OnNewFrame( image );
 
                     // release the image
                     image.Dispose( );

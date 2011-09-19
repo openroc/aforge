@@ -37,13 +37,8 @@
     <DocumentationFile>AForge.Controls.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AForge, Version=2.1.2.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
+    <Reference Include="AForge, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c1db6ff4eaa06aeb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Release\AForge.dll</HintPath>
-    </Reference>
-    <Reference Include="AForge.Imaging, Version=2.1.5.0, Culture=neutral, PublicKeyToken=ba8ddea9676ca48b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Release\AForge.Imaging.dll</HintPath>
     </Reference>
     <Reference Include="AForge.Video, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cbfb6e07d173c401, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -56,15 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HuePicker.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="SliderControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="SliderControl.Designer.cs">
-      <DependentUpon>SliderControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Chart.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -73,14 +59,6 @@
     </Compile>
     <Compile Include="Histogram.cs">
       <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Joystick.cs" />
-    <Compile Include="JoystickAPI.cs" />
-    <Compile Include="ManipulatorControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ManipulatorControl.Designer.cs">
-      <DependentUpon>ManipulatorControl.cs</DependentUpon>
     </Compile>
     <Compile Include="PictureBox.cs">
       <SubType>Component</SubType>
@@ -109,17 +87,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="HuePicker.resx">
-      <DependentUpon>HuePicker.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SliderControl.resx">
-      <DependentUpon>SliderControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="ColorSlider.resx">
       <DependentUpon>ColorSlider.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ManipulatorControl.resx">
-      <DependentUpon>ManipulatorControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\arrow.bmp" />
   </ItemGroup>

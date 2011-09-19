@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -339,26 +339,39 @@ namespace SVSTest
         }
 
         // Driving with "software joystick"
-        private void manipulatorControl_PositionChanged( object sender, ManipulatorControl.PositionEventArgs eventArgs )
+        private void manipulatorControl_PositionChanged( float x, float y )
         {
             float leftMotorPower = 0f, rightMotorPower = 0f;
 
             // calculate robot's direction and speed
-            if ( ( eventArgs.X != 0 ) || ( eventArgs.Y != 0 ) )
+            if ( ( x != 0 ) || ( y != 0 ) )
             {
                 // radius (distance from center)
-                double r = eventArgs.R;
+                double r = Math.Min( Math.Sqrt( x * x + y * y ), 1.0 );
                 // theta
-                double t = eventArgs.Theta;
+                double t = 0;
 
-                if ( t > 180 )
-                    t -= 180;
+                // calculate theta
+                if ( x != 0 )
+                {
+                    t = Math.Atan( y / x );
+                    t = t / Math.PI * 180;
+
+                    if ( t < 0 )
+                    {
+                        t = 180.0 + t;
+                    }
+                }
+                else
+                {
+                    t = 90;
+                }
 
                 // index of maximum power
                 int maxPowerIndex = (int) ( t / 180 * maxPowers.Length );
 
                 // check direction to move
-                if ( eventArgs.Y > 0 )
+                if ( y > 0 )
                 {
                     // forward direction
                     leftMotorPower  = (float) ( r * maxPowers[maxPowers.Length - maxPowerIndex - 1] );
@@ -376,7 +389,7 @@ namespace SVSTest
         }
 
         // Robot turning on place - opposite directions for motors
-        private void turnControl_PositionChanged( object sender, float x )
+        private void turnControl_PositionChanged( float x )
         {
             DriveMotors( x, -x );
         }

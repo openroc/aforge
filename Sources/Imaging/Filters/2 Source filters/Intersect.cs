@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
@@ -48,14 +47,14 @@ namespace AForge.Imaging.Filters
     public sealed class Intersect : BaseInPlaceFilter2
     {
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -63,7 +62,7 @@ namespace AForge.Imaging.Filters
         /// </summary>
         public Intersect( )
         {
-            InitFormatTranslations( );
+            InitFormatTransalations( );
         }
 
         /// <summary>
@@ -75,7 +74,7 @@ namespace AForge.Imaging.Filters
         public Intersect( Bitmap overlayImage )
             : base( overlayImage )
         {
-            InitFormatTranslations( );
+            InitFormatTransalations( );
         }
 
         /// <summary>
@@ -87,19 +86,19 @@ namespace AForge.Imaging.Filters
         public Intersect( UnmanagedImage unmanagedOverlayImage )
             : base( unmanagedOverlayImage )
         {
-            InitFormatTranslations( );
+            InitFormatTransalations( );
         }
 
         // Initialize format translation dictionary
-        private void InitFormatTranslations( )
+        private void InitFormatTransalations( )
         {
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-            formatTranslations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
+            formatTransalations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
+            formatTransalations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
+            formatTransalations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
+            formatTransalations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
+            formatTransalations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
+            formatTransalations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
         }
 
         /// <summary>
@@ -156,8 +155,8 @@ namespace AForge.Imaging.Filters
                 int ovrStride = overlay.Stride;
 
                 // do the job
-                byte* basePtr = (byte*) image.ImageData.ToPointer( );
-                byte* baseOvr = (byte*) overlay.ImageData.ToPointer( );
+                int basePtr = (int) image.ImageData.ToPointer( );
+                int baseOvr = (int) overlay.ImageData.ToPointer( );
 
                 // for each line
                 for ( int y = 0; y < height; y++ )

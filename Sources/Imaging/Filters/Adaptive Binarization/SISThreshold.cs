@@ -48,17 +48,17 @@ namespace AForge.Imaging.Filters
     /// 
     public class SISThreshold : BaseInPlacePartialFilter
     {
-        private Threshold thresholdFilter = new Threshold( );
+        private byte threshold;
 
         // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        private Dictionary<PixelFormat, PixelFormat> formatTransalations = new Dictionary<PixelFormat, PixelFormat>( );
 
         /// <summary>
         /// Format translations dictionary.
         /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
+        public override Dictionary<PixelFormat, PixelFormat> FormatTransalations
         {
-            get { return formatTranslations; }
+            get { return formatTransalations; }
         }
 
         /// <summary>
@@ -68,9 +68,9 @@ namespace AForge.Imaging.Filters
         /// <remarks><para>The property is read only and represents the value, which
         /// was automaticaly calculated using image statistics.</para></remarks>
         /// 
-        public int ThresholdValue
+        public byte ThresholdValue
         {
-            get { return thresholdFilter.ThresholdValue; }
+            get { return threshold; }
         }
 
         /// <summary>
@@ -80,86 +80,18 @@ namespace AForge.Imaging.Filters
         public SISThreshold( )
         {
             // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
+            formatTransalations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
         }
 
         /// <summary>
-        /// Calculate binarization threshold for the given image.
+        /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Image to calculate binarization threshold for.</param>
-        /// <param name="rect">Rectangle to calculate binarization threshold for.</param>
+        /// <param name="image">Source image data.</param>
+        /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        /// <returns>Returns binarization threshold.</returns>
-        /// 
-        /// <remarks><para>The method is used to calculate binarization threshold only. The threshold
-        /// later may be applied to the image using <see cref="Threshold"/> image processing filter.</para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported by the routine. It should be
-        /// 8 bpp grayscale (indexed) image.</exception>
-        /// 
-        public int CalculateThreshold( Bitmap image, Rectangle rect )
+        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
         {
-            int calculatedThreshold = 0;
-
-            // lock source bitmap data
-            BitmapData data = image.LockBits(
-                new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, image.PixelFormat );
-
-            try
-            {
-                calculatedThreshold = CalculateThreshold( data, rect );
-            }
-            finally
-            {
-                // unlock image
-                image.UnlockBits( data );
-            }
-
-            return calculatedThreshold;
-        }
-
-        /// <summary>
-        /// Calculate binarization threshold for the given image.
-        /// </summary>
-        /// 
-        /// <param name="image">Image to calculate binarization threshold for.</param>
-        /// <param name="rect">Rectangle to calculate binarization threshold for.</param>
-        /// 
-        /// <returns>Returns binarization threshold.</returns>
-        /// 
-        /// <remarks><para>The method is used to calculate binarization threshold only. The threshold
-        /// later may be applied to the image using <see cref="Threshold"/> image processing filter.</para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported by the routine. It should be
-        /// 8 bpp grayscale (indexed) image.</exception>
-        /// 
-        public int CalculateThreshold( BitmapData image, Rectangle rect )
-        {
-            return CalculateThreshold( new UnmanagedImage( image ), rect );
-        }
-
-        /// <summary>
-        /// Calculate binarization threshold for the given image.
-        /// </summary>
-        /// 
-        /// <param name="image">Image to calculate binarization threshold for.</param>
-        /// <param name="rect">Rectangle to calculate binarization threshold for.</param>
-        /// 
-        /// <returns>Returns binarization threshold.</returns>
-        /// 
-        /// <remarks><para>The method is used to calculate binarization threshold only. The threshold
-        /// later may be applied to the image using <see cref="Threshold"/> image processing filter.</para></remarks>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">Source pixel format is not supported by the routine. It should be
-        /// 8 bpp grayscale (indexed) image.</exception>
-        /// 
-        public int CalculateThreshold( UnmanagedImage image, Rectangle rect )
-        {
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
-                throw new UnsupportedImageFormatException( "Source pixel format is not supported by the routine." );
-
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
@@ -172,59 +104,59 @@ namespace AForge.Imaging.Filters
             // differences and weights
             double ex, ey, weight, weightTotal = 0, total = 0;
 
-            unsafe
+            // do the job
+            byte* ptr = (byte*) image.ImageData.ToPointer( );
+
+            // allign pointer to the first pixel to process
+            ptr += ( startY * image.Stride + startX );
+
+            // --- 1st pass - collecting statistics
+
+            // skip the first line for the first pass
+            ptr += stride;
+
+            // for each line
+            for ( int y = startY + 1; y < stopYM1; y++ )
             {
-                // do the job
-                byte* ptr = (byte*) image.ImageData.ToPointer( );
-
-                // allign pointer to the first pixel to process
-                ptr += ( startY * image.Stride + startX );
-
-                // skip the first line for the first pass
-                ptr += stride;
-
-                // for each line
-                for ( int y = startY + 1; y < stopYM1; y++ )
+                ptr++;
+                // for each pixels
+                for ( int x = startX + 1; x < stopXM1; x++, ptr++ )
                 {
-                    ptr++;
-                    // for each pixels
-                    for ( int x = startX + 1; x < stopXM1; x++, ptr++ )
-                    {
-                        // the equations are:
-                        // ex = | I(x + 1, y) - I(x - 1, y) |
-                        // ey = | I(x, y + 1) - I(x, y - 1) |
-                        // weight = max(ex, ey)
-                        // weightTotal += weight
-                        // total += weight * I(x, y)
+                    // the equations are:
+                    // ex = | I(x + 1, y) - I(x - 1, y) |
+                    // ey = | I(x, y + 1) - I(x, y - 1) |
+                    // weight = max(ex, ey)
+                    // weightTotal += weight
+                    // total += weight * I(x, y)
 
-                        ex = Math.Abs( ptr[1] - ptr[-1] );
-                        ey = Math.Abs( ptr[stride] - ptr[-stride] );
-                        weight = ( ex > ey ) ? ex : ey;
-                        weightTotal += weight;
-                        total += weight * ( *ptr );
-                    }
-                    ptr += offset + 1;
+                    ex = Math.Abs( ptr[1] - ptr[-1] );
+                    ey = Math.Abs( ptr[stride] - ptr[-stride] );
+                    weight = ( ex > ey ) ? ex : ey;
+                    weightTotal += weight;
+                    total += weight * ( *ptr );
                 }
+                ptr += offset + 1;
             }
 
             // calculate threshold
-            return ( weightTotal == 0 ) ? (byte) 0 : (byte) ( total / weightTotal );
-        }
+            threshold = ( weightTotal == 0 ) ? (byte) 0 : (byte) ( total / weightTotal );
 
-        /// <summary>
-        /// Process the filter on the specified image.
-        /// </summary>
-        /// 
-        /// <param name="image">Source image data.</param>
-        /// <param name="rect">Image rectangle for processing by the filter.</param>
-        /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
-        {
-            // calculate threshold
-            thresholdFilter.ThresholdValue = CalculateThreshold( image, rect );
+            // --- 2nd pass - thresholding
+            ptr = (byte*) image.ImageData.ToPointer( );
 
-            // thresholding
-            thresholdFilter.ApplyInPlace( image, rect );
+            // allign pointer to the first pixel to process
+            ptr += ( startY * image.Stride + startX );
+
+            // for each line
+            for ( int y = startY; y < stopY; y++ )
+            {
+                // for all pixels
+                for ( int x = startX; x < stopX; x++, ptr++ )
+                {
+                    *ptr = (byte) ( ( *ptr >= threshold ) ? 255 : 0 );
+                }
+                ptr += offset;
+            }
         }
     }
 }

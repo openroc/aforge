@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 using TeRKIceLib = TeRK;
@@ -338,14 +338,14 @@ namespace AForge.Robotics.TeRK
                 DateTime start;
                 TimeSpan span;
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+                while ( !stopEvent.WaitOne( 0, true ) )
                 {
                     try
                     {
                         // start Qwerk's camera
                         videoStreamer.startCamera( );
 
-                        while ( !stopEvent.WaitOne( 0, false ) )
+                        while ( !stopEvent.WaitOne( 0, true ) )
                         {
                             // get download start time
                             start = DateTime.Now;
@@ -384,7 +384,7 @@ namespace AForge.Robotics.TeRK
                                 // miliseconds to sleep
                                 int msec = frameInterval - (int) span.TotalMilliseconds;
 
-                                while ( ( msec > 0 ) && ( stopEvent.WaitOne( 0, false ) == false ) )
+                                while ( ( msec > 0 ) && ( stopEvent.WaitOne( 0, true ) == false ) )
                                 {
                                     // sleeping ...
                                     Thread.Sleep( ( msec < 100 ) ? msec : 100 );

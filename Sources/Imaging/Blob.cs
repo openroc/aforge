@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging
@@ -29,7 +29,7 @@ namespace AForge.Imaging
     public class Blob
     {
         // blob's image
-        private UnmanagedImage image;
+        private Bitmap image;
         // blob's image size - as original image or not
         private bool originalSize = false;
 
@@ -43,10 +43,6 @@ namespace AForge.Imaging
         private IntPoint cog;
         // fullness of the blob ( area / ( width * height ) )
         private double fullness;
-        // mean color of the blob
-        private Color colorMean = Color.Black;
-        // color's standard deviation of the blob
-        private Color colorStdDev = Color.Black;
 
         /// <summary>
         /// Blob's image.
@@ -54,10 +50,10 @@ namespace AForge.Imaging
         ///
         /// <remarks><para>The property keeps blob's image. In the case if it equals to <b>null</b>,
         /// the image may be extracted using <see cref="BlobCounterBase.ExtractBlobsImage( Bitmap, Blob, bool )"/>
-        /// or <see cref="BlobCounterBase.ExtractBlobsImage( UnmanagedImage, Blob, bool )"/> method.</para></remarks>
+        /// or <see cref="BlobCounterBase.ExtractBlobsImage( BitmapData, Blob, bool )"/> method.</para></remarks>
         ///
         [Browsable( false )]
-        public UnmanagedImage Image
+        public Bitmap Image
         {
             get { return image; }
             internal set { image = value; }
@@ -145,30 +141,6 @@ namespace AForge.Imaging
         }
 
         /// <summary>
-        /// Blob's mean color.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property keeps mean color of pixels comprising the blob.</para></remarks>
-        /// 
-        public Color ColorMean
-        {
-            get { return colorMean; }
-            internal set { colorMean = value; }
-        }
-
-        /// <summary>
-        /// Blob color's standard deviation.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property keeps standard deviation of pixels' colors comprising the blob.</para></remarks>
-        /// 
-        public Color ColorStdDev
-        {
-            get { return colorStdDev; }
-            internal set { colorStdDev = value; }
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Blob"/> class.
         /// </summary>
         /// 
@@ -177,7 +149,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>This constructor leaves <see cref="Image"/> property not initialized. The blob's
         /// image may be extracted later using <see cref="BlobCounterBase.ExtractBlobsImage( Bitmap, Blob, bool )"/>
-        /// or <see cref="BlobCounterBase.ExtractBlobsImage( UnmanagedImage, Blob, bool )"/> method.</para></remarks>
+        /// or <see cref="BlobCounterBase.ExtractBlobsImage( BitmapData, Blob, bool )"/> method.</para></remarks>
         /// 
         internal Blob( int id, Rectangle rect )
         {
@@ -194,8 +166,6 @@ namespace AForge.Imaging
             cog  = source.cog;
             area = source.area;
             fullness = source.fullness;
-            colorMean = source.colorMean;
-            colorStdDev = source.colorStdDev;
         }
     }
 }

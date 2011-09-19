@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2010
+// Copyright © Andrew Kirillov, 2005-2009
 // andrew.kirillov@aforgenet.com
 //
 
@@ -20,8 +20,9 @@ namespace AForge.Imaging
     /// images using recursive version of connected components labeling
     /// algorithm.</para>
     /// 
-    /// <para><note>The algorithm treats all pixels with values less or equal to <see cref="BackgroundThreshold"/>
-    /// as background, but pixels with higher values are treated as objects' pixels.</note></para>
+    /// <para><note>The algorithm treats all black pixels as background, but not an object.
+    /// This means that all objects, which could be located by the algorithm, should have other
+    /// than black color.</note></para>
     /// 
     /// <para><note>Since this algorithm is based on recursion, it is
     /// required to be careful with its application to big images with big blobs,
@@ -56,36 +57,6 @@ namespace AForge.Imaging
         private int[] tempLabels;
         private int stride;
         private int pixelSize;
-
-        private byte backgroundThresholdR = 0;
-        private byte backgroundThresholdG = 0;
-        private byte backgroundThresholdB = 0;
-
-        /// <summary>
-        /// Background threshold's value.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property sets threshold value for distinguishing between background
-        /// pixel and objects' pixels. All pixel with values less or equal to this property are
-        /// treated as background, but pixels with higher values are treated as objects' pixels.</para>
-        /// 
-        /// <para><note>In the case of colour images a pixel is treated as objects' pixel if <b>any</b> of its
-        /// RGB values are higher than corresponding values of this threshold.</note></para>
-        /// 
-        /// <para><note>For processing grayscale image, set the property with all RGB components eqaul.</note></para>
-        ///
-        /// <para>Default value is set to <b>(0, 0, 0)</b> - black colour.</para></remarks>
-        /// 
-        public Color BackgroundThreshold
-        {
-            get { return Color.FromArgb( backgroundThresholdR, backgroundThresholdG, backgroundThresholdB ); }
-            set
-            {
-                backgroundThresholdR = value.R;
-                backgroundThresholdG = value.G;
-                backgroundThresholdB = value.B;
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecursiveBlobCounter"/> class.
@@ -180,7 +151,7 @@ namespace AForge.Imaging
                         for ( int x = 0; x < imageWidth; x++, src++, p++ )
                         {
                             // check for non-labeled pixel
-                            if ( ( *src > backgroundThresholdG ) && ( tempLabels[p] == 0 ) )
+                            if ( ( *src != 0 ) && ( tempLabels[p] == 0 ) )
                             {
                                 objectsCount++;
                                 LabelPixel( src, p );
@@ -202,12 +173,7 @@ namespace AForge.Imaging
                         for ( int x = 0; x < imageWidth; x++, src += pixelSize, p++ )
                         {
                             // check for non-labeled pixel
-                            if ( (
-                                    ( src[RGB.R] > backgroundThresholdR ) ||
-                                    ( src[RGB.G] > backgroundThresholdG ) ||
-                                    ( src[RGB.B] > backgroundThresholdB )
-                                  ) && 
-                                ( tempLabels[p] == 0 ) )
+                            if ( ( ( src[RGB.R] | src[RGB.G] | src[RGB.B] ) != 0 ) && ( tempLabels[p] == 0 ) )
                             {
                                 objectsCount++;
                                 LabelColorPixel( src, p );
@@ -230,7 +196,7 @@ namespace AForge.Imaging
 
         private unsafe void LabelPixel( byte* pixel, int labelPointer )
         {
-            if ( ( tempLabels[labelPointer] == 0 ) && ( *pixel > backgroundThresholdG ) )
+            if ( ( tempLabels[labelPointer] == 0 ) && ( *pixel != 0 ) )
             {
                 tempLabels[labelPointer] = objectsCount;
 
@@ -247,10 +213,7 @@ namespace AForge.Imaging
 
         private unsafe void LabelColorPixel( byte* pixel, int labelPointer )
         {
-            if ( ( tempLabels[labelPointer] == 0 ) && (
-                ( pixel[RGB.R] > backgroundThresholdR ) ||
-                ( pixel[RGB.G] > backgroundThresholdG ) ||
-                ( pixel[RGB.B] > backgroundThresholdB ) ) )
+            if ( ( tempLabels[labelPointer] == 0 ) && ( ( pixel[RGB.R] | pixel[RGB.G] | pixel[RGB.B] ) != 0 ) )
             {
                 tempLabels[labelPointer] = objectsCount;
 

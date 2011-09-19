@@ -352,40 +352,37 @@ namespace AForge.Controls
                     brush.Dispose( );
                 }
 
-                if ( max != 0 )
-                {
-                    // scaling factor
-                    double factor = (double) ( ( vertical ) ? width : height ) /
-                        ( ( logarithmic ) ? maxLogarithmic : max );
+                // scaling factor
+                double factor = (double) ( ( vertical ) ? width : height ) /
+                    ( ( logarithmic ) ? maxLogarithmic : max );
 
-                    // draw histogram
-                    for ( int i = 0, len = ( vertical ) ? height : width; i < len; i++ )
+                // draw histogram
+                for ( int i = 0, len = ( vertical ) ? height : width; i < len; i++ )
+                {
+                    if ( logarithmic )
                     {
-                        if ( logarithmic )
+                        value = ( values[i] == 0 ) ? 0 : (int) ( Math.Log10( values[i] ) * factor );
+                    }
+                    else
+                    {
+                        value = (int) ( values[i] * factor );
+                    }
+
+                    if ( value != 0 )
+                    {
+                        if ( vertical )
                         {
-                            value = ( values[i] == 0 ) ? 0 : (int) ( Math.Log10( values[i] ) * factor );
+                            g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
+                                new Point( x, y + i ),
+                                new Point( x + value, y + i )
+                                );
                         }
                         else
                         {
-                            value = (int) ( values[i] * factor );
-                        }
-
-                        if ( value != 0 )
-                        {
-                            if ( vertical )
-                            {
-                                g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
-                                    new Point( x, y + i ),
-                                    new Point( x + value, y + i )
-                                    );
-                            }
-                            else
-                            {
-                                g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
-                                    new Point( x + i, y + height - 1 ),
-                                    new Point( x + i, y + height - value )
-                                    );
-                            }
+                            g.DrawLine( ( ( tracking ) && ( i >= start ) && ( i <= stop ) ) ? whitePen : drawPen,
+                                new Point( x + i, y + height - 1 ),
+                                new Point( x + i, y + height - value )
+                                );
                         }
                     }
                 }

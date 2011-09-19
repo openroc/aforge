@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Robotics.Surveyor
@@ -64,9 +64,6 @@ namespace AForge.Robotics.Surveyor
     ///
     public class SRV1
     {
-        // dummy object to lock for synchronization
-        private object sync = new object( );
-
         /// <summary>
         /// Enumeration of predefined motors' commands.
         /// </summary>
@@ -77,16 +74,6 @@ namespace AForge.Robotics.Surveyor
         /// <para><note>Controlling SRV-1 motors with these commands is only possible
         /// after at least one direct motor command is sent, which is done using <see cref="StopMotors"/> or
         /// <see cref="RunMotors"/> methods.</note></para>
-        /// 
-        /// <para><note>The <b>IncreaseSpeed</b> and <b>DecreaseSpeed</b> commands do not have any effect
-        /// unless another driving command is sent. In other words, these do not increase/decrease speed of
-        /// current operation, but affect speed of all following commands.</note></para>
-        /// 
-        /// <para><note>The <b>RotateLeft</b> and <b>RotateRight</b> commands may be useful only for the original
-        /// <a href="http://www.surveyor.com/SRV_info.html">Surveyor SRV-1 Blackfin Robot</a>.
-        /// For most of other robots, which may have different motors and moving base, these commands
-        /// will not be accurate – will not rotate for 20 degrees.
-        /// </note></para>
         /// </remarks>
         /// 
         public enum MotorCommand
@@ -132,17 +119,33 @@ namespace AForge.Robotics.Surveyor
             /// Robot rotate left 20 degrees.
             /// </summary>
             /// 
+            /// <remarks><para>The command may be useful only for the original
+            /// <a href="http://www.surveyor.com/SRV_info.html">Surveyor SRV-1 Blackfin Robot</a>.
+            /// For most of other robots, which may have different motors and moving base, the command
+            /// will not be accurate – will not rotate for 20 degrees.
+            /// </para></remarks>
+            /// 
             RotateLeft = '0',
 
             /// <summary>
             /// Robot rotate right 20 degrees.
             /// </summary>
             /// 
+            /// <remarks><para>The command may be useful only for the original
+            /// <a href="http://www.surveyor.com/SRV_info.html">Surveyor SRV-1 Blackfin Robot</a>.
+            /// For most of other robots, which may have different motors and moving base, the command
+            /// will not be accurate – will not rotate for 20 degrees.
+            /// </para></remarks>
+            /// 
             RotateRight = '.',
             
             /// <summary>
             /// Increase motors' speed.
             /// </summary>
+            /// 
+            /// <remarks><note>The command does not have any effect unless another driving
+            /// command is sent. In other words, it does not increase speed of current operation,
+            /// but it affects speed of all following commands.</note></remarks>
             ///
             IncreaseSpeed = '+',
 
@@ -150,6 +153,10 @@ namespace AForge.Robotics.Surveyor
             /// Decrease motors' speed.
             /// </summary>
             /// 
+            /// <remarks><note>The command does not have any effect unless another driving
+            /// command is sent. In other words, it does not decrease speed of current operation,
+            /// but it affects speed of all following commands.</note></remarks>
+            ///
             DecreaseSpeed = '-',
         }
 
@@ -291,7 +298,7 @@ namespace AForge.Robotics.Surveyor
         {
             Disconnect( );
 
-            lock ( sync )
+            lock ( this )
             {
                 try
                 {
@@ -340,7 +347,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public void Disconnect( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( thread != null )
                 {
@@ -465,7 +472,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public SRV1Camera GetCamera( )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( socket == null )
                 {
@@ -537,7 +544,7 @@ namespace AForge.Robotics.Surveyor
         /// 
         public int SendAndReceive( byte[] request, byte[] responseBuffer )
         {
-            lock ( sync )
+            lock ( this )
             {
                 if ( socket == null )
                 {
@@ -737,10 +744,10 @@ namespace AForge.Robotics.Surveyor
         /// <param name="leftSpeed">Left motor's speed, [-127, 127].</param>
         /// <param name="rightSpeed">Right motor's speed, [-127, 127].</param>
         /// 
-        /// <remarks><para>In the case if fail safe mode is enabled and no commands are received
-        /// by SRV-1 robot withing 2 seconds, motors' speed will be set to the specified values. The command
+        /// <remarks><para>In the case if fail safe mode is enabled and no commands are sent
+        /// to SRV-1 robot, motors' speed will be set to the specified values. The command
         /// is very useful to instruct robot to stop if no other commands were sent
-        /// within 2 last seconds (probably lost connection).</para></remarks>
+        /// within 2 seconds (probably lost connection).</para></remarks>
         ///
         public void EnableFailsafeMode( int leftSpeed, int rightSpeed )
         {
@@ -781,7 +788,7 @@ namespace AForge.Robotics.Surveyor
         /// using 6<sup>th</sup> and 7<sup>th</sup> timers.</note></para>
         /// </remarks>
         /// 
-        public void ControlServos( int leftServo, int rightServo )
+        public void ControlServos( byte leftServo, byte rightServo )
         {
             // check limts
             if ( leftServo > 100 )
@@ -789,7 +796,7 @@ namespace AForge.Robotics.Surveyor
             if ( rightServo > 100 )
                 rightServo = 100;
 
-            Send( new byte[] { (byte) 's', (byte) leftServo, (byte) rightServo } );
+            Send( new byte[] { (byte) 's', leftServo, rightServo } );
         }
 
         /// <summary>
@@ -918,138 +925,6 @@ namespace AForge.Robotics.Surveyor
             }
         }
 
-        /// <summary>
-        /// Read byte from I2C device.
-        /// </summary>
-        /// 
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to read.</param>
-        /// 
-        /// <returns>Returns byte read from the specified register of the specified I2C device.</returns>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SRV-1. Connect to SRV-1 before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// <exception cref="ApplicationException">Failed parsing response from SRV-1.</exception>
-        /// 
-        public byte I2CReadByte( byte deviceID, byte register )
-        {
-            byte[] response = new byte[100];
-
-            int    read = SendAndReceive( new byte[] { (byte) 'i', (byte) 'r', deviceID, register }, response );
-            string str  = System.Text.ASCIIEncoding.ASCII.GetString( response, 0, read );
-
-            try
-            {
-                str = str.Trim( );
-                // split string into separate values
-                string[] strs = str.Split( ' ' );
-
-                return byte.Parse( strs[1] );
-            }
-            catch
-            {
-                throw new ApplicationException( "Failed parsing response from SRV-1." );
-            }
-        }
-
-        /// <summary>
-        /// Read word from I2C device.
-        /// </summary>
-        /// 
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to read.</param>
-        /// 
-        /// <returns>Returns word read from the specified register of the specified I2C device.</returns>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SRV-1. Connect to SRV-1 before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// <exception cref="ApplicationException">Failed parsing response from SRV-1.</exception>
-        /// 
-        public ushort I2CReadWord( byte deviceID, byte register )
-        {
-            byte[] response = new byte[100];
-
-            int    read = SendAndReceive( new byte[] { (byte) 'i', (byte) 'R', deviceID, register }, response );
-            string str  = System.Text.ASCIIEncoding.ASCII.GetString( response, 0, read );
-
-            try
-            {
-                str = str.Trim( );
-                // split string into separate values
-                string[] strs = str.Split( ' ' );
-
-                return ushort.Parse( strs[1] );
-            }
-            catch
-            {
-                throw new ApplicationException( "Failed parsing response from SRV-1." );
-            }
-        }
-
-        /// <summary>
-        /// Write byte to I2C device.
-        /// </summary>
-        /// 
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to write to.</param>
-        /// <param name="byteToWrite">Byte to write to the specified register of the specified device.</param>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SRV-1. Connect to SRV-1 before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// 
-        public void I2CWriteByte( byte deviceID, byte register, byte byteToWrite )
-        {
-            byte[] response = new byte[100];
-
-            // use SendAndReceive() to make sure the command was executed successfully
-            int read = SendAndReceive( new byte[] { (byte) 'i', (byte) 'W', deviceID, register, byteToWrite }, response );
-        }
-
-        /// <summary>
-        /// Write two bytes to I2C device.
-        /// </summary>
-        /// 
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to write to.</param>
-        /// <param name="firstByteToWrite">First byte to write to the specified register of the specified device.</param>
-        /// <param name="secondByteToWrite">Second byte to write to the specified register of the specified device.</param>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SRV-1. Connect to SRV-1 before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// 
-        public void I2CWriteWord( byte deviceID, byte register, byte firstByteToWrite, byte secondByteToWrite )
-        {
-            byte[] response = new byte[100];
-
-            // use SendAndReceive() to make sure the command was executed successfully
-            int read = SendAndReceive( new byte[] { (byte) 'i', (byte) 'W', deviceID, register,
-                firstByteToWrite, secondByteToWrite }, response );
-        }
-
         // portion size to read at once
         private const int readSize = 1024;
 
@@ -1058,12 +933,12 @@ namespace AForge.Robotics.Surveyor
         {
             bool lastRequestFailed = false;
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+            while ( !stopEvent.WaitOne( 0, true ) )
             {
                 // wait for any request
                 requestIsAvailable.WaitOne( );
 
-                while ( !stopEvent.WaitOne( 0, false ) )
+                while ( !stopEvent.WaitOne( 0, true ) )
                 {
                     // get next communication request from queue
                     CommunicationRequest cr = null;
@@ -1086,8 +961,8 @@ namespace AForge.Robotics.Surveyor
 
                         if ( cr.Request[0] != (byte) 'I' )
                         {
-                            // System.Diagnostics.Debug.WriteLine( ">> " +
-                            //    System.Text.ASCIIEncoding.ASCII.GetString( cr.Request ) );
+                            System.Diagnostics.Debug.WriteLine( ">> " +
+                                System.Text.ASCIIEncoding.ASCII.GetString( cr.Request ) );
                         }
 
                         // send request
@@ -1121,7 +996,7 @@ namespace AForge.Robotics.Surveyor
                                 }
 
                                 // read the rest
-                                while ( !stopEvent.WaitOne( 0, false ) )
+                                while ( !stopEvent.WaitOne( 0, true ) )
                                 {
                                     int read = socket.Receive( cr.ResponseBuffer, cr.BytesRead,
                                         Math.Min( readSize, bytesToRead ), SocketFlags.None );
@@ -1135,11 +1010,6 @@ namespace AForge.Robotics.Surveyor
                             }
                             else
                             {
-                                // commenting check for new line presence, because not all replies
-                                // which start with '##' have new line in the end.
-                                // this SRV-1 text based protocol drives me crazy.
-
-                                /*
                                 if ( ( cr.BytesRead >= 2 ) &&
                                      ( cr.ResponseBuffer[0] == (byte) '#' ) &&
                                      ( cr.ResponseBuffer[1] == (byte) '#' ) )
@@ -1163,17 +1033,16 @@ namespace AForge.Robotics.Surveyor
                                             }
                                         }
 
-                                        if ( ( endLineWasFound ) || stopEvent.WaitOne( 0, false ) )
+                                        if ( ( endLineWasFound ) || stopEvent.WaitOne( 0, true ) )
                                             break;
 
                                         // read more
                                         bytesToRead = Math.Min( readSize, cr.ResponseBuffer.Length - cr.BytesRead );
 
                                         cr.BytesRead += socket.Receive( cr.ResponseBuffer, cr.BytesRead,
-                                            bytesToRead, SocketFlags.None );
+                                            readSize, SocketFlags.None );
                                     }
                                 }
-                                */
                             }
 
                             // check if there is still something to read
@@ -1184,7 +1053,7 @@ namespace AForge.Robotics.Surveyor
                             }
 
 
-                            // System.Diagnostics.Debug.WriteLine( "<< (" + cr.BytesRead + ") " +
+                            //System.Diagnostics.Debug.WriteLine( "<< (" + cr.BytesRead + ") " +
                             //     System.Text.ASCIIEncoding.ASCII.GetString( cr.ResponseBuffer, 0, Math.Min( 5, cr.BytesRead ) ) );
                         }
                         else
@@ -1212,7 +1081,7 @@ namespace AForge.Robotics.Surveyor
                     finally
                     {
                         // signal about available response to the waiting caller
-                        if ( ( stopEvent != null ) && ( !stopEvent.WaitOne( 0, false ) ) && ( cr.ResponseBuffer != null ) )
+                        if ( ( !stopEvent.WaitOne( 0, true ) ) && ( cr.ResponseBuffer != null ) )
                         {
                             lastRequestWithReply = cr;
                             replyIsAvailable.Set( );
@@ -1226,14 +1095,14 @@ namespace AForge.Robotics.Surveyor
         {
             byte[] buffer = new byte[100];
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+            while ( !stopEvent.WaitOne( 0, true ) )
             {
                 int read = socket.Receive( buffer, 0, 100, SocketFlags.None );
 
                 if ( socket.Available == 0 )
                 {
-                    // System.Diagnostics.Debug.WriteLine( "<< (" + read + ") " +
-                    //     System.Text.ASCIIEncoding.ASCII.GetString( buffer, 0, Math.Min( 100, read ) ) );
+                    System.Diagnostics.Debug.WriteLine( "<< (" + read + ") " +
+                         System.Text.ASCIIEncoding.ASCII.GetString( buffer, 0, Math.Min( 100, read ) ) );
 
                     break;
                 }

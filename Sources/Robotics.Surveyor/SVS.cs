@@ -90,15 +90,6 @@ namespace AForge.Robotics.Surveyor
         public enum ServosBank
         {
             /// <summary>
-            /// First bank of the first (<see cref="Camera.Left"/>) SRV-1 Blackfin camera,
-            /// timers 2 and 3 (marked as TMR2-1 and TMR3-1 on the SVS board). Note: these
-            /// timers on SVS board are supposed for controlling motors by default
-            /// (see <see cref="RunMotors"/> and <see cref="ControlMotors"/>), so use 0th
-            /// servos bank only when you've done proper configuration changes on SVS side.
-            /// </summary>
-            Bank0,
-
-            /// <summary>
             /// Second bank of the first (<see cref="Camera.Left"/>) SRV-1 Blackfin camera,
             /// timers 6 and 7 (marked as TMR6-1 and TMR7-1 on the SVS board).
             /// </summary>
@@ -264,7 +255,7 @@ namespace AForge.Robotics.Surveyor
                         // abort camera if it can not be stopped
                         if ( rightCamera.IsRunning )
                         {
-                            rightCamera.Stop( );
+                            leftCamera.Stop( );
                         }
                         rightCamera = null;
                     }
@@ -468,10 +459,10 @@ namespace AForge.Robotics.Surveyor
         /// <param name="leftSpeed">Left motor's speed, [-127, 127].</param>
         /// <param name="rightSpeed">Right motor's speed, [-127, 127].</param>
         /// 
-        /// <remarks><para>In the case if fail safe mode is enabled and no commands are received
-        /// by SVS robot withing 2 seconds, motors' speed will be set to the specified values. The command
+        /// <remarks><para>In the case if fail safe mode is enabled and no commands are sent
+        /// to SRV-1 robot, motors' speed will be set to the specified values. The command
         /// is very useful to instruct robot to stop if no other commands were sent
-        /// within 2 last seconds (probably lost connection).</para></remarks>
+        /// within 2 seconds (probably lost connection).</para></remarks>
         /// 
         /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
         /// this method.</exception>
@@ -525,28 +516,18 @@ namespace AForge.Robotics.Surveyor
         /// <remarks><para>The method performs servos control of the SVS board.
         /// For <see cref="ServosBank.Bank1"/> and <see cref="ServosBank.Bank3"/>
         /// banks it calls <see cref="SRV1.ControlServos"/> method for the corresponding
-        /// SRV-1 Blackfin camera. In the case of <see cref="ServosBank.Bank0"/> or <see cref="ServosBank.Bank2"/>,
+        /// SRV-1 Blackfin camera. In the case of <see cref="ServosBank.Bank2"/>,
         /// the method sends 'Sab' SRV-1 command (see <a href="http://www.surveyor.com/SRV_protocol.html">SRV-1
-        /// Control Protocol</a>) to the appropriate SRV-1 Blackfin camera.</para>
+        /// Control Protocol</a>) to the second SRV-1 Blackfin camera (<see cref="Camera.Right"/>).</para>
         /// </remarks>
         /// 
         /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
         /// this method.</exception>
         /// 
-        public void ControlServos( ServosBank servosBank, int leftServo, int rightServo )
+        public void ControlServos( ServosBank servosBank, byte leftServo, byte rightServo )
         {
             switch ( servosBank )
             {
-                case ServosBank.Bank0:
-                    // check limts
-                    if ( leftServo > 100 )
-                        leftServo = 100;
-                    if ( rightServo > 100 )
-                        rightServo = 100;
-
-                    SafeGetCommunicator1( ).Send( new byte[] { (byte) 'S', (byte) leftServo, (byte) rightServo } );
-                    break;
-
                 case ServosBank.Bank1:
                     SafeGetCommunicator1( ).ControlServos( leftServo, rightServo );
                     break;
@@ -558,7 +539,7 @@ namespace AForge.Robotics.Surveyor
                     if ( rightServo > 100 )
                         rightServo = 100;
 
-                    SafeGetCommunicator2( ).Send( new byte[] { (byte) 'S', (byte) leftServo, (byte) rightServo } );
+                    SafeGetCommunicator2( ).Send( new byte[] { (byte) 'S', leftServo, rightServo } );
                     break;
 
                 case ServosBank.Bank3:
@@ -587,103 +568,6 @@ namespace AForge.Robotics.Surveyor
         public float[] UltrasonicPing( Camera camera )
         {
             return GetDirectAccessToSRV1( camera ).UltrasonicPing( );
-        }
-
-        /// <summary>
-        /// Read byte from I2C device.
-        /// </summary>
-        /// 
-        /// <param name="camera">SRV-1 Blackfin camera to access I2C device on.</param>
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to read.</param>
-        /// 
-        /// <returns>Returns byte read from the specified register of the specified I2C device.</returns>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// <exception cref="ApplicationException">Failed parsing response from SRV-1.</exception>
-        /// 
-        public byte I2CReadByte( Camera camera, byte deviceID, byte register )
-        {
-            return GetDirectAccessToSRV1( camera ).I2CReadByte( deviceID, register );
-        }
-
-        /// <summary>
-        /// Read word from I2C device.
-        /// </summary>
-        /// 
-        /// <param name="camera">SRV-1 Blackfin camera to access I2C device on.</param>
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to read.</param>
-        /// 
-        /// <returns>Returns word read from the specified register of the specified I2C device.</returns>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        ///
-        /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// <exception cref="ApplicationException">Failed parsing response from SRV-1.</exception>
-        /// 
-        public ushort I2CReadWord( Camera camera, byte deviceID, byte register )
-        {
-            return GetDirectAccessToSRV1( camera ).I2CReadWord( deviceID, register );
-        }
-
-        /// <summary>
-        /// Write byte to I2C device.
-        /// </summary>
-        /// 
-        /// <param name="camera">SRV-1 Blackfin camera to access I2C device on.</param>
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to write to.</param>
-        /// <param name="byteToWrite">Byte to write to the specified register of the specified device.</param>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// 
-        public void I2CWriteByte( Camera camera, byte deviceID, byte register, byte byteToWrite )
-        {
-            GetDirectAccessToSRV1( camera ).I2CWriteByte( deviceID, register, byteToWrite );
-        }
-
-        /// <summary>
-        /// Write two bytes to I2C device.
-        /// </summary>
-        /// 
-        /// <param name="camera">SRV-1 Blackfin camera to access I2C device on.</param>
-        /// <param name="deviceID">I2C device ID (7 bit notation).</param>
-        /// <param name="register">I2C device register to write to.</param>
-        /// <param name="firstByteToWrite">First byte to write to the specified register of the specified device.</param>
-        /// <param name="secondByteToWrite">Second byte to write to the specified register of the specified device.</param>
-        /// 
-        /// <para><note>The IC2 device ID should be specified in 7 bit notation. This means that low bit of the ID
-        /// is not used for specifying read/write mode as in 8 bit notation. For example, if I2C device IDs are 0x44 for reading
-        /// and 0x45 for writing in 8 bit notation, then it equals to 0x22 device ID in 7 bit notation.
-        /// </note></para>
-        /// 
-        /// <exception cref="NotConnectedException">Not connected to SVS. Connect to SVS board before using
-        /// this method.</exception>
-        /// <exception cref="ConnectionLostException">Connection lost or communicaton failure. Try to reconnect.</exception>
-        /// 
-        public void I2CWriteWord( Camera camera, byte deviceID, byte register, byte firstByteToWrite, byte secondByteToWrite )
-        {
-            GetDirectAccessToSRV1( camera ).I2CWriteWord( deviceID, register, firstByteToWrite, secondByteToWrite );
         }
 
         /// <summary>
