@@ -1,9 +1,8 @@
+// AForge Framework
 // Color Clustering using Kohonen SOM
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -22,7 +21,7 @@ using AForge.Neuro.Learning;
 namespace Color
 {
 	/// <summary>
-	/// Summary description for MainForm.
+	/// Summary description for Form1.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -331,7 +330,7 @@ namespace Color
 		// Radnomize weights of network
 		private void RandomizeNetwork( )
 		{
-			Neuron.RandRange = new Range( 0, 255 );
+			Neuron.RandRange = new DoubleRange( 0, 255 );
 
 			// randomize net
 			network.Randomize( );

@@ -1,127 +1,134 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
-    using AForge;
+	using System;
+	using System.Drawing;
+	using System.Drawing.Imaging;
+	using AForge;
 
-    /// <summary>
-    /// Contrast adjusting in HSL color space.
-    /// </summary>
-    /// 
-    /// <remarks><para>The filter operates in <b>HSL</b> color space and adjusts
-    /// pixels contrast value using luminance value of HSL color space, increasing it
-    /// or decreasing by specified factor. The filters is based on <see cref="HSLLinear"/>
-    /// filter, passing work to it after recalculating contrast
-    /// <see cref="Factor">factor</see> to input/output ranges of the
-    /// <see cref="HSLLinear"/> filter.</para>
-    /// 
-    /// <para>The filter accepts 24 and 32 bpp color images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter
-    /// ContrastCorrection filter = new ContrastCorrection( 2.0f );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample1.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/contrast_correction.jpg" width="480" height="361" />
-    /// </remarks>
-    ///
-    /// 
-    public class ContrastCorrection : BaseInPlacePartialFilter
-    {
-        private HSLLinear baseFilter = new HSLLinear( );
-        private float factor;
+	/// <summary>
+	/// Contrast adjusting in HSL color space
+	/// </summary>
+	/// 
+	/// <remarks>The filter operates in <b>HSL</b> color space and adjusts
+	/// pixels contrast value using luminance value of HSL color space.</remarks>
+	/// 
+	public class ContrastCorrection : IFilter, IInPlaceFilter
+	{
+		private HSLLinear	baseFilter = new HSLLinear( );
+		private double		factor;
 
-        /// <summary>
-        /// Contrast adjusting factor.
-        /// </summary>
-        /// 
-        /// <remarks><para>Factor which is used to adjust contrast. Factor values greater than
-        /// 1 increase contrast making light areas lighter and dark areas darker. Factor values
-        /// less than 1 decrease contrast - decreasing variety of contrast.</para>
-        /// 
-        /// <para>Default value is set to <b>1.25</b>.</para></remarks>
-        /// 
-        public float Factor
-        {
-            get { return factor; }
-            set
-            {
-                factor = Math.Max( 0.000001f, value );
+		/// <summary>
+		/// Contrast adjusting factor. Defailt value is 1.25.
+		/// </summary>
+		public double Factor
+		{
+			get { return factor; }
+			set
+			{
+				factor = Math.Max( 0.000001, value );
 
-                // create luminance filter
-                baseFilter.InLuminance  = new Range( 0.0f, 1.0f );
-                baseFilter.OutLuminance = new Range( 0.0f, 1.0f );
+				// create luminance filter
+				baseFilter.InLuminance	= new DoubleRange( 0.0, 1.0 );
+				baseFilter.OutLuminance	= new DoubleRange( 0.0, 1.0 );
 
-                if ( factor > 1 )
-                {
-                    baseFilter.InLuminance = new Range( 0.5f - ( 0.5f / factor ), 0.5f + ( 0.5f / factor ) );
-                }
-                else
-                {
-                    baseFilter.OutLuminance = new Range( 0.5f - ( 0.5f * factor ), 0.5f + ( 0.5f * factor ) );
-                }
-            }
-        }
+				if ( factor > 1 )
+				{
+					baseFilter.InLuminance = new DoubleRange( 0.5 - ( 0.5 / factor ), 0.5 + ( 0.5 / factor ) );
+				}
+				else
+				{
+					baseFilter.OutLuminance = new DoubleRange( 0.5 - ( 0.5 * factor ), 0.5 + ( 0.5 * factor ) );
+				}
+			}
+		}
 
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ContrastCorrection"/> class
+		/// </summary>
+		/// 
+		public ContrastCorrection( )
+		{
+			Factor = 1.25;
+		}
 
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ContrastCorrection"/> class
+		/// </summary>
+		/// 
+		/// <param name="factor">Contrast adjusting factor</param>
+		/// 
+		public ContrastCorrection( double factor )
+		{
+			Factor = factor;
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContrastCorrection"/> class.
-        /// </summary>
-        /// 
-        public ContrastCorrection( ) : this( 1.25f )
-        {
-        }
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="image">Source image to apply filter to</param>
+		/// 
+		/// <returns>Returns filter's result obtained by applying the filter to
+		/// the source image</returns>
+		/// 
+		/// <remarks>The method keeps the source image unchanged and returns the
+		/// the result of image processing filter as new image.</remarks> 
+		///
+		public Bitmap Apply( Bitmap image )
+		{
+			return baseFilter.Apply( image );
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContrastCorrection"/> class.
-        /// </summary>
-        /// 
-        /// <param name="factor">Contrast adjusting factor.</param>
-        /// 
-        public ContrastCorrection( float factor )
-        {
-            Factor = factor;
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="imageData">Source image to apply filter to</param>
+		/// 
+		/// <returns>Returns filter's result obtained by applying the filter to
+		/// the source image</returns>
+		/// 
+		/// <remarks>The filter accepts birmap data as input and returns the result
+		/// of image processing filter as new image. The source image data are kept
+		/// unchanged.</remarks>
+		/// 
+		public Bitmap Apply( BitmapData imageData )
+		{
+			return baseFilter.Apply( imageData );
+		}
 
-            formatTranslations[PixelFormat.Format24bppRgb]  = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]  = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb] = PixelFormat.Format32bppArgb;
-        }
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="image">Image to apply filter to</param>
+		/// 
+		/// <remarks>The method applies the filter directly to the provided
+		/// image.</remarks>
+		/// 
+		public void ApplyInPlace( Bitmap image )
+		{
+			baseFilter.ApplyInPlace( image );
+		}
 
-        /// <summary>
-        /// Process the filter on the specified image.
-        /// </summary>
-        /// 
-        /// <param name="image">Source image data.</param>
-        /// <param name="rect">Image rectangle for processing by the filter.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
-        {
-            baseFilter.ApplyInPlace( image, rect );
-        }
-    }
+		/// <summary>
+		/// Apply filter to an image
+		/// </summary>
+		/// 
+		/// <param name="imageData">Image to apply filter to</param>
+		/// 
+		/// <remarks>The method applies the filter directly to the provided
+		/// image data.</remarks>
+		/// 
+		public void ApplyInPlace( BitmapData imageData )
+		{
+			baseFilter.ApplyInPlace( imageData );
+		}
+	}
 }

@@ -1,9 +1,8 @@
+// AForge.NET Framework
 // Animat sample application
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -342,7 +341,7 @@ namespace Animat
         }
 
         // On "Stop" button click
-        private void stopButton_Click( object sender, EventArgs e )
+        private void button1_Click( object sender, EventArgs e )
         {
             if ( workerThread != null )
             {
@@ -427,7 +426,7 @@ namespace Animat
             EnableControls( true );
         }
 
-        // Sarsa thread
+        // Sarse thread
         private void SarsaThread( )
         {
             int iteration = 0;
