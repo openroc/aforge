@@ -1,99 +1,55 @@
 // AForge Image Processing Library
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
     /// <summary>
-    /// Rotate image using bicubic interpolation.
+    /// Rotate image using bicubic interpolation
     /// </summary>
     /// 
-    /// <remarks><para>The class implements image rotation filter using bicubic
-    /// interpolation algorithm. It uses bicubic kernel W(x) as described on
-    /// <a href="http://en.wikipedia.org/wiki/Bicubic_interpolation#Bicubic_convolution_algorithm">Wikipedia</a>
-    /// (coefficient <b>a</b> is set to <b>-0.5</b>).</para>
+    /// <remarks></remarks>
     /// 
-    /// <para><note>Rotation is performed in counterclockwise direction.</note></para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images and 24 bpp
-    /// color images for processing.</para>
-    ///
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // create filter - rotate for 30 degrees keeping original image size
-    /// RotateBicubic filter = new RotateBicubic( 30, true );
-    /// // apply the filter
-    /// Bitmap newImage = filter.Apply( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample9.png" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/rotate_bicubic.png" width="320" height="240" />
-    /// </remarks>
-    /// 
-    /// <seealso cref="RotateBilinear"/>
-    /// <seealso cref="RotateNearestNeighbor"/>
-    /// 
-    public class RotateBicubic : BaseRotateFilter
+    public class RotateBicubic : FilterRotate
     {
-        // format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RotateNearestNeighbor"/> class
+        /// </summary>
+        /// 
+        /// <param name="angle">Rotation angle</param>
+        /// 
+		public RotateBicubic( double  angle ) :
+            base( angle )
+		{
+		}
 
         /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RotateBicubic"/> class.
+        /// Initializes a new instance of the <see cref="RotateNearestNeighbor"/> class
         /// </summary>
         /// 
-        /// <param name="angle">Rotation angle.</param>
+        /// <param name="angle">Rotation angle</param>
+        /// <param name="keepSize">Keep image size or not</param>
         /// 
-        /// <remarks><para>This constructor sets <see cref="BaseRotateFilter.KeepSize"/> property
-        /// to <see langword="false"/>.</para>
-        /// </remarks>
-        ///
-        public RotateBicubic( double angle ) :
-            this( angle, false )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RotateBicubic"/> class.
-        /// </summary>
-        /// 
-        /// <param name="angle">Rotation angle.</param>
-        /// <param name="keepSize">Keep image size or not.</param>
-        /// 
-        public RotateBicubic( double angle, bool keepSize ) :
+        public RotateBicubic( double angle, bool keepSize )
+            :
             base( angle, keepSize )
-        {
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format24bppRgb]    = PixelFormat.Format24bppRgb;
-        }
+		{
+		}
 
         /// <summary>
-        /// Process the filter on the specified image.
+        /// Process the filter on the specified image
         /// </summary>
         /// 
-        /// <param name="sourceData">Source image data.</param>
-        /// <param name="destinationData">Destination image data.</param>
-        ///
-        protected override unsafe void ProcessFilter( UnmanagedImage sourceData, UnmanagedImage destinationData )
+        /// <param name="sourceData">Source image data</param>
+        /// <param name="destinationData">Destination image data</param>
+        /// 
+        protected override unsafe void ProcessFilter( BitmapData sourceData, BitmapData destinationData )
         {
             // get source image size
             int     width       = sourceData.Width;
@@ -109,8 +65,8 @@ namespace AForge.Imaging.Filters
 
             // angle's sine and cosine
             double angleRad = -angle * Math.PI / 180;
-            double angleCos = Math.Cos( angleRad );
-            double angleSin = Math.Sin( angleRad );
+			double angleCos = Math.Cos( angleRad );
+			double angleSin = Math.Sin( angleRad );
 
             int srcStride = sourceData.Stride;
             int dstOffset = destinationData.Stride -
@@ -122,8 +78,8 @@ namespace AForge.Imaging.Filters
             byte fillB = fillColor.B;
 
             // do the job
-            byte* src = (byte*) sourceData.ImageData.ToPointer( );
-            byte* dst = (byte*) destinationData.ImageData.ToPointer( );
+            byte* src = (byte*) sourceData.Scan0.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
 
             // destination pixel's coordinate relative to image center
             double cx, cy;
@@ -148,7 +104,7 @@ namespace AForge.Imaging.Filters
                     for ( int x = 0; x < newWidth; x++, dst++ )
                     {
                         // coordinates of source point
-                        ox = angleCos * cx + angleSin * cy + halfWidth;
+                        ox =  angleCos * cx + angleSin * cy + halfWidth;
                         oy = -angleSin * cx + angleCos * cy + halfHeight;
 
                         ox1 = (int) ox;
@@ -193,7 +149,7 @@ namespace AForge.Imaging.Filters
                                     g += k2 * src[oy2 * srcStride + ox2];
                                 }
                             }
-                            *dst = (byte) Math.Max( 0, Math.Min( 255, g ) );
+                            *dst = (byte) g;
                         }
                         cx++;
                     }
@@ -263,9 +219,9 @@ namespace AForge.Imaging.Filters
                                     b += k2 * p[RGB.B];
                                 }
                             }
-                            dst[RGB.R] = (byte) Math.Max( 0, Math.Min( 255, r ) );
-                            dst[RGB.G] = (byte) Math.Max( 0, Math.Min( 255, g ) );
-                            dst[RGB.B] = (byte) Math.Max( 0, Math.Min( 255, b ) );
+                            dst[RGB.R] = (byte) r;
+                            dst[RGB.G] = (byte) g;
+                            dst[RGB.B] = (byte) b;
                         }
                         cx++;
                     }

@@ -1,9 +1,8 @@
 // AForge Video Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Video
@@ -13,14 +12,12 @@ namespace AForge.Video
 	using System.IO;
 	using System.Threading;
 	using System.Net;
-    using System.Security;
 
 	/// <summary>
 	/// JPEG video source.
     /// </summary>
     /// 
-    /// <remarks><para>The video source constantly downloads JPEG files from the specified URL.</para>
-    /// 
+    /// <remarks><para>The video source downloads constantly JPEG files from the specified URL.</para>
     /// <para>Sample usage:</para>
     /// <code>
     /// // create JPEG video source
@@ -41,11 +38,10 @@ namespace AForge.Video
     ///     // process the frame
     /// }
     /// </code>
-    /// 
-    /// <para><note>Some cameras produce HTTP header, which does not conform strictly to
+    /// <para><b>Note</b>: Some cameras produce HTTP header, which does conform strictly to
     /// standard, what leads to .NET exception. To avoid this exception the <b>useUnsafeHeaderParsing</b>
     /// configuration option of <b>httpWebRequest</b> should be set, what may be done using application
-    /// configuration file.</note></para>
+    /// configuration file.</para>
     /// <code>
     /// &lt;configuration&gt;
     /// 	&lt;system.net&gt;
@@ -64,8 +60,8 @@ namespace AForge.Video
         // login and password for HTTP authentication
 		private string login = null;
 		private string password = null;
-        // proxy information
-        private IWebProxy proxy = null;
+        // user data associated with the video source
+		private object userData = null;
         // received frames count
 		private int framesReceived;
         // recieved byte count
@@ -91,12 +87,7 @@ namespace AForge.Video
         /// New frame event.
         /// </summary>
         /// 
-        /// <remarks><para>Notifies clients about new available frame from video source.</para>
-        /// 
-        /// <para><note>Since video source may have multiple clients, each client is responsible for
-        /// making a copy (cloning) of the passed video frame, because the video source disposes its
-        /// own original copy after notifying of clients.</note></para>
-        /// </remarks>
+        /// <remarks>Notifies client about new available frame from video source.</remarks>
         /// 
         public event NewFrameEventHandler NewFrame;
 
@@ -104,19 +95,10 @@ namespace AForge.Video
         /// Video source error event.
         /// </summary>
         /// 
-        /// <remarks>This event is used to notify clients about any type of errors occurred in
-        /// video source object, for example internal exceptions.</remarks>
+        /// <remarks>The event is used to notify client about any type error occurred in
+        /// video source object, for example exceptions.</remarks>
         /// 
         public event VideoSourceErrorEventHandler VideoSourceError;
-
-        /// <summary>
-        /// Video playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>This event is used to notify clients that the video playing has finished.</para>
-        /// </remarks>
-        /// 
-        public event PlayingFinishedEventHandler PlayingFinished;
 
         /// <summary>
         /// Use or not separate connection group.
@@ -134,8 +116,8 @@ namespace AForge.Video
         /// Use or not caching.
         /// </summary>
         /// 
-        /// <remarks>If the property is set to <b>true</b>, then a fake random parameter will be added
-        /// to URL to prevent caching. It's required for clients, who are behind proxy server.</remarks>
+        /// <remarks>If the property is set to <b>true</b>, then a fake parameter will be added
+        /// to URL to prevent caching. It's required for client, who are behind proxy server.</remarks>
         /// 
 		public bool PreventCaching
 		{
@@ -194,25 +176,6 @@ namespace AForge.Video
 		}
 
         /// <summary>
-        /// Gets or sets proxy information for the request.
-        /// </summary>
-        /// 
-        /// <remarks><para>The local computer or application config file may specify that a default
-        /// proxy to be used. If the Proxy property is specified, then the proxy settings from the Proxy
-        /// property overridea the local computer or application config file and the instance will use
-        /// the proxy settings specified. If no proxy is specified in a config file
-        /// and the Proxy property is unspecified, the request uses the proxy settings
-        /// inherited from Internet Explorer on the local computer. If there are no proxy settings
-        /// in Internet Explorer, the request is sent directly to the server.
-        /// </para></remarks>
-        /// 
-        public IWebProxy Proxy
-        {
-            get { return proxy; }
-            set { proxy = value; }
-        }
-
-        /// <summary>
         /// Received frames count.
         /// </summary>
         /// 
@@ -249,12 +212,23 @@ namespace AForge.Video
 		}
 
         /// <summary>
+        /// User data.
+        /// </summary>
+        /// 
+        /// <remarks>The property allows to associate user data with video source object.</remarks>
+        /// 
+        public object UserData
+		{
+			get { return userData; }
+			set { userData = value; }
+		}
+
+        /// <summary>
         /// Request timeout value.
         /// </summary>
         /// 
-        /// <remarks><para>The property sets timeout value in milliseconds for web requests.</para>
-        /// 
-        /// <para>Default value is set <b>10000</b> milliseconds.</para></remarks>
+        /// <remarks>The property sets timeout value in milliseconds for web requests.
+        /// Default value is 10000 milliseconds.</remarks>
         /// 
         public int RequestTimeout
         {
@@ -266,7 +240,7 @@ namespace AForge.Video
         /// State of the video source.
         /// </summary>
         /// 
-        /// <remarks>Current state of video source object - running or not.</remarks>
+        /// <remarks>Current state of video source object.</remarks>
         /// 
         public bool IsRunning
 		{
@@ -306,27 +280,25 @@ namespace AForge.Video
         /// Start video source.
         /// </summary>
         /// 
-        /// <remarks>Starts video source and return execution to caller. Video source
+        /// <remarks>Start video source and return execution to caller. Video source
         /// object creates background thread and notifies about new frames with the
         /// help of <see cref="NewFrame"/> event.</remarks>
         /// 
-        /// <exception cref="ArgumentException">Video source is not specified.</exception>
-        /// 
         public void Start( )
 		{
-			if ( !IsRunning )
+			if ( thread == null )
 			{
                 // check source
                 if ( ( source == null ) || ( source == string.Empty ) )
-                    throw new ArgumentException( "Video source is not specified." );
+                    throw new ArgumentException( "Video source is not specified" );
 
 				framesReceived = 0;
 				bytesReceived = 0;
 
 				// create events
 				stopEvent = new ManualResetEvent( false );
-
-                // create and start new thread
+				
+				// create and start new thread
 				thread = new Thread( new ThreadStart( WorkerThread ) );
 				thread.Name = source; // mainly for debugging
 				thread.Start( );
@@ -372,20 +344,13 @@ namespace AForge.Video
         /// Stop video source.
         /// </summary>
         /// 
-        /// <remarks><para>Stops video source aborting its thread.</para>
-        /// 
-        /// <para><note>Since the method aborts background thread, its usage is highly not preferred
-        /// and should be done only if there are no other options. The correct way of stopping camera
-        /// is <see cref="SignalToStop">signaling it stop</see> and then
-        /// <see cref="WaitForStop">waiting</see> for background thread's completion.</note></para>
-        /// </remarks>
+        /// <remarks>Stops video source aborting its thread.</remarks>
         /// 
         public void Stop( )
 		{
 			if ( this.IsRunning )
 			{
-                stopEvent.Set( );
-                thread.Abort( );
+				thread.Abort( );
 				WaitForStop( );
 			}
 		}
@@ -403,8 +368,11 @@ namespace AForge.Video
 			stopEvent = null;
 		}
 
-        // Worker thread
-        private void WorkerThread( )
+        /// <summary>
+        /// Worker thread.
+        /// </summary>
+        /// 
+		private void WorkerThread( )
 		{
             // buffer to read stream
 			byte[] buffer = new byte[bufferSize];
@@ -420,7 +388,7 @@ namespace AForge.Video
 			DateTime start;
 			TimeSpan span;
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+			while ( true )
 			{
 				int	read, total = 0;
 
@@ -440,13 +408,6 @@ namespace AForge.Video
                         // request with cache prevention
                         request = (HttpWebRequest) WebRequest.Create( source + ( ( source.IndexOf( '?' ) == -1 ) ? '?' : '&' ) + "fake=" + rand.Next( ).ToString( ) );
 					}
-
-                    // set proxy
-                    if ( proxy != null )
-                    {
-                        request.Proxy = proxy;
-                    }
-
                     // set timeout value for the request
                     request.Timeout = requestTimeout;
 					// set login and password
@@ -459,10 +420,9 @@ namespace AForge.Video
                     response = request.GetResponse( );
 					// get response stream
                     stream = response.GetResponseStream( );
-                    stream.ReadTimeout = requestTimeout;
 
 					// loop
-					while ( !stopEvent.WaitOne( 0, false ) )
+					while ( !stopEvent.WaitOne( 0, true ) )
 					{
 						// check total read
 						if ( total > bufferSize - readSize )
@@ -480,7 +440,7 @@ namespace AForge.Video
 						bytesReceived += read;
 					}
 
-					if ( !stopEvent.WaitOne( 0, false ) )
+					if ( !stopEvent.WaitOne( 0, true ) )
 					{
 						// increment frames counter
 						framesReceived++;
@@ -505,24 +465,27 @@ namespace AForge.Video
 						// miliseconds to sleep
 						int msec = frameInterval - (int) span.TotalMilliseconds;
 
-                        if ( ( msec > 0 ) && ( stopEvent.WaitOne( msec, false ) ) )
-                            break;
+						while ( ( msec > 0 ) && ( stopEvent.WaitOne( 0, true ) == false ) )
+						{
+							// sleeping ...
+							Thread.Sleep( ( msec < 100 ) ? msec : 100 );
+							msec -= 100;
+						}
 					}
 				}
-                catch ( ThreadAbortException )
-                {
-                    break;
-                }
-                catch ( Exception exception )
+				catch ( WebException exception )
 				{
                     // provide information to clients
                     if ( VideoSourceError != null )
                     {
                         VideoSourceError( this, new VideoSourceErrorEventArgs( exception.Message ) );
                     }
-                    // wait for a while before the next try
-                    Thread.Sleep( 250 );
-                }
+					// wait for a while before the next try
+					Thread.Sleep( 250 );
+				}
+				catch ( Exception )
+				{
+				}
 				finally
 				{
 					// abort request
@@ -546,14 +509,9 @@ namespace AForge.Video
 				}
 
 				// need to stop ?
-				if ( stopEvent.WaitOne( 0, false ) )
+				if ( stopEvent.WaitOne( 0, true ) )
 					break;
 			}
-
-            if ( PlayingFinished != null )
-            {
-                PlayingFinished( this, ReasonToFinishPlaying.StoppedByUser );
-            }
 		}
 	}
 }

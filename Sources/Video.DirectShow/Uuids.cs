@@ -1,7 +1,7 @@
 // AForge Direct Show Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2008
+// Copyright © Andrew Kirillov, 2007
 // andrew.kirillov@gmail.com
 //
 
@@ -14,7 +14,7 @@ namespace AForge.Video.DirectShow
     /// DirectShow filter categories.
     /// </summary>
     [ComVisible( false )]
-    public static class FilterCategory
+    public class FilterCategory
     {
         /// <summary>
         /// Audio input device category.

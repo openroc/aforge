@@ -1,9 +1,8 @@
-// Motion Detection sample application
 // AForge.NET Framework
-// http://www.aforgenet.com/framework/
+// Motion Detection sample application
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -11,31 +10,23 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using AForge;
-using AForge.Imaging;
 using AForge.Video;
 using AForge.Video.VFW;
 using AForge.Video.DirectShow;
-using AForge.Vision.Motion;
+using AForge.Vision;
 
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     public partial class MainForm : Form
     {
-        // opened video source
-        private IVideoSource videoSource = null;
         // motion detector
-        MotionDetector detector = new MotionDetector(
-            new TwoFramesDifferenceDetector( ),
-            new MotionAreaHighlighting( ) );
-        // motion detection and processing algorithm
-        private int motionDetectionType = 1;
-        private int motionProcessingType = 1;
+        private IMotionDetector detector = null;
+        // motion detector's type
+        private int detectorType = 0;
 
         // statistics length
         private const int statLength = 15;
@@ -46,18 +37,13 @@ namespace MotionDetectorSample
         // statistics array
         private int[] statCount = new int[statLength];
 
-        // counter used for flashing
-        private int flash = 0;
-        private float motionAlarmLevel = 0.015f;
-
-        private List<float> motionHistory = new List<float>( );
-        private int detectedObjectsCount = -1;
 
         // Constructor
         public MainForm( )
         {
             InitializeComponent( );
-            Application.Idle += new EventHandler( Application_Idle );
+
+            cameraWindow.AutoSize = true;
         }
 
         // Application's main form is closing
@@ -99,6 +85,9 @@ namespace MotionDetectorSample
             form.Description = "Enter URL of an updating JPEG from a web camera:";
             form.URLs = new string[]
 				{
+					"http://61.220.38.10/axis-cgi/jpg/image.cgi?camera=1",
+					"http://212.98.46.120/axis-cgi/jpg/image.cgi?resolution=352x240",
+					"http://webcam.mmhk.cz/axis-cgi/jpg/image.cgi?resolution=320x240",
 					"http://195.243.185.195/axis-cgi/jpg/image.cgi?camera=1"
 				};
 
@@ -120,8 +109,10 @@ namespace MotionDetectorSample
             form.Description = "Enter URL of an MJPEG video stream:";
             form.URLs = new string[]
 				{
+					"http://129.186.47.239/axis-cgi/mjpg/video.cgi?resolution=352x240",
 					"http://195.243.185.195/axis-cgi/mjpg/video.cgi?camera=3",
 					"http://195.243.185.195/axis-cgi/mjpg/video.cgi?camera=4",
+                    "http://chipmunk.uvm.edu/cgi-bin/webcam/nph-update.cgi?dummy=garb"
 				};
 
             if ( form.ShowDialog( this ) == DialogResult.OK )
@@ -172,18 +163,19 @@ namespace MotionDetectorSample
             // close previous video source
             CloseVideoSource( );
 
-            // start new video source
-            videoSourcePlayer.VideoSource = new AsyncVideoSource( source );
-            videoSourcePlayer.Start( );
+            // create camera
+            Camera camera = new Camera( source, detector );
+            // start camera
+            camera.Start( );
+
+            // attach camera to camera window
+            cameraWindow.Camera = camera;
 
             // reset statistics
             statIndex = statReady = 0;
 
-            // start timers
+            // start timer
             timer.Start( );
-            alarmTimer.Start( );
-
-            videoSource = source;
 
             this.Cursor = Cursors.Default;
         }
@@ -191,136 +183,43 @@ namespace MotionDetectorSample
         // Close current video source
         private void CloseVideoSource( )
         {
-            // set busy cursor
-            this.Cursor = Cursors.WaitCursor;
+            Camera camera = cameraWindow.Camera;
 
-            // stop current video source
-            videoSourcePlayer.SignalToStop( );
-
-            // wait 2 seconds until camera stops
-            for ( int i = 0; ( i < 50 ) && ( videoSourcePlayer.IsRunning ); i++ )
+            if ( camera != null )
             {
-                Thread.Sleep( 100 );
-            }
-            if ( videoSourcePlayer.IsRunning )
-                videoSourcePlayer.Stop( );
+                // stop timer
+                timer.Stop( );
 
-            // stop timers
-            timer.Stop( );
-            alarmTimer.Stop( );
+                // detach camera from camera window
+                cameraWindow.Camera = null;
+                Application.DoEvents( );
 
-            motionHistory.Clear( );
+                // signal camera to stop
+                camera.SignalToStop( );
+                // wait 2 seconds until camera stops
+                for ( int i = 0; ( i < 20 ) && ( camera.IsRunning ); i++ )
+                {
+                    Thread.Sleep( 100 );
+                }
+                if ( camera.IsRunning )
+                    camera.Stop( );
+                camera = null;
 
-            // reset motion detector
-            if ( detector != null )
-                detector.Reset( );
-
-            videoSourcePlayer.BorderColor = Color.Black;
-            this.Cursor = Cursors.Default;
-        }
-
-        // New frame received by the player
-        private void videoSourcePlayer_NewFrame( object sender, ref Bitmap image )
-        {
-            lock ( this )
-            {
+                // reset motion detector
                 if ( detector != null )
-                {
-                    float motionLevel = detector.ProcessFrame( image );
-
-                    if ( motionLevel > motionAlarmLevel )
-                    {
-                        // flash for 2 seconds
-                        flash = (int) ( 2 * ( 1000 / alarmTimer.Interval ) );
-                    }
-
-                    // check objects' count
-                    if ( detector.MotionProcessingAlgorithm is BlobCountingObjectsProcessing )
-                    {
-                        BlobCountingObjectsProcessing countingDetector = (BlobCountingObjectsProcessing) detector.MotionProcessingAlgorithm;
-                        detectedObjectsCount = countingDetector.ObjectsCount;
-                    }
-                    else
-                    {
-                        detectedObjectsCount = -1;
-                    }
-
-                    // accumulate history
-                    motionHistory.Add( motionLevel );
-                    if ( motionHistory.Count > 300 )
-                    {
-                        motionHistory.RemoveAt( 0 );
-                    }
-
-                    if ( showMotionHistoryToolStripMenuItem.Checked )
-                        DrawMotionHistory( image );
-                }
+                    detector.Reset( );
             }
-        }
-
-        // Update some UI elements
-        private void Application_Idle( object sender, EventArgs e )
-        {
-            objectsCountLabel.Text = ( detectedObjectsCount < 0 ) ? string.Empty : "Objects: " + detectedObjectsCount;
-        }
-
-        // Draw motion history
-        private void DrawMotionHistory( Bitmap image )
-        {
-            Color greenColor  = Color.FromArgb( 128, 0, 255, 0);
-            Color yellowColor = Color.FromArgb( 128, 255, 255, 0 );
-            Color redColor    = Color.FromArgb( 128, 255, 0, 0 );
-
-            BitmapData bitmapData = image.LockBits( new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadWrite, image.PixelFormat );
-
-            int t1 = (int) ( motionAlarmLevel * 500 );
-            int t2 = (int) ( 0.075 * 500 );
-
-            for ( int i = 1, n = motionHistory.Count; i <= n; i++ )
-            {
-                int motionBarLength = (int) ( motionHistory[n - i] * 500 );
-
-                if ( motionBarLength == 0 )
-                    continue;
-
-                if ( motionBarLength > 50 )
-                    motionBarLength = 50;
-
-                Drawing.Line( bitmapData,
-                    new IntPoint( image.Width - i, image.Height - 1 ),
-                    new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
-                    greenColor );
-
-                if ( motionBarLength > t1 )
-                {
-                    Drawing.Line( bitmapData,
-                        new IntPoint( image.Width - i, image.Height - 1 - t1 ),
-                        new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
-                        yellowColor );
-                }
-
-                if ( motionBarLength > t2 )
-                {
-                    Drawing.Line( bitmapData,
-                        new IntPoint( image.Width - i, image.Height - 1 - t2 ),
-                        new IntPoint( image.Width - i, image.Height - 1 - motionBarLength ),
-                        redColor );
-                }
-            }
-
-            image.UnlockBits( bitmapData );
         }
 
         // On timer event - gather statistics
         private void timer_Tick( object sender, EventArgs e )
         {
-            IVideoSource videoSource = videoSourcePlayer.VideoSource;
+            Camera camera = cameraWindow.Camera;
 
-            if ( videoSource != null )
+            if ( camera != null )
             {
                 // get number of frames for the last second
-                statCount[statIndex] = videoSource.FramesReceived;
+                statCount[statIndex] = camera.FramesReceived;
 
                 // increment indexes
                 if ( ++statIndex >= statLength )
@@ -343,192 +242,91 @@ namespace MotionDetectorSample
             }
         }
 
+        // Main window resized
+        private void MainForm_SizeChanged( object sender, EventArgs e )
+        {
+            cameraWindow.UpdatePosition( );
+        }
+
         // Turn off motion detection
-        private void noneToolStripMenuItem1_Click( object sender, EventArgs e )
+        private void noneToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            motionDetectionType = 0;
-            SetMotionDetectionAlgorithm( null );
+            detectorType = 0;
+            SetMotionDetector( null );
         }
 
-        // Set Two Frames Difference motion detection algorithm
-        private void twoFramesDifferenceToolStripMenuItem_Click( object sender, EventArgs e )
+        // Turn on motion detector type #1 - two frames difference
+        private void detector1ToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            motionDetectionType = 1;
-            SetMotionDetectionAlgorithm( new TwoFramesDifferenceDetector( ) );
+            detectorType = 1;
+            SetMotionDetector( new TwoFramesDifferenceMotionDetector(
+                highlightMotionRegionsToolStripMenuItem.Checked, true ) );
         }
 
-        // Set Simple Background Modeling motion detection algorithm
-        private void simpleBackgroundModelingToolStripMenuItem_Click( object sender, EventArgs e )
+        // Turn on motion detector type #2 - high precision background modeling
+        private void detector2ToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            motionDetectionType = 2;
-            SetMotionDetectionAlgorithm( new SimpleBackgroundModelingDetector( true, true ) );
+            detectorType = 2;
+            SetMotionDetector( new BackgroundModelingHighPrecisionMotionDetector(
+                highlightMotionRegionsToolStripMenuItem.Checked, true ) );
         }
 
-        // Turn off motion processing
-        private void noneToolStripMenuItem2_Click( object sender, EventArgs e )
+        // Turn on motion detector type #3 - low precision background modeling
+        private void detector3ToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            motionProcessingType = 0;
-            SetMotionProcessingAlgorithm( null );
+            detectorType = 3;
+            SetMotionDetector( new BackgroundModelingLowPrecisionMotionDetector(
+                highlightMotionRegionsToolStripMenuItem.Checked ) );
         }
 
-        // Set motion area highlighting
-        private void motionAreaHighlightingToolStripMenuItem_Click( object sender, EventArgs e )
+        // Set motion detector
+        private void SetMotionDetector( IMotionDetector detector )
         {
-            motionProcessingType = 1;
-            SetMotionProcessingAlgorithm( new MotionAreaHighlighting( ) );
-        }
+            this.detector = detector;
 
-        // Set motion borders highlighting
-        private void motionBorderHighlightingToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            motionProcessingType = 2;
-            SetMotionProcessingAlgorithm( new MotionBorderHighlighting( ) );
-        }
+            // set motion detector to camera
+            Camera camera = cameraWindow.Camera;
 
-        // Set objects' counter
-        private void blobCountingToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            motionProcessingType = 3;
-            SetMotionProcessingAlgorithm( new BlobCountingObjectsProcessing( ) );
-        }
-
-        // Set grid motion processing
-        private void gridMotionAreaProcessingToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            motionProcessingType = 4;
-            SetMotionProcessingAlgorithm( new GridMotionAreaProcessing( 32, 32 ) );
-        }
-
-        // Set new motion detection algorithm
-        private void SetMotionDetectionAlgorithm( IMotionDetector detectionAlgorithm )
-        {
-            lock ( this )
+            if ( camera != null )
             {
-                detector.MotionDetectionAlgorithm = detectionAlgorithm;
-                motionHistory.Clear( );
+                camera.Lock( );
+                camera.MotionDetector = detector;
 
-                if ( detectionAlgorithm is TwoFramesDifferenceDetector )
-                {
-                    if (
-                        ( detector.MotionProcessingAlgorithm is MotionBorderHighlighting ) ||
-                        ( detector.MotionProcessingAlgorithm is BlobCountingObjectsProcessing ) )
-                    {
-                        motionProcessingType = 1;
-                        SetMotionProcessingAlgorithm( new MotionAreaHighlighting( ) );
-                    }
-                }
-            }
-        }
-
-        // Set new motion processing algorithm
-        private void SetMotionProcessingAlgorithm( IMotionProcessing processingAlgorithm )
-        {
-            lock ( this )
-            {
-                detector.MotionProcessingAlgorithm = processingAlgorithm;
+                // reset statistics
+                statIndex = statReady = 0;
+                camera.Unlock( );
             }
         }
 
         // Motion menu is opening
         private void motionToolStripMenuItem_DropDownOpening( object sender, EventArgs e )
         {
-            ToolStripMenuItem[] motionDetectionItems = new ToolStripMenuItem[]
+            ToolStripMenuItem[] items = new ToolStripMenuItem[]
+			{
+				noneToolStripMenuItem, detector1ToolStripMenuItem, detector2ToolStripMenuItem,
+                detector3ToolStripMenuItem
+			};
+
+            for ( int i = 0; i < items.Length; i++ )
             {
-                noneToolStripMenuItem1, twoFramesDifferenceToolStripMenuItem,
-                simpleBackgroundModelingToolStripMenuItem
-            };
-            ToolStripMenuItem[] motionProcessingItems = new ToolStripMenuItem[]
-            {
-                noneToolStripMenuItem2, motionAreaHighlightingToolStripMenuItem,
-                motionBorderHighlightingToolStripMenuItem, blobCountingToolStripMenuItem,
-                gridMotionAreaProcessingToolStripMenuItem
-            };
-
-            for ( int i = 0; i < motionDetectionItems.Length; i++ )
-            {
-                motionDetectionItems[i].Checked = ( i == motionDetectionType );
-            }
-            for ( int i = 0; i < motionProcessingItems.Length; i++ )
-            {
-                motionProcessingItems[i].Checked = ( i == motionProcessingType );
-            }
-
-            // enable/disable some motion processing algorithm depending on detection algorithm
-            bool enabled = ( motionDetectionType != 1 );
-            motionBorderHighlightingToolStripMenuItem.Enabled = enabled;
-            blobCountingToolStripMenuItem.Enabled = enabled;
-        }
-
-        // On "Define motion regions" menu item selected
-        private void defineMotionregionsToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            if ( videoSourcePlayer.VideoSource != null )
-            {
-                Bitmap currentVideoFrame = videoSourcePlayer.GetCurrentVideoFrame( );
-
-                if ( currentVideoFrame != null )
-                {
-                    MotionRegionsForm form = new MotionRegionsForm( );
-                    form.VideoFrame = currentVideoFrame;
-                    form.MotionRectangles = detector.MotionZones;
-
-                    // show the dialog
-                    if ( form.ShowDialog( this ) == DialogResult.OK )
-                    {
-                        Rectangle[] rects = form.MotionRectangles;
-
-                        if ( rects.Length == 0 )
-                            rects = null;
-
-                        detector.MotionZones = rects;
-                    }
-
-                    return;
-                }
-            }
-
-            MessageBox.Show( "It is required to start video source and receive at least first video frame before setting motion zones.",
-                "Message", MessageBoxButtons.OK, MessageBoxIcon.Information );
-        }
-
-        // On opening of Tools menu
-        private void toolsToolStripMenuItem_DropDownOpening( object sender, EventArgs e )
-        {
-            localVideoCaptureSettingsToolStripMenuItem.Enabled =
-                ( ( videoSource != null ) && ( videoSource is VideoCaptureDevice ) );
-        }
-
-        // Display properties of local capture device
-        private void localVideoCaptureSettingsToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            if ( ( videoSource != null ) && ( videoSource is VideoCaptureDevice ) )
-            {
-                try
-                {
-                    ( (VideoCaptureDevice) videoSource ).DisplayPropertyPage( this.Handle );
-                }
-                catch ( NotSupportedException )
-                {
-                    MessageBox.Show( "The video source does not support configuration property page.", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error );
-                }
+                items[i].Checked = ( i == detectorType );
             }
         }
 
-        // Timer used for flashing in the case if motion is detected
-        private void alarmTimer_Tick( object sender, EventArgs e )
+        // Turn on/off motion regions highlight
+        private void highlightMotionRegionsToolStripMenuItem_Click( object sender, EventArgs e )
         {
-            if ( flash != 0 )
-            {
-                videoSourcePlayer.BorderColor = ( flash % 2 == 1 ) ? Color.Black : Color.Red;
-                flash--;
-            }
-        }
+            highlightMotionRegionsToolStripMenuItem.Checked = !highlightMotionRegionsToolStripMenuItem.Checked;
 
-        // Change status of menu item when it is clicked
-        private void showMotionHistoryToolStripMenuItem_Click( object sender, EventArgs e )
-        {
-            showMotionHistoryToolStripMenuItem.Checked = !showMotionHistoryToolStripMenuItem.Checked;
+            // update motion detector
+            Camera camera = cameraWindow.Camera;
+            if ( camera != null )
+            {
+                IMotionDetector detector = camera.MotionDetector;
+
+                if ( detector != null )
+                    detector.HighlightMotionRegions = highlightMotionRegionsToolStripMenuItem.Checked;
+            }
         }
     }
 }
