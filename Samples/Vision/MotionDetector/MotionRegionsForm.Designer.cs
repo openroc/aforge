@@ -1,4 +1,4 @@
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     partial class MotionRegionsForm
     {
@@ -33,7 +33,7 @@ namespace MotionDetectorSample
             this.rectangleButton = new System.Windows.Forms.ToolStripButton( );
             this.okButton = new System.Windows.Forms.Button( );
             this.cancelButton = new System.Windows.Forms.Button( );
-            this.defineRegionsControl = new MotionDetectorSample.DefineRegionsControl( );
+            this.defineRegionsControl = new MotionDetector.DefineRegionsControl( );
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator( );
             this.clearButton = new System.Windows.Forms.ToolStripButton( );
             this.toolStrip.SuspendLayout( );
@@ -86,7 +86,7 @@ namespace MotionDetectorSample
             // defineRegionsControl
             // 
             this.defineRegionsControl.BackgroundImage = null;
-            this.defineRegionsControl.DrawingMode = MotionDetectorSample.DrawingMode.None;
+            this.defineRegionsControl.DrawingMode = MotionDetector.DrawingMode.None;
             this.defineRegionsControl.Location = new System.Drawing.Point( 10, 35 );
             this.defineRegionsControl.Name = "defineRegionsControl";
             this.defineRegionsControl.Size = new System.Drawing.Size( 322, 242 );

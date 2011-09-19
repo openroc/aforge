@@ -1,9 +1,8 @@
 // AForge Neural Net Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Neuro
@@ -60,12 +59,8 @@ namespace AForge.Neuro
         /// Layer's output vector.
         /// </summary>
         /// 
-        /// <remarks><para>The calculation way of layer's output vector is determined by neurons,
-        /// which comprise the layer.</para>
-        /// 
-        /// <para><note>The property is not initialized (equals to <see langword="null"/>) until
-        /// <see cref="Compute"/> method is called.</note></para>
-        /// </remarks>
+        /// <remarks>The calculation way of layer's output vector is determined by
+        /// inherited class.</remarks>
         /// 
         public double[] Output
         {
@@ -85,6 +80,7 @@ namespace AForge.Neuro
             get { return neurons[index]; }
         }
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Layer"/> class.
         /// </summary>
@@ -93,15 +89,19 @@ namespace AForge.Neuro
         /// <param name="inputsCount">Layer's inputs count.</param>
         /// 
         /// <remarks>Protected contructor, which initializes <see cref="inputsCount"/>,
-        /// <see cref="neuronsCount"/> and <see cref="neurons"/> members.</remarks>
+        /// <see cref="neuronsCount"/>, <see cref="neurons"/> and <see cref="output"/>
+        /// members.</remarks>
         /// 
         protected Layer( int neuronsCount, int inputsCount )
         {
-            this.inputsCount = Math.Max( 1, inputsCount );
+            this.inputsCount  = Math.Max( 1, inputsCount );
             this.neuronsCount = Math.Max( 1, neuronsCount );
             // create collection of neurons
             neurons = new Neuron[this.neuronsCount];
+            // allocate output array
+            output = new double[this.neuronsCount];
         }
+
 
         /// <summary>
         /// Compute output vector of the layer.
@@ -111,33 +111,19 @@ namespace AForge.Neuro
         /// 
         /// <returns>Returns layer's output vector.</returns>
         /// 
-        /// <remarks><para>The actual layer's output vector is determined by neurons,
-        /// which comprise the layer - consists of output values of layer's neurons.
-        /// The output vector is also stored in <see cref="Output"/> property.</para>
-        /// 
-        /// <para><note>The method may be called safely from multiple threads to compute layer's
-        /// output value for the specified input values. However, the value of
-        /// <see cref="Output"/> property in multi-threaded environment is not predictable,
-        /// since it may hold layer's output computed from any of the caller threads. Multi-threaded
-        /// access to the method is useful in those cases when it is required to improve performance
-        /// by utilizing several threads and the computation is based on the immediate return value
-        /// of the method, but not on layer's output property.</note></para>
-        /// </remarks>
+        /// <remarks>The actual layer's output vector is determined by inherited class and it
+        /// consists of output values of layer's neurons. The output vector is also stored in
+        /// <see cref="Output"/> property.</remarks>
         /// 
         public virtual double[] Compute( double[] input )
         {
-            // local variable to avoid mutlithread conflicts
-            double[] output = new double[neuronsCount];
-
             // compute each neuron
             for ( int i = 0; i < neuronsCount; i++ )
                 output[i] = neurons[i].Compute( input );
 
-            // assign output property as well (works correctly for single threaded usage)
-            this.output = output;
-
             return output;
         }
+
 
         /// <summary>
         /// Randomize neurons of the layer.

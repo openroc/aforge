@@ -1,10 +1,8 @@
 // AForge Video for Windows Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
-
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 namespace AForge.Video.VFW
 {
@@ -17,25 +15,8 @@ namespace AForge.Video.VFW
     /// 
     /// <remarks>The class provides Video for Windows and some other Win32 functions and structurs.</remarks>
     /// 
-    internal static class Win32
+    internal class Win32
     {
-        /// <summary>
-        /// Copy a block of memory.
-        /// </summary>
-        /// 
-        /// <param name="dst">Destination pointer.</param>
-        /// <param name="src">Source pointer.</param>
-        /// <param name="count">Memory block's length to copy.</param>
-        /// 
-        /// <returns>Return's the value of <b>dst</b> - pointer to destination.</returns>
-        /// 
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
-        public static extern int memcpy(
-            int dst,
-            int src,
-            int count );
-
-
         // --- Video for Windows Functions
 
         /// <summary>
@@ -391,7 +372,7 @@ namespace AForge.Video.VFW
             /// </summary>
             /// 
             [MarshalAs( UnmanagedType.I4 )]
-            public int Capabilities;
+            public int ñapabilities;
 
             /// <summary>
             /// Priority of the stream.

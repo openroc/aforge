@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 // Copyright © Frank Nagl, 2007
 // admin@franknagl.de
@@ -22,14 +21,14 @@ namespace AForge.Imaging
     /// 
     /// <remarks><para>The class implements Susan corners detector, which is described by
     /// S.M. Smith in: <b>S.M. Smith, "SUSAN - a new approach to low level image processing",
-    /// Internal Technical Report TR95SMS1, Defense Research Agency, Chobham Lane, Chertsey,
+    /// Internal Technical Report TR95SMS1, Defence Research Agency, Chobham Lane, Chertsey,
     /// Surrey, UK, 1995</b>.</para>
     /// 
     /// <para><note>Some implementation notes:
     /// <list type="bullet">
     /// <item>Analyzing each pixel and searching for its USAN area, the 7x7 mask is used,
     /// which is comprised of 37 pixels. The mask has circle shape:
-    /// <code lang="none">
+    /// <code>
     ///   xxx
     ///  xxxxx
     /// xxxxxxx
@@ -43,25 +42,21 @@ namespace AForge.Imaging
     /// (central point), the pixel is not a corner.</item>
     /// <item>For noise suppression the 5x5 square window is used.</item></list></note></para>
     /// 
-    /// <para>The class processes only grayscale 8 bpp and color 24/32 bpp images.
-    /// In the case of color image, it is converted to grayscale internally using
-    /// <see cref="GrayscaleBT709"/> filter.</para>
-    /// 
+    /// <para><note>The class processes only grayscale (8 bpp indexed) and color (24 bpp) images.
+    /// In the case of color image, it is converted to grayscale internally.</note></para>
     /// <para>Sample usage:</para>
     /// <code>
-    /// // create corners detector's instance
+    /// // create corner detector's instance
     /// SusanCornersDetector scd = new SusanCornersDetector( );
     /// // process image searching for corners
-    /// List&lt;IntPoint&gt; corners = scd.ProcessImage( image );
+    /// Point[] corners = scd.ProcessImage( image );
     /// // process points
-    /// foreach ( IntPoint corner in corners )
+    /// foreach ( Point corner in corners )
     /// {
     ///     // ... 
     /// }
     /// </code>
     /// </remarks>
-    /// 
-    /// <seealso cref="MoravecCornersDetector"/>
     /// 
     public class SusanCornersDetector : ICornersDetector
     {
@@ -78,10 +73,8 @@ namespace AForge.Imaging
         /// of pixels, which become part of USAN area. If difference between central
         /// pixel (nucleus) and surrounding pixel is not higher than difference threshold,
         /// then that pixel becomes part of USAN.</para>
-        /// 
-        /// <para>Increasing this value decreases the amount of detected corners.</para>
-        /// 
-        /// <para>Default value is set to <b>25</b>.</para>
+        /// <para>Increasing this value increases the amount of detected corners.</para>
+        /// <para>Default value is set to 25.</para>
         /// </remarks>
         /// 
         public int DifferenceThreshold
@@ -97,12 +90,10 @@ namespace AForge.Imaging
         /// <remarks><para>The geometrical threshold sets the maximum number of pixels
         /// in USAN area around corner. If potential corner has USAN with more pixels, than
         /// it is not a corner.</para>
-        /// 
         /// <para> Decreasing this value decreases the amount of detected corners - only sharp corners
         /// are detected. Increasing this value increases the amount of detected corners, but
         /// also increases amount of flat corners, which may be not corners at all.</para>
-        /// 
-        /// <para>Default value is set to <b>18</b>, which is half of maximum amount of pixels in USAN.</para>
+        /// <para>Default value is set to 18, which half of maximum amount of pixels in USAN.</para>
         /// </remarks>
         /// 
         public int GeometricalThreshold
@@ -129,7 +120,7 @@ namespace AForge.Imaging
         /// 
         public SusanCornersDetector( int differenceThreshold, int geometricalThreshold )
         {
-            this.differenceThreshold  = differenceThreshold;
+            this.differenceThreshold = differenceThreshold;
             this.geometricalThreshold = geometricalThreshold;
         }
 
@@ -139,21 +130,19 @@ namespace AForge.Imaging
         /// 
         /// <param name="image">Source image to process.</param>
         /// 
-        /// <returns>Returns list of found corners (X-Y coordinates).</returns>
+        /// <returns>Returns array of found corners (X-Y coordinates).</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="ArgumentException">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( Bitmap image )
+        public Point[] ProcessImage( Bitmap image )
         {
             // check image format
             if (
                 ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
-                ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppArgb )
+                ( image.PixelFormat != PixelFormat.Format24bppRgb )
                 )
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
+                throw new ArgumentException( "Source image can be grayscale (8 bpp indexed) or color (24 bpp) image only" );
             }
 
             // lock source image
@@ -161,18 +150,11 @@ namespace AForge.Imaging
                 new Rectangle( 0, 0, image.Width, image.Height ),
                 ImageLockMode.ReadOnly, image.PixelFormat );
 
-            List<IntPoint> corners;
+            // process the image
+            Point[] corners = ProcessImage( imageData );
 
-            try
-            {
-                // process the image
-                corners = ProcessImage( new UnmanagedImage( imageData ) );
-            }
-            finally
-            {
-                // unlock image
-                image.UnlockBits( imageData );
-            }
+            // unlock image
+            image.UnlockBits( imageData );
 
             return corners;
         }
@@ -183,53 +165,40 @@ namespace AForge.Imaging
         /// 
         /// <param name="imageData">Source image data to process.</param>
         /// 
-        /// <returns>Returns list of found corners (X-Y coordinates).</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
-        /// 
-        public List<IntPoint> ProcessImage( BitmapData imageData )
-        {
-            return ProcessImage( new UnmanagedImage( imageData ) );
-        }
-
-        /// <summary>
-        /// Process image looking for corners.
-        /// </summary>
-        /// 
-        /// <param name="image">Unmanaged source image to process.</param>
-        /// 
         /// <returns>Returns array of found corners (X-Y coordinates).</returns>
-        ///
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
         /// 
-        public List<IntPoint> ProcessImage( UnmanagedImage image )
+        /// <exception cref="ArgumentException">The source image has incorrect pixel format.</exception>
+        /// 
+        public Point[] ProcessImage( BitmapData imageData )
         {
             // check image format
             if (
-                ( image.PixelFormat != PixelFormat.Format8bppIndexed ) &&
-                ( image.PixelFormat != PixelFormat.Format24bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppRgb ) &&
-                ( image.PixelFormat != PixelFormat.Format32bppArgb )
+                ( imageData.PixelFormat != PixelFormat.Format8bppIndexed ) &&
+                ( imageData.PixelFormat != PixelFormat.Format24bppRgb )
                 )
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
+                throw new ArgumentException( "Source image can be grayscale (8 bpp indexed) or color (24 bpp) image only" );
             }
 
             // get source image size
-            int width  = image.Width;
-            int height = image.Height;
+            int width  = imageData.Width;
+            int height = imageData.Height;
 
             // make sure we have grayscale image
-            UnmanagedImage grayImage = null;
+            Bitmap grayImage = null;
+            BitmapData grayImageData = null;
 
-            if ( image.PixelFormat == PixelFormat.Format8bppIndexed )
+            if ( imageData.PixelFormat == PixelFormat.Format8bppIndexed )
             {
-                grayImage = image;
+                grayImageData = imageData;
             }
             else
             {
                 // create temporary grayscale image
-                grayImage = Grayscale.CommonAlgorithms.BT709.Apply( image );
+                GrayscaleBT709 grayFilter = new GrayscaleBT709( );
+                grayImage = grayFilter.Apply( imageData );
+                grayImageData = grayImage.LockBits( new Rectangle( 0, 0, width, height ),
+                    ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed );
             }
 
             int[,] susanMap = new int[height, width];
@@ -237,10 +206,10 @@ namespace AForge.Imaging
             // do the job
             unsafe
             {
-                int stride = grayImage.Stride;
+                int stride = grayImageData.Stride;
                 int offset = stride - width;
 
-                byte* src = (byte*) grayImage.ImageData.ToPointer( ) + stride * 3 + 3;
+                byte* src = (byte*) grayImageData.Scan0.ToPointer( ) + stride * 3 + 3;
 
 			    // for each row
                 for ( int y = 3, maxY = height - 3; y < maxY; y++ )
@@ -307,14 +276,15 @@ namespace AForge.Imaging
                 }
             }
 
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
+            // free temporary image if required
+            if ( grayImage != null )
             {
-                // free grayscale image
+                grayImage.UnlockBits( grayImageData );
                 grayImage.Dispose( );
             }
 
             // collect interesting points - only those points, which are local maximums
-            List<IntPoint> cornersList = new List<IntPoint>( );
+            List<Point> cornersList = new List<Point>( );
 
             // for each row
             for ( int y = 2, maxY = height - 2; y < maxY; y++ )
@@ -341,12 +311,16 @@ namespace AForge.Imaging
                     // check if this point is really interesting
                     if ( currentValue != 0 )
                     {
-                        cornersList.Add( new IntPoint( x, y ) );
+                        cornersList.Add( new Point( x, y ) );
                     }
                 }
             }
 
-            return cornersList;
+            // convert list to array
+            Point[] corners = new Point[cornersList.Count];
+            cornersList.CopyTo( corners );
+
+            return corners;
         }
     }
 }

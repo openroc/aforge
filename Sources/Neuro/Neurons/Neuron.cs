@@ -1,9 +1,8 @@
 // AForge Neural Net Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Neuro
@@ -42,7 +41,7 @@ namespace AForge.Neuro
         /// 
         /// <remarks>The generator is used for neuron's weights randomization.</remarks>
         /// 
-        protected static Random rand = new Random( );
+        protected static Random rand = new Random( (int) DateTime.Now.Ticks );
 
         /// <summary>
         /// Random generator range.
@@ -51,7 +50,7 @@ namespace AForge.Neuro
         /// <remarks>Sets the range of random generator. Affects initial values of neuron's weight.
         /// Default value is [0, 1].</remarks>
         /// 
-        protected static Range randRange = new Range( 0.0f, 1.0f );
+        protected static DoubleRange randRange = new DoubleRange( 0.0, 1.0 );
 
         /// <summary>
         /// Random number generator.
@@ -75,14 +74,16 @@ namespace AForge.Neuro
         /// <summary>
         /// Random generator range.
         /// </summary>
-        /// 
-        /// <remarks>Sets the range of random generator. Affects initial values of neuron's weight.
-        /// Default value is [0, 1].</remarks>
-        /// 
-        public static Range RandRange
+        public static DoubleRange RandRange
         {
             get { return randRange; }
-            set { randRange = value; }
+            set
+            {
+                if ( value != null )
+                {
+                    randRange = value;
+                }
+            }
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace AForge.Neuro
         /// <remarks>The new neuron will be randomized (see <see cref="Randomize"/> method)
         /// after it is created.</remarks>
         ///
-        protected Neuron( int inputs )
+        public Neuron( int inputs )
         {
             // allocate weights
             inputsCount = Math.Max( 1, inputs );

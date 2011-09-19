@@ -1,14 +1,13 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
+// Copyright © Andrew Kirillov, 2005-2007
 // andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
 
@@ -24,37 +23,21 @@ namespace AForge.Imaging.Filters
     /// becomes white and cumulative pixel value is decreased by 255. In the beginning of each
     /// image line the cumulative value is reset to 0.
     /// </para>
-    /// 
-    /// <para>The filter accepts 8 bpp grayscale images for processing.</para>
-    /// 
-    /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
     /// Threshold filter = new Threshold( 100 );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
-    /// 
     /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/grayscale.jpg" width="480" height="361" />
+    /// <img src="grayscale.jpg" width="480" height="361" />
     /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/threshold_carry.jpg" width="480" height="361" />
+    /// <img src="threshold_carry.jpg" width="480" height="361" />
     /// </remarks>
     /// 
-    public class ThresholdWithCarry : BaseInPlacePartialFilter
+    public class ThresholdWithCarry : FilterGrayToGrayPartial
     {
         private byte threshold = 128;
-
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
 
         /// <summary>
         /// Threshold value.
@@ -72,11 +55,7 @@ namespace AForge.Imaging.Filters
         /// Initializes a new instance of the <see cref="ThresholdWithCarry"/> class.
         /// </summary>
         /// 
-        public ThresholdWithCarry( )
-        {
-            // initialize format translation dictionary
-            formatTranslations[PixelFormat.Format8bppIndexed] = PixelFormat.Format8bppIndexed;
-        }
+        public ThresholdWithCarry( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ThresholdWithCarry"/> class.
@@ -85,7 +64,6 @@ namespace AForge.Imaging.Filters
         /// <param name="threshold">Threshold value.</param>
         /// 
         public ThresholdWithCarry( byte threshold )
-            : this( )
         {
             this.threshold = threshold;
         }
@@ -94,25 +72,25 @@ namespace AForge.Imaging.Filters
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="image">Source image data.</param>
+        /// <param name="imageData">Image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage image, Rectangle rect )
+        protected override unsafe void ProcessFilter( BitmapData imageData, Rectangle rect )
         {
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
-            int offset  = image.Stride - rect.Width;
+            int offset  = imageData.Stride - rect.Width;
 
             // value which is caried from pixel to pixel
             short carry = 0;
 
             // do the job
-            byte* ptr = (byte*) image.ImageData.ToPointer( );
+            byte* ptr = (byte*) imageData.Scan0.ToPointer( );
 
             // allign pointer to the first pixel to process
-            ptr += ( startY * image.Stride + startX );
+            ptr += ( startY * imageData.Stride + startX );
 
             // for each line	
             for ( int y = startY; y < stopY; y++ )

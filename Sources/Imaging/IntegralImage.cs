@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2010
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging
@@ -19,22 +18,17 @@ namespace AForge.Imaging
     /// <remarks><para>The class implements integral image concept, which is described by
     /// Viola and Jones in: <b>P. Viola and M. J. Jones, "Robust real-time face detection",
     /// Int. Journal of Computer Vision 57(2), pp. 137–154, 2004</b>.</para>
-    /// 
     /// <para><i>"An integral image <b>I</b> of an input image <b>G</b> is defined as the image in which the
     /// intensity at a pixel position is equal to the sum of the intensities of all the pixels
     /// above and to the left of that position in the original image."</i></para>
-    /// 
-    /// <para>The intensity at position (x, y) can be written as:</para>
+    /// <para>So the intensity at position (x, y) can be written as:</para>
     /// <code>
     ///           x    y
     /// I(x,y) = SUM( SUM( G(i,j) ) )
     ///          i=0  j=0
     /// </code>
-    /// 
     /// <para><note>The class uses 32-bit integers to represent integral image.</note></para>
-    /// 
     /// <para><note>The class processes only grayscale (8 bpp indexed) images.</note></para>
-    /// 
     /// <para><note>This class contains two versions of each method: safe and unsafe. Safe methods do
     /// checks of provided coordinates and ensure that these coordinates belong to the image, what makes
     /// these methods slower. Unsafe methods do not do coordinates' checks and rely that these
@@ -44,8 +38,6 @@ namespace AForge.Imaging
     /// <code>
     /// // create integral image
     /// IntegralImage im = IntegralImage.FromBitmap( image );
-    /// // get pixels' mean value in the specified rectangle
-    /// float mean = im.GetRectangleMean( 10, 10, 20, 30 )
     /// </code>
     /// </remarks>
     /// 
@@ -69,7 +61,6 @@ namespace AForge.Imaging
         /// 
         /// <remarks>
         /// <para><note>The array should be accessed by [y, x] indexing.</note></para>
-        /// 
         /// <para><note>The array's size is [height+1, width+1]. The first row and column are filled with
         /// zeros, what is done for more efficient calculation of rectangles' sums.</note></para>
         /// </remarks>
@@ -105,14 +96,14 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns integral image.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="ArgumentException">The source image has incorrect pixel format.</exception>
         /// 
         public static IntegralImage FromBitmap( Bitmap image )
         {
             // check image format
             if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
             {
-                throw new UnsupportedImageFormatException( "Source image can be graysclae (8 bpp indexed) image only." );
+                throw new ArgumentException( "Source image can be graysclae (8 bpp indexed) image only" );
             }
 
             // lock source image
@@ -137,35 +128,20 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns integral image.</returns>
         /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
+        /// <exception cref="ArgumentException">The source image has incorrect pixel format.</exception>
         /// 
         public static IntegralImage FromBitmap( BitmapData imageData )
         {
-            return FromBitmap( new UnmanagedImage( imageData ) );
-        }
-
-        /// <summary>
-        /// Construct integral image from source grayscale image.
-        /// </summary>
-        /// 
-        /// <param name="image">Source unmanaged image.</param>
-        /// 
-        /// <returns>Returns integral image.</returns>
-        /// 
-        /// <exception cref="UnsupportedImageFormatException">The source image has incorrect pixel format.</exception>
-        /// 
-        public static IntegralImage FromBitmap( UnmanagedImage image )
-        {
             // check image format
-            if ( image.PixelFormat != PixelFormat.Format8bppIndexed )
+            if ( imageData.PixelFormat != PixelFormat.Format8bppIndexed )
             {
-                throw new ArgumentException( "Source image can be graysclae (8 bpp indexed) image only." );
+                throw new ArgumentException( "Source image can be graysclae (8 bpp indexed) image only" );
             }
 
             // get source image size
-            int width  = image.Width;
-            int height = image.Height;
-            int offset = image.Stride - width;
+            int width  = imageData.Width;
+            int height = imageData.Height;
+            int offset = imageData.Stride - width;
 
             // create integral image
             IntegralImage im = new IntegralImage( width, height );
@@ -174,19 +150,15 @@ namespace AForge.Imaging
             // do the job
             unsafe
             {
-                byte* src = (byte*) image.ImageData.ToPointer( );
+                byte* src = (byte*) imageData.Scan0.ToPointer( );
 
                 // for each line
                 for ( int y = 1; y <= height; y++ )
                 {
-                    uint rowSum = 0;
-
                     // for each pixel
                     for ( int x = 1; x <= width; x++, src++ )
                     {
-                        rowSum += *src;
-
-                        integralImage[y, x] = rowSum + integralImage[y - 1, x];
+                        integralImage[y, x] = *src + integralImage[y, x - 1] + integralImage[y - 1, x] - integralImage[y - 1, x - 1];
                     }
                     src += offset;
                 }
@@ -206,7 +178,7 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns sum of pixels in the specified rectangle.</returns>
         /// 
-        /// <remarks><para>Both specified points are included into the calculation rectangle.</para></remarks>
+        /// <remarks><para>Both specified points are included into the rectangle calculation rectangle.</para></remarks>
         /// 
         public uint GetRectangleSum( int x1, int y1, int x2, int y2 )
         {
@@ -237,7 +209,7 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns sum of pixels in the specified rectangle.</returns>
         /// 
-        /// <remarks><para>Both specified points are included into the calculation rectangle.</para></remarks>
+        /// <remarks><para>Both specified points are included into the rectangle calculation rectangle.</para></remarks>
         /// 
         public uint GetRectangleSumUnsafe( int x1, int y1, int x2, int y2 )
         {
@@ -298,7 +270,7 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns mean value of pixels in the specified rectangle.</returns>
         /// 
-        /// <remarks>Both specified points are included into the calculation rectangle.</remarks>
+        /// <remarks>Both specified points are included into the rectangle calculation rectangle.</remarks>
         /// 
         public float GetRectangleMean( int x1, int y1, int x2, int y2 )
         {
@@ -331,7 +303,7 @@ namespace AForge.Imaging
         /// 
         /// <returns>Returns mean value of pixels in the specified rectangle.</returns>
         /// 
-        /// <remarks>Both specified points are included into the calculation rectangle.</remarks>
+        /// <remarks>Both specified points are included into the rectangle calculation rectangle.</remarks>
         /// 
         public float GetRectangleMeanUnsafe( int x1, int y1, int x2, int y2 )
         {

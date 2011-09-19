@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging
@@ -16,17 +15,16 @@ namespace AForge.Imaging
     /// used with block matching algorithms implementing <see cref="IBlockMatching"/>
     /// interface.
     /// </summary>
-    /// 
     public class BlockMatch
     {
-        private IntPoint sourcePoint;
-        private IntPoint matchPoint;
+        private Point sourcePoint;
+        private Point matchPoint;
         private float similarity;
 
         /// <summary>
         /// Reference point in source image.
         /// </summary>
-        public IntPoint SourcePoint
+        public Point SourcePoint
         {
             get { return sourcePoint; }
         }
@@ -34,7 +32,7 @@ namespace AForge.Imaging
         /// <summary>
         /// Match point in search image (point of a found match).
         /// </summary>
-        public IntPoint MatchPoint
+        public Point MatchPoint
         {
             get { return matchPoint; }
         }
@@ -55,7 +53,7 @@ namespace AForge.Imaging
         /// <param name="matchPoint">Match point in search image (point of a found match).</param>
         /// <param name="similarity">Similarity between blocks in source and search images, [0..1].</param>
         /// 
-        public BlockMatch( IntPoint sourcePoint, IntPoint matchPoint, float similarity )
+        public BlockMatch( Point sourcePoint, Point matchPoint, float similarity )
         {
             this.sourcePoint = sourcePoint;
             this.matchPoint  = matchPoint;

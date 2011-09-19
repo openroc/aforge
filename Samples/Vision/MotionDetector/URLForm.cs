@@ -1,9 +1,8 @@
-// Motion Detection sample application
 // AForge.NET Framework
-// http://www.aforgenet.com/framework/
+// Motion Detection sample application
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2007
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -14,7 +13,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     public partial class URLForm : Form
     {

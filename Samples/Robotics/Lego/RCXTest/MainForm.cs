@@ -1,9 +1,8 @@
+// AForge.NET Framework
 // Lego Mindstorm RCX test application
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -46,7 +45,7 @@ namespace RCXTest
         // On Connect button
         private void connectButton_Click( object sender, EventArgs e )
         {
-            if ( rcx.Connect( RCXBrick.IRTowerType.USB ) )
+            if ( rcx.Connect( ) )
             {
                 EnableConnectionControls( true );
 

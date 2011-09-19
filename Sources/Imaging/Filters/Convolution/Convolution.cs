@@ -1,77 +1,31 @@
 // AForge Image Processing Library
-// AForge.NET framework
 //
-// Copyright © Andrew Kirillov, 2005-2008
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2006
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging.Filters
 {
 	using System;
-    using System.Collections.Generic;
-    using System.Drawing;
+	using System.Drawing;
 	using System.Drawing.Imaging;
 
 	/// <summary>
 	/// Convolution filter.
 	/// </summary>
 	/// 
-    /// <remarks><para>The filter implements convolution operator, which calculates each pixel
-    /// of the result image as weighted sum of the correspond pixel and its neighbors in the source
-    /// image. The weights are set by <see cref="Kernel">convolution kernel</see>. The weighted
-    /// sum is divided by <see cref="Divisor"/> before putting it into result image and also
-    /// may be thresholded using <see cref="Threshold"/> value.</para>
-    /// 
-    /// <para>Convolution is a simple mathematical operation which is fundamental to many common
-    /// image processing filters. Depending on the type of provided kernel, the filter may produce
-    /// different results, like blur image, sharpen it, find edges, etc.</para>
-    /// 
-    /// <para>The filter accepts 8 and 16 bpp grayscale images and 24, 32, 48 and 64 bpp
-    /// color images for processing. Note: for 32 bpp and 64 bpp images, the alpha channel is
-    /// not processed anyhow with the specified kernel; its values are just copied as is. </para>
-    /// 
-    /// <para>Sample usage:</para>
-    /// <code>
-    /// // define emboss kernel
-    /// int[,] kernel = {
-    ///             { -2, -1,  0 },
-    ///             { -1,  1,  1 },
-    ///             {  0,  1,  2 } };
-    /// // create filter
-    /// Convolution filter = new Convolution( kernel );
-    /// // apply the filter
-    /// filter.ApplyInPlace( image );
-    /// </code>
-    /// 
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample5.jpg" width="480" height="361" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/emboss.jpg" width="480" height="361" />
-    /// </remarks>
+	/// <remarks></remarks>
 	/// 
-    public class Convolution : BaseUsingCopyPartialFilter
+    public class Convolution : FilterAnyToAnyUsingCopyPartial
 	{
         // convolution kernel
         private int[,] kernel;
         // division factor
         private int divisor = 1;
-        // threshold to add to weighted sum
-        private int threshold = 0;
         // kernel size
         private int size;
         // use dynamic divisor for edges
         private bool dynamicDivisorForEdges = true;
-
-        // private format translation dictionary
-        private Dictionary<PixelFormat, PixelFormat> formatTranslations = new Dictionary<PixelFormat, PixelFormat>( );
-
-        /// <summary>
-        /// Format translations dictionary.
-        /// </summary>
-        public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
-        {
-            get { return formatTranslations; }
-        }
 
         /// <summary>
         /// Convolution kernel.
@@ -79,7 +33,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>
         /// <para><note>Convolution kernel must be square and its width/height
-        /// should be odd and should be in the [3, 99] range.</note></para>
+        /// should be odd and should be in the range [3, 25].</note></para>
         /// 
         /// <para><note>Setting convolution kernel through this property does not
         /// affect <see cref="Divisor"/> - it is not recalculated automatically.</note></para>
@@ -95,8 +49,8 @@ namespace AForge.Imaging.Filters
                 int s = value.GetLength( 0 );
 
                 // check kernel size
-                if ( ( s != value.GetLength( 1 ) ) || ( s < 3 ) || ( s > 99 ) || ( s % 2 == 0 ) )
-                    throw new ArgumentException( "Invalid kernel size." );
+                if ( ( s != value.GetLength( 1 ) ) || ( s < 3 ) || ( s > 25 ) || ( s % 2 == 0 ) )
+                    throw new ArgumentException( "Invalid kernel size" );
 
                 this.kernel = value;
                 this.size = s;
@@ -110,7 +64,7 @@ namespace AForge.Imaging.Filters
         /// <remarks><para>The value is used to divide convolution - weighted sum
         /// of pixels is divided by this value.</para>
         /// 
-        /// <para><note>The value may be calculated automatically in the case if constructor
+        /// <para><note>The value may calculated automatically in the case if constructor
         /// with one parameter is used (<see cref="Convolution( int[,] )"/>).</note></para>
         /// </remarks>
         /// 
@@ -122,26 +76,9 @@ namespace AForge.Imaging.Filters
             set
             {
                 if ( value == 0 )
-                    throw new ArgumentException( "Divisor can not be equal to zero." );
+                    throw new ArgumentException( "Divisor can not be equal to zero" );
                 divisor = value;
             }
-        }
-
-        /// <summary>
-        /// Threshold to add to weighted sum.
-        /// </summary>
-        /// 
-        /// <remarks><para>The property specifies threshold value, which is added to each weighted
-        /// sum of pixels. The value is added right after division was done by <see cref="Divisor"/>
-        /// value.</para>
-        /// 
-        /// <para>Default value is set to <b>0</b>.</para>
-        /// </remarks>
-        /// 
-        public int Threshold
-        {
-            get { return threshold; }
-            set { threshold = value; }
         }
 
         /// <summary>
@@ -149,34 +86,20 @@ namespace AForge.Imaging.Filters
         /// </summary>
         /// 
         /// <remarks><para>The property specifies how to handle edges. If it is set to
-        /// <see langword="false"/>, then the same divisor (which is specified by <see cref="Divisor"/>
+        /// <b>false</b>, then the same divisor (which is specified by <see cref="Divisor"/>
         /// property or calculated automatically) will be applied both for non-edge regions
-        /// and for edge regions. If the value is set to <see langword="true"/>, then dynamically
+        /// and for edge regions. If the value is set to <b>true</b>, then dynamically
         /// calculated divisor will be used for edge regions, which is sum of those kernel
-        /// elements, which are taken into account for particular processed pixel
-        /// (elements, which are not outside image).</para>
+        /// elements, which are taken into account for particular processed image
+        /// (are not outside image).</para>
         /// 
-        /// <para>Default value is set to <see langword="true"/>.</para>
+        /// <para>Default value is set to <b>true</b>.</para>
         /// </remarks>
         /// 
         public bool DynamicDivisorForEdges
         {
             get { return dynamicDivisorForEdges; }
             set { dynamicDivisorForEdges = value; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Convolution"/> class.
-        /// </summary>
-        protected Convolution( )
-        {
-            formatTranslations[PixelFormat.Format8bppIndexed]    = PixelFormat.Format8bppIndexed;
-            formatTranslations[PixelFormat.Format16bppGrayScale] = PixelFormat.Format16bppGrayScale;
-            formatTranslations[PixelFormat.Format24bppRgb]       = PixelFormat.Format24bppRgb;
-            formatTranslations[PixelFormat.Format32bppRgb]       = PixelFormat.Format32bppRgb;
-            formatTranslations[PixelFormat.Format32bppArgb]      = PixelFormat.Format32bppArgb;
-            formatTranslations[PixelFormat.Format48bppRgb]       = PixelFormat.Format48bppRgb;
-            formatTranslations[PixelFormat.Format64bppArgb]      = PixelFormat.Format64bppArgb;
         }
 
         /// <summary>
@@ -191,12 +114,11 @@ namespace AForge.Imaging.Filters
         /// division factor will be assigned to 1.</para></remarks>
         /// 
         /// <exception cref="ArgumentException">Invalid kernel size is specified. Kernel must be
-        /// square, its width/height should be odd and should be in the [3, 25] range.</exception>
+        /// square, its width/height should be odd and should be in the range [3, 25].</exception>
         /// 
-        public Convolution( int[,] kernel ) : this( )
+        public Convolution( int[,] kernel ) :
+            this( kernel, 1 )
         {
-            Kernel = kernel;
-
             divisor = 0;
 
             // calculate divisor
@@ -216,13 +138,13 @@ namespace AForge.Imaging.Filters
         /// </summary>
         /// 
         /// <param name="kernel">Convolution kernel.</param>
-        /// <param name="divisor">Divisor, used used to divide weighted sum.</param>
+        /// <param name="divisor">Divisor, used used to divide wheighted sum.</param>
         /// 
         /// <exception cref="ArgumentException">Invalid kernel size is specified. Kernel must be
-        /// square, its width/height should be odd and should be in the [3, 25] range.</exception>
+        /// square, its width/height should be odd and should be in the range [3, 25].</exception>
         /// <exception cref="ArgumentException">Divisor can not be equal to zero.</exception>
         /// 
-        public Convolution( int[,] kernel, int divisor ) : this( )
+        public Convolution( int[,] kernel, int divisor )
         {
             Kernel = kernel;
             Divisor = divisor;
@@ -232,19 +154,22 @@ namespace AForge.Imaging.Filters
         /// Process the filter on the specified image.
         /// </summary>
         /// 
-        /// <param name="source">Source image data.</param>
-        /// <param name="destination">Destination image data.</param>
+        /// <param name="sourceData">Pointer to source image data (first scan line).</param>
+        /// <param name="destinationData">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        protected override unsafe void ProcessFilter( UnmanagedImage source, UnmanagedImage destination, Rectangle rect )
+        protected override unsafe void ProcessFilter( IntPtr sourceData, BitmapData destinationData, Rectangle rect )
         {
-            int pixelSize = Image.GetPixelFormatSize( source.PixelFormat ) / 8;
+            int pixelSize = ( destinationData.PixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3;
 
             // processing start and stop X,Y positions
             int startX  = rect.Left;
             int startY  = rect.Top;
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
+
+            int stride = destinationData.Stride;
+            int offset = stride - rect.Width * pixelSize;
 
             // loop and array indexes
             int i, j, t, k, ir, jr;
@@ -258,368 +183,168 @@ namespace AForge.Imaging.Filters
             // number of kernel elements taken into account
             int processedKernelSize;
 
-            // check pixel size to find if we deal with 8 or 16 bpp channels
-            if ( pixelSize <= 4 )
+            byte* src = (byte*) sourceData.ToPointer( );
+            byte* dst = (byte*) destinationData.Scan0.ToPointer( );
+            byte* p;
+
+            // allign pointers to the first pixel to process
+            src += ( startY * stride + startX * pixelSize );
+            dst += ( startY * stride + startX * pixelSize );
+
+            // do the processing job
+            if ( destinationData.PixelFormat == PixelFormat.Format8bppIndexed )
             {
-                int srcStride = source.Stride;
-                int dstStride = destination.Stride;
+                // grayscale image
 
-                int srcOffset = srcStride - rect.Width * pixelSize;
-                int dstOffset = dstStride - rect.Width * pixelSize;
-
-                byte* src = (byte*) source.ImageData.ToPointer( );
-                byte* dst = (byte*) destination.ImageData.ToPointer( );
-                byte* p;
-
-                // allign pointers to the first pixel to process
-                src += ( startY * srcStride + startX * pixelSize );
-                dst += ( startY * dstStride + startX * pixelSize );
-
-                // do the processing job
-                if ( destination.PixelFormat == PixelFormat.Format8bppIndexed )
+                // for each line
+                for ( int y = startY; y < stopY; y++ )
                 {
-                    // grayscale image
-
-                    // for each line
-                    for ( int y = startY; y < stopY; y++ )
+                    // for each pixel
+                    for ( int x = startX; x < stopX; x++, src++, dst++ )
                     {
-                        // for each pixel
-                        for ( int x = startX; x < stopX; x++, src++, dst++ )
+                        g = div = processedKernelSize = 0;
+
+                        // for each kernel row
+                        for ( i = 0; i < size; i++ )
                         {
-                            g = div = processedKernelSize = 0;
+                            ir = i - radius;
+                            t = y + ir;
 
-                            // for each kernel row
-                            for ( i = 0; i < size; i++ )
+                            // skip row
+                            if ( t < startY )
+                                continue;
+                            // break
+                            if ( t >= stopY )
+                                break;
+
+                            // for each kernel column
+                            for ( j = 0; j < size; j++ )
                             {
-                                ir = i - radius;
-                                t = y + ir;
+                                jr = j - radius;
+                                t = x + jr;
 
-                                // skip row
-                                if ( t < startY )
+                                // skip column
+                                if ( t < startX )
                                     continue;
-                                // break
-                                if ( t >= stopY )
-                                    break;
 
-                                // for each kernel column
-                                for ( j = 0; j < size; j++ )
+                                if ( t < stopX )
                                 {
-                                    jr = j - radius;
-                                    t = x + jr;
+                                    k = kernel[i, j];
 
-                                    // skip column
-                                    if ( t < startX )
-                                        continue;
-
-                                    if ( t < stopX )
-                                    {
-                                        k = kernel[i, j];
-
-                                        div += k;
-                                        g += k * src[ir * srcStride + jr];
-                                        processedKernelSize++;
-                                    }
+                                    div += k;
+                                    g += k * src[ir * stride + jr];
+                                    processedKernelSize++;
                                 }
                             }
+                        }
 
-                            // check if all kernel elements were processed
-                            if ( processedKernelSize == kernelSize )
+                        // check if all kernel elements were processed
+                        if ( processedKernelSize == kernelSize )
+                        {
+                            // all kernel elements are processed - we are not on the edge
+                            div = divisor;
+                        }
+                        else
+                        {
+                            // we are on edge. do we need to use dynamic divisor or not?
+                            if ( !dynamicDivisorForEdges )
                             {
-                                // all kernel elements are processed - we are not on the edge
+                                // do
                                 div = divisor;
                             }
-                            else
-                            {
-                                // we are on edge. do we need to use dynamic divisor or not?
-                                if ( !dynamicDivisorForEdges )
-                                {
-                                    // do
-                                    div = divisor;
-                                }
-                            }
-
-                            // check divider
-                            if ( div != 0 )
-                            {
-                                g /= div;
-                            }
-                            g += threshold;
-                            *dst = (byte) ( ( g > 255 ) ? 255 : ( ( g < 0 ) ? 0 : g ) );
                         }
-                        src += srcOffset;
-                        dst += dstOffset;
-                    }
-                }
-                else
-                {
-                    // RGB image
 
-                    // for each line
-                    for ( int y = startY; y < stopY; y++ )
-                    {
-                        // for each pixel
-                        for ( int x = startX; x < stopX; x++, src += pixelSize, dst += pixelSize )
+                        // check divider
+                        if ( div != 0 )
                         {
-                            r = g = b = div = processedKernelSize = 0;
-
-                            // for each kernel row
-                            for ( i = 0; i < size; i++ )
-                            {
-                                ir = i - radius;
-                                t = y + ir;
-
-                                // skip row
-                                if ( t < startY )
-                                    continue;
-                                // break
-                                if ( t >= stopY )
-                                    break;
-
-                                // for each kernel column
-                                for ( j = 0; j < size; j++ )
-                                {
-                                    jr = j - radius;
-                                    t = x + jr;
-
-                                    // skip column
-                                    if ( t < startX )
-                                        continue;
-
-                                    if ( t < stopX )
-                                    {
-                                        k = kernel[i, j];
-                                        p = &src[ir * srcStride + jr * pixelSize];
-
-                                        div += k;
-
-                                        r += k * p[RGB.R];
-                                        g += k * p[RGB.G];
-                                        b += k * p[RGB.B];
-
-                                        processedKernelSize++;
-                                    }
-                                }
-                            }
-
-                            // check if all kernel elements were processed
-                            if ( processedKernelSize == kernelSize )
-                            {
-                                // all kernel elements are processed - we are not on the edge
-                                div = divisor;
-                            }
-                            else
-                            {
-                                // we are on edge. do we need to use dynamic divisor or not?
-                                if ( !dynamicDivisorForEdges )
-                                {
-                                    // do
-                                    div = divisor;
-                                }
-                            }
-
-                            // check divider
-                            if ( div != 0 )
-                            {
-                                r /= div;
-                                g /= div;
-                                b /= div;
-                            }
-                            r += threshold;
-                            g += threshold;
-                            b += threshold;
-
-                            dst[RGB.R] = (byte) ( ( r > 255 ) ? 255 : ( ( r < 0 ) ? 0 : r ) );
-                            dst[RGB.G] = (byte) ( ( g > 255 ) ? 255 : ( ( g < 0 ) ? 0 : g ) );
-                            dst[RGB.B] = (byte) ( ( b > 255 ) ? 255 : ( ( b < 0 ) ? 0 : b ) );
-
-                            // take care of alpha channel
-                            if ( pixelSize == 4 )
-                                dst[RGB.A] = src[RGB.A];
+                            g /= div;
                         }
-                        src += srcOffset;
-                        dst += dstOffset;
+                        *dst = ( g > 255 ) ? (byte) 255 : ( ( g < 0 ) ? (byte) 0 : (byte) g );
                     }
+                    src += offset;
+                    dst += offset;
                 }
             }
             else
             {
-                pixelSize /= 2;
+                // RGB image
 
-                int dstStride = destination.Stride / 2;
-                int srcStride = source.Stride / 2;
-
-                // base pointers
-                ushort* baseSrc = (ushort*) source.ImageData.ToPointer( );
-                ushort* baseDst = (ushort*) destination.ImageData.ToPointer( );
-                ushort* p;
-
-                // allign pointers by X
-                baseSrc += ( startX * pixelSize );
-                baseDst += ( startX * pixelSize );
-
-                if ( source.PixelFormat == PixelFormat.Format16bppGrayScale )
+                // for each line
+                for ( int y = startY; y < stopY; y++ )
                 {
-                    // 16 bpp grayscale image
-
-                    // for each line
-                    for ( int y = startY; y < stopY; y++ )
+                    // for each pixel
+                    for ( int x = startX; x < stopX; x++, src += 3, dst += 3 )
                     {
-                        ushort* src = baseSrc + y * srcStride;
-                        ushort* dst = baseDst + y * dstStride;
+                        r = g = b = div = processedKernelSize = 0;
 
-                        // for each pixel
-                        for ( int x = startX; x < stopX; x++, src++, dst++ )
+                        // for each kernel row
+                        for ( i = 0; i < size; i++ )
                         {
-                            g = div = processedKernelSize = 0;
+                            ir = i - radius;
+                            t = y + ir;
 
-                            // for each kernel row
-                            for ( i = 0; i < size; i++ )
+                            // skip row
+                            if ( t < startY )
+                                continue;
+                            // break
+                            if ( t >= stopY )
+                                break;
+
+                            // for each kernel column
+                            for ( j = 0; j < size; j++ )
                             {
-                                ir = i - radius;
-                                t = y + ir;
+                                jr = j - radius;
+                                t = x + jr;
 
-                                // skip row
-                                if ( t < startY )
+                                // skip column
+                                if ( t < startX )
                                     continue;
-                                // break
-                                if ( t >= stopY )
-                                    break;
 
-                                // for each kernel column
-                                for ( j = 0; j < size; j++ )
+                                if ( t < stopX )
                                 {
-                                    jr = j - radius;
-                                    t = x + jr;
+                                    k = kernel[i, j];
+                                    p = &src[ir * stride + jr * 3];
 
-                                    // skip column
-                                    if ( t < startX )
-                                        continue;
+                                    div += k;
 
-                                    if ( t < stopX )
-                                    {
-                                        k = kernel[i, j];
+                                    r += k * p[RGB.R];
+                                    g += k * p[RGB.G];
+                                    b += k * p[RGB.B];
 
-                                        div += k;
-                                        g += k * src[ir * srcStride + jr];
-                                        processedKernelSize++;
-                                    }
+                                    processedKernelSize++;
                                 }
                             }
+                        }
 
-                            // check if all kernel elements were processed
-                            if ( processedKernelSize == kernelSize )
+                        // check if all kernel elements were processed
+                        if ( processedKernelSize == kernelSize )
+                        {
+                            // all kernel elements are processed - we are not on the edge
+                            div = divisor;
+                        }
+                        else
+                        {
+                            // we are on edge. do we need to use dynamic divisor or not?
+                            if ( !dynamicDivisorForEdges )
                             {
-                                // all kernel elements are processed - we are not on the edge
+                                // do
                                 div = divisor;
                             }
-                            else
-                            {
-                                // we are on edge. do we need to use dynamic divisor or not?
-                                if ( !dynamicDivisorForEdges )
-                                {
-                                    // do
-                                    div = divisor;
-                                }
-                            }
-
-                            // check divider
-                            if ( div != 0 )
-                            {
-                                g /= div;
-                            }
-                            g += threshold;
-                            *dst = (ushort) ( ( g > 65535 ) ? 65535 : ( ( g < 0 ) ? 0 : g ) );
                         }
-                    }
-                }
-                else
-                {
-                    // for each line
-                    for ( int y = startY; y < stopY; y++ )
-                    {
-                        ushort* src = baseSrc + y * srcStride;
-                        ushort* dst = baseDst + y * dstStride;
 
-                        // for each pixel
-                        for ( int x = startX; x < stopX; x++, src += pixelSize, dst += pixelSize )
+                        // check divider
+                        if ( div != 0 )
                         {
-                            r = g = b = div = processedKernelSize = 0;
-
-                            // for each kernel row
-                            for ( i = 0; i < size; i++ )
-                            {
-                                ir = i - radius;
-                                t = y + ir;
-
-                                // skip row
-                                if ( t < startY )
-                                    continue;
-                                // break
-                                if ( t >= stopY )
-                                    break;
-
-                                // for each kernel column
-                                for ( j = 0; j < size; j++ )
-                                {
-                                    jr = j - radius;
-                                    t = x + jr;
-
-                                    // skip column
-                                    if ( t < startX )
-                                        continue;
-
-                                    if ( t < stopX )
-                                    {
-                                        k = kernel[i, j];
-                                        p = &src[ir * srcStride + jr * pixelSize];
-
-                                        div += k;
-
-                                        r += k * p[RGB.R];
-                                        g += k * p[RGB.G];
-                                        b += k * p[RGB.B];
-
-                                        processedKernelSize++;
-                                    }
-                                }
-                            }
-
-                            // check if all kernel elements were processed
-                            if ( processedKernelSize == kernelSize )
-                            {
-                                // all kernel elements are processed - we are not on the edge
-                                div = divisor;
-                            }
-                            else
-                            {
-                                // we are on edge. do we need to use dynamic divisor or not?
-                                if ( !dynamicDivisorForEdges )
-                                {
-                                    // do
-                                    div = divisor;
-                                }
-                            }
-
-                            // check divider
-                            if ( div != 0 )
-                            {
-                                r /= div;
-                                g /= div;
-                                b /= div;
-                            }
-                            r += threshold;
-                            g += threshold;
-                            b += threshold;
-
-                            dst[RGB.R] = (ushort) ( ( r > 65535 ) ? 65535 : ( ( r < 0 ) ? 0 : r ) );
-                            dst[RGB.G] = (ushort) ( ( g > 65535 ) ? 65535 : ( ( g < 0 ) ? 0 : g ) );
-                            dst[RGB.B] = (ushort) ( ( b > 65535 ) ? 65535 : ( ( b < 0 ) ? 0 : b ) );
-
-                            // take care of alpha channel
-                            if ( pixelSize == 4 )
-                                dst[RGB.A] = src[RGB.A];
+                            r /= div;
+                            g /= div;
+                            b /= div;
                         }
+                        dst[RGB.R] = ( r > 255 ) ? (byte) 255 : ( ( r < 0 ) ? (byte) 0 : (byte) r );
+                        dst[RGB.G] = ( g > 255 ) ? (byte) 255 : ( ( g < 0 ) ? (byte) 0 : (byte) g );
+                        dst[RGB.B] = ( b > 255 ) ? (byte) 255 : ( ( b < 0 ) ? (byte) 0 : (byte) b );
                     }
+                    src += offset;
+                    dst += offset;
                 }
             }
         }
