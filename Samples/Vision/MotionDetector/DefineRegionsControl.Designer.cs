@@ -1,4 +1,4 @@
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     partial class DefineRegionsControl
     {

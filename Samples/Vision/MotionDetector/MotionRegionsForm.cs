@@ -1,11 +1,3 @@
-// Motion Detection sample application
-// AForge.NET Framework
-// http://www.aforgenet.com/framework/
-//
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
-//
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace MotionDetectorSample
+namespace MotionDetector
 {
     public partial class MotionRegionsForm : Form
     {

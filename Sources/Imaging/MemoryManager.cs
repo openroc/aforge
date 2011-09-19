@@ -1,9 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © Andrew Kirillov, 2005-2009
-// andrew.kirillov@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2007
+// andrew.kirillov@gmail.com
 //
 
 namespace AForge.Imaging
@@ -20,7 +19,7 @@ namespace AForge.Imaging
     /// caching. Caching means that memory blocks may be not freed on request, but
     /// kept for later reuse.</para></remarks>
     /// 
-    public static class MemoryManager
+    public class MemoryManager
     {
         // maximum memory blocks to cache
         private static int maximumCacheSize = 3;
@@ -45,9 +44,9 @@ namespace AForge.Imaging
 
             public CacheBlock( IntPtr memoryBlock, int size )
             {
-                this.MemoryBlock = memoryBlock;
-                this.Size = size;
-                this.Free = false;
+                this.MemoryBlock    = memoryBlock;
+                this.Size           = size;
+                this.Free           = false;
             }
         }
 
@@ -59,8 +58,7 @@ namespace AForge.Imaging
         /// 
         /// <remarks><para>The value specifies the amount of memory blocks, which could be
         /// cached by the memory manager.</para>
-        /// 
-        /// <para>Default value is set to 3. Maximum value is 10.</para>
+        /// <para>Default value is 3. Maximum value is 10.</para>
         /// </remarks>
         /// 
         public static int MaximumCacheSize
@@ -97,7 +95,7 @@ namespace AForge.Imaging
         }
 
         /// <summary>
-        /// Amount of busy memory blocks in cache (which were not freed yet by user).
+        /// Amount of busy memory blocks in cache (which were not freed yet by users).
         /// </summary>
         /// 
         public static int BusyMemoryBlocks
@@ -165,6 +163,9 @@ namespace AForge.Imaging
             set { minSizeToCache = value; }
         }
 
+        // Private constructor to avoid instantiation.
+        private MemoryManager( ) { }
+
         /// <summary>
         /// Allocate unmanaged memory.
         /// </summary>
@@ -173,10 +174,10 @@ namespace AForge.Imaging
         /// 
         /// <returns>Return's pointer to the allocated memory buffer.</returns>
         /// 
+        /// <exception cref="OutOfMemoryException">There is insufficient memory to satisfy the request.</exception>
+        /// 
         /// <remarks>The method allocates requested amount of memory and returns pointer to it. It may avoid allocation
         /// in the case some caching scheme is uses and there is already enough allocated memory available.</remarks>
-        /// 
-        /// <exception cref="OutOfMemoryException">There is insufficient memory to satisfy the request.</exception>
         /// 
         public static IntPtr Alloc( int size )
         {
@@ -286,7 +287,7 @@ namespace AForge.Imaging
                 int freedBlocks = 0;
 
                 // free all unused memory
-                for ( int i = currentCacheSize - 1; i >= 0; i-- )
+                for ( int i = currentCacheSize - 1; i >= 0 ; i-- )
                 {
                     if ( memoryBlocks[i].Free )
                     {

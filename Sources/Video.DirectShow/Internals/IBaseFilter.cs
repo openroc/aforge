@@ -115,7 +115,7 @@ namespace AForge.Video.DirectShow.Internals
         /// Retrieves the pin with the specified identifier.
         /// </summary>
         /// 
-        /// <param name="id">Pointer to a constant wide-character string that identifies the pin.</param>
+        /// <param name="id">Pointer to a constant wide-character string that identifies the pinþ</param>
         /// <param name="pin">Address of a variable that receives a pointer to the pin's IPin interface.</param>
         /// 
         /// <returns>Return's <b>HRESULT</b> error code.</returns>
@@ -124,18 +124,18 @@ namespace AForge.Video.DirectShow.Internals
         int FindPin( [In, MarshalAs( UnmanagedType.LPWStr )] string id, [Out] out IPin pin );
 
         /// <summary>
-        /// Retrieves information about the filter.
+        /// Notifies the filter that it has joined or left the filter graph.
         /// </summary>
         /// 
-        /// <param name="filterInfo">Pointer to <b>FilterInfo</b> structure.</param>
+        /// <param name="filterInfo">Pointer to <b>FilterInfo</b> structure</param>
         /// 
         /// <returns>Return's <b>HRESULT</b> error code.</returns>
         /// 
         [PreserveSig]
-        int QueryFilterInfo( [Out] out FilterInfo filterInfo );
+        int QueryFilterInfo( [Out] FilterInfo filterInfo );
 
         /// <summary>
-        /// Notifies the filter that it has joined or left the filter graph.
+        /// Retrieves information about the filter.
         /// </summary>
         /// 
         /// <param name="graph">Pointer to the Filter Graph Manager's <b>IFilterGraph</b> interface, or NULL

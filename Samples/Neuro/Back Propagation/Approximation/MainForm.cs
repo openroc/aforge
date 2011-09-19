@@ -1,9 +1,8 @@
+// AForge Framework
 // Approximation using Mutli-Layer Neural Network
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2006
+// andrew.kirillov@gmail.com
 //
 
 using System;
@@ -469,9 +468,9 @@ namespace Approximation
 			{
 				StreamReader reader = null;
 				// read maximum 50 points
-                float[,] tempData = new float[50, 2];
-                float minX = float.MaxValue;
-                float maxX = float.MinValue;
+				double[,] tempData = new double[50, 2];
+				double minX = double.MaxValue;
+				double maxX = double.MinValue;
 
 				try
 				{
@@ -487,8 +486,8 @@ namespace Approximation
 						if ( strs.Length == 1 )
 							strs = str.Split( ',' );
 						// parse X
-                        tempData[i, 0] = float.Parse( strs[0] );
-                        tempData[i, 1] = float.Parse( strs[1] );
+						tempData[i, 0] = double.Parse( strs[0] );
+						tempData[i, 1] = double.Parse( strs[1] );
 
 						// search for min value
 						if ( tempData[i, 0] < minX )
@@ -518,7 +517,7 @@ namespace Approximation
 
 				// update list and chart
 				UpdateDataListView( );
-				chart.RangeX = new Range( minX, maxX );
+				chart.RangeX = new DoubleRange( minX, maxX );
 				chart.UpdateDataSeries( "data", data );
 				chart.UpdateDataSeries( "solution", null );
 				// enable "Start" button
