@@ -1,4 +1,4 @@
-﻿// AForge XIMEA Video Library
+﻿// AForge Kinect Video Library
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //

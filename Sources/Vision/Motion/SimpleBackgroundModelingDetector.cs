@@ -374,7 +374,7 @@ namespace AForge.Vision.Motion
                     }
 
                     // convert source frame to grayscale
-                    Tools.ConvertToGrayscale( videoFrame, backgroundFrame );
+                    Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, backgroundFrame );
 
                     return;
                 }
@@ -384,7 +384,7 @@ namespace AForge.Vision.Motion
                     return;
 
                 // convert current image to grayscale
-                Tools.ConvertToGrayscale( videoFrame, motionFrame );
+                Grayscale.CommonAlgorithms.BT709.Apply( videoFrame, motionFrame );
 
                 // pointers to background and current frames
                 byte* backFrame;

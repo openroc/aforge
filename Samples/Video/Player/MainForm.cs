@@ -49,7 +49,7 @@ namespace Player
             if ( form.ShowDialog( this ) == DialogResult.OK )
             {
                 // create video source
-                VideoCaptureDevice videoSource = form.VideoDevice;
+                VideoCaptureDevice videoSource = new VideoCaptureDevice( form.VideoDevice );
 
                 // open it
                 OpenVideoSource( videoSource );

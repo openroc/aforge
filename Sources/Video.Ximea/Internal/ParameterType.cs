@@ -1,4 +1,4 @@
-﻿// AForge XIMEA Video Library
+﻿// AForge Kinect Video Library
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
@@ -12,8 +12,8 @@ namespace AForge.Video.Ximea.Internal
 {
     internal enum ParameterType
     {
-        Integer = 0,
-        Float = 1,
-        String = 2
+        Integer,
+        Float,
+        String
     }
 }

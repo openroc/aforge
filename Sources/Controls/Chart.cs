@@ -215,7 +215,8 @@ namespace AForge.Controls
                             x += 5;
                             y = clientHeight - 6 - y;
 
-                            if ( ( rangeX.IsInside( (float) data[i, 0] ) ) && ( rangeY.IsInside( (float) data[i, 1] ) ) )
+                            if ( ( rangeX.IsInside( (float) data[i, 0] ) )     && ( rangeY.IsInside( (float) data[i, 1] ) ) &&
+                                 ( rangeX.IsInside( (float) data[i - 1, 0] ) ) && ( rangeY.IsInside( (float) data[i - 1, 1] ) ) )
                             {
                                 g.FillRectangle( brush, x - r, y - r, width, width );
                             }
@@ -369,7 +370,7 @@ namespace AForge.Controls
             // get data series
             DataSeries	series = seriesTable[name];
             // update data
-            series.data = ( data != null ) ? (double[,]) data.Clone( ) : null;
+            series.data = (double[,]) data.Clone( );
 
             // update Y range
             if ( series.updateYRange )

@@ -227,15 +227,6 @@ namespace AForge.Controls
         public event NewFrameHandler NewFrame;
 
         /// <summary>
-        /// Playing finished event.
-        /// </summary>
-        /// 
-        /// <remarks><para>The event is fired when/if video playing finishes. The reason of video
-        /// stopping is provided as an argument to the event handler.</para></remarks>
-        /// 
-        public event PlayingFinishedEventHandler PlayingFinished;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="VideoSourcePlayer"/> class.
         /// </summary>
         public VideoSourcePlayer( )
@@ -486,7 +477,7 @@ namespace AForge.Controls
                          ( currentFrame.PixelFormat == PixelFormat.Format48bppRgb ) ||
                          ( currentFrame.PixelFormat == PixelFormat.Format64bppArgb ) )
                     {
-                        convertedFrame = AForge.Imaging.Image.Convert16bppTo8bpp( currentFrame );
+                        convertedFrame = Tools.ConvertImage( currentFrame );
                     }
                 }
 
@@ -528,12 +519,6 @@ namespace AForge.Controls
                     break;
             }
             Invalidate( );
-
-            // notify users
-            if ( PlayingFinished != null )
-            {
-                PlayingFinished( this, reason );
-            }
         }
 
         // Parent Changed event handler

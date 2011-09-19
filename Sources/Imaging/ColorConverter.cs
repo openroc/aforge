@@ -79,13 +79,7 @@ namespace AForge.Imaging
         /// <summary>
         /// Initializes a new instance of the <see cref="RGB"/> class.
         /// </summary>
-        public RGB( )
-        {
-            Red   = 0;
-            Green = 0;
-            Blue  = 0;
-            Alpha = 255;
-        }
+        public RGB( ) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RGB"/> class.
@@ -289,7 +283,6 @@ namespace AForge.Imaging
                 rgb.Red   = (byte) ( 255 * Hue_2_RGB( v1, v2, hue + ( 1.0f / 3 ) ) );
                 rgb.Green = (byte) ( 255 * Hue_2_RGB( v1, v2, hue ) );
                 rgb.Blue  = (byte) ( 255 * Hue_2_RGB( v1, v2, hue - ( 1.0f / 3 ) ) );
-                rgb.Alpha = 255;
             }
         }
 
@@ -433,7 +426,6 @@ namespace AForge.Imaging
             rgb.Red   = (byte) ( r * 255 );
             rgb.Green = (byte) ( g * 255 );
             rgb.Blue  = (byte) ( b * 255 );
-            rgb.Alpha = 255;
         }
 
         /// <summary>

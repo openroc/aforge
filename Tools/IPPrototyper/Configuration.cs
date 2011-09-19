@@ -23,7 +23,6 @@ namespace IPPrototyper
         // list of configuration options
         private Dictionary<string, string> options = new Dictionary<string, string>( );
 
-        private const string configFolderName = "AForge";
         private const string baseConfigFileName = "ipprototyper.cfg";
         private string configFileName = null;
         bool isSuccessfullyLoaded = false;
@@ -44,8 +43,7 @@ namespace IPPrototyper
         {
             configFileName = Path.Combine(
                 Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ),
-                configFolderName );
-            configFileName = Path.Combine( configFileName, baseConfigFileName );
+                baseConfigFileName );
         }
 
         // Get instance of the configuration storage
@@ -85,32 +83,35 @@ namespace IPPrototyper
         {
             lock ( baseConfigFileName )
             {
-                // make sure directory exists
-                Directory.CreateDirectory( Path.GetDirectoryName( configFileName ) );
+                try
+                {
+                    // open file
+                    FileStream fs = new FileStream( configFileName, FileMode.Create );
+                    // create XML writer
+                    XmlTextWriter xmlOut = new XmlTextWriter( fs, Encoding.UTF8 );
 
-                // open file
-                FileStream fs = new FileStream( configFileName, FileMode.Create );
-                // create XML writer
-                XmlTextWriter xmlOut = new XmlTextWriter( fs, Encoding.UTF8 );
+                    // use indenting for readability
+                    xmlOut.Formatting = Formatting.Indented;
 
-                // use indenting for readability
-                xmlOut.Formatting = Formatting.Indented;
+                    // start document
+                    xmlOut.WriteStartDocument( );
+                    xmlOut.WriteComment( "IPPrototyper configuration file" );
 
-                // start document
-                xmlOut.WriteStartDocument( );
-                xmlOut.WriteComment( "IPPrototyper configuration file" );
+                    // main node
+                    xmlOut.WriteStartElement( mainTag );
 
-                // main node
-                xmlOut.WriteStartElement( mainTag );
+                    // save configuration options
+                    xmlOut.WriteStartElement( optionsTag );
+                    SaveOptions( xmlOut );
+                    xmlOut.WriteEndElement( );
 
-                // save configuration options
-                xmlOut.WriteStartElement( optionsTag );
-                SaveOptions( xmlOut );
-                xmlOut.WriteEndElement( );
-
-                xmlOut.WriteEndElement( ); // end of main node
-                // close file
-                xmlOut.Close( );
+                    xmlOut.WriteEndElement( ); // end of main node
+                    // close file
+                    xmlOut.Close( );
+                }
+                catch
+                {
+                }
             }
         }
 
