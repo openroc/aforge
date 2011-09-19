@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
+// Copyright © AForge.NET, 2005-2010
 // contacts@aforgenet.com
 //
 
@@ -18,8 +18,7 @@ namespace AForge.Imaging.ColorReduction
     /// Base class for error diffusion color dithering.
     /// </summary>
     /// 
-    /// <remarks><para>The class is the base class for color dithering algorithms based on
-    /// <a href="http://en.wikipedia.org/wiki/Error_diffusion">error diffusion</a>.</para>
+    /// <remarks><para>The class is the base class for color dithering algorithms based on error diffusion.</para>
     /// 
     /// <para>Color dithering with error diffusion is based on the idea that each pixel from the specified source
     /// image is substituted with a best matching color (or better say with color's index) from the specified color
@@ -115,7 +114,7 @@ namespace AForge.Imaging.ColorReduction
         /// <para><note>The property provides a trade off. On one hand it may speedup color dithering routine, but on another
         /// hand it increases memory usage. Also cache usage may not be efficient for very small target color tables.</note></para>
         /// 
-        /// <para>Default value is set to <see langword="false"/>.</para>
+        /// <para>Default value is set to <see langword="true"/>.</para>
         /// </remarks>
         /// 
         public bool UseCaching
@@ -168,7 +167,6 @@ namespace AForge.Imaging.ColorReduction
             try
             {
                 result = Apply( new UnmanagedImage( data)  );
-                result.SetResolution( sourceImage.HorizontalResolution, sourceImage.VerticalResolution );
             }
             finally
             {

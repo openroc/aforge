@@ -1,9 +1,8 @@
-﻿// Image Viewer sample application
-// AForge.NET framework
-// http://www.aforgenet.com/framework/
+﻿// AForge.NET Framework
+// Image Viewer sample application
 //
-// Copyright © AForge.NET, 2006-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008
+// andrew.kirillov@gmail.com
 //
 
 using System;

@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging
@@ -365,98 +365,41 @@ namespace AForge.Imaging
         /// <returns>Returns managed copy of the unmanaged image.</returns>
         /// 
         /// <remarks><para>The method creates a managed copy of the unmanaged image with the
-        /// same size and pixel format (it calls <see cref="ToManagedImage(bool)"/> specifying
-        /// <see langword="true"/> for the <b>makeCopy</b> parameter).</para></remarks>
+        /// same size and pixel format.</para></remarks>
         /// 
         public Bitmap ToManagedImage( )
         {
-            return ToManagedImage( true );
-        }
+            // create new image of required format
+            Bitmap dstImage = ( pixelFormat == PixelFormat.Format8bppIndexed ) ?
+                AForge.Imaging.Image.CreateGrayscaleImage( width, height ) :
+                new Bitmap( width, height, pixelFormat );
 
-        /// <summary>
-        /// Create managed image from the unmanaged.
-        /// </summary>
-        /// 
-        /// <param name="makeCopy">Make a copy of the unmanaged image or not.</param>
-        /// 
-        /// <returns>Returns managed copy of the unmanaged image.</returns>
-        /// 
-        /// <remarks><para>If the <paramref name="makeCopy"/> is set to <see langword="true"/>, then the method
-        /// creates a managed copy of the unmanaged image, so the managed image stays valid even when the unmanaged
-        /// image gets disposed. However, setting this parameter to <see langword="false"/> creates a managed image which is
-        /// just a wrapper around the unmanaged image. So if unmanaged image is disposed, the
-        /// managed image becomes no longer valid and accessing it will generate an exception.</para></remarks>
-        /// 
-        /// <exception cref="InvalidImagePropertiesException">The unmanaged image has some invalid properties, which results
-        /// in failure of converting it to managed image. This may happen if user used the
-        /// <see cref="UnmanagedImage(IntPtr, int, int, int, PixelFormat)"/> constructor specifying some
-        /// invalid parameters.</exception>
-        /// 
-        public Bitmap ToManagedImage( bool makeCopy )
-        {
-            Bitmap dstImage = null;
+            // lock destination bitmap data
+            BitmapData dstData = dstImage.LockBits(
+                new Rectangle( 0, 0, width, height ),
+                ImageLockMode.ReadWrite, pixelFormat );
 
-            try
+            int dstStride = dstData.Stride;
+            int lineSize  = Math.Min( stride, dstStride );
+
+            unsafe
             {
-                if ( !makeCopy )
+                byte* dst = (byte*) dstData.Scan0.ToPointer( );
+                byte* src = (byte*) imageData.ToPointer( );
+
+                // copy image
+                for ( int y = 0; y < height; y++ )
                 {
-                    dstImage = new Bitmap( width, height, stride, pixelFormat, imageData );
-                    if ( pixelFormat == PixelFormat.Format8bppIndexed )
-                    {
-                        Image.SetGrayscalePalette( dstImage );
-                    }
+                    AForge.SystemTools.CopyUnmanagedMemory( dst, src, lineSize );
+                    dst += dstStride;
+                    src += stride;
                 }
-                else
-                {
-                    // create new image of required format
-                    dstImage = ( pixelFormat == PixelFormat.Format8bppIndexed ) ?
-                        AForge.Imaging.Image.CreateGrayscaleImage( width, height ) :
-                        new Bitmap( width, height, pixelFormat );
-
-                    // lock destination bitmap data
-                    BitmapData dstData = dstImage.LockBits(
-                        new Rectangle( 0, 0, width, height ),
-                        ImageLockMode.ReadWrite, pixelFormat );
-
-                    int dstStride = dstData.Stride;
-                    int lineSize  = Math.Min( stride, dstStride );
-
-                    unsafe
-                    {
-                        byte* dst = (byte*) dstData.Scan0.ToPointer( );
-                        byte* src = (byte*) imageData.ToPointer( );
-
-                        if ( stride != dstStride )
-                        {
-                            // copy image
-                            for ( int y = 0; y < height; y++ )
-                            {
-                                AForge.SystemTools.CopyUnmanagedMemory( dst, src, lineSize );
-                                dst += dstStride;
-                                src += stride;
-                            }
-                        }
-                        else
-                        {
-                            AForge.SystemTools.CopyUnmanagedMemory( dst, src, stride * height );
-                        }
-                    }
-
-                    // unlock destination images
-                    dstImage.UnlockBits( dstData );
-                }
-
-                return dstImage;
             }
-            catch ( Exception )
-            {
-                if ( dstImage != null )
-                {
-                    dstImage.Dispose( );
-                }
 
-                throw new InvalidImagePropertiesException( "The unmanaged image has some invalid properties, which results in failure of converting it to managed image." );
-            }
+            // unlock destination images
+            dstImage.UnlockBits( dstData );
+
+            return dstImage;
         }
 
         /// <summary>
@@ -601,324 +544,6 @@ namespace AForge.Imaging
             }
 
             return pixelValues;
-        }
-
-        /// <summary>
-        /// Collect coordinates of none black pixels in the image.
-        /// </summary>
-        /// 
-        /// <returns>Returns list of points, which have other than black color.</returns>
-        /// 
-        public List<IntPoint> CollectActivePixels( )
-        {
-            return CollectActivePixels( new Rectangle( 0, 0, width, height ) );
-        }
-
-        /// <summary>
-        /// Collect coordinates of none black pixels within specified rectangle of the image.
-        /// </summary>
-        /// 
-        /// <param name="rect">Image's rectangle to process.</param>
-        /// 
-        /// <returns>Returns list of points, which have other than black color.</returns>
-        ///
-        public List<IntPoint> CollectActivePixels( Rectangle rect )
-        {
-            List<IntPoint> pixels = new List<IntPoint>( );
-
-            int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-
-            // correct rectangle
-            rect.Intersect( new Rectangle( 0, 0, width, height ) );
-
-            int startX = rect.X;
-            int startY = rect.Y;
-            int stopX  = rect.Right;
-            int stopY  = rect.Bottom;
-
-            unsafe
-            {
-                byte* basePtr = (byte*) imageData.ToPointer( );
-
-                if ( ( pixelFormat == PixelFormat.Format16bppGrayScale ) || ( pixelSize > 4 ) )
-                {
-                    int pixelWords = pixelSize >> 1;
-
-                    for ( int y = startY; y < stopY; y++ )
-                    {
-                        ushort* ptr = (ushort*) ( basePtr + y * stride + startX * pixelSize );
-
-                        if ( pixelWords == 1 )
-                        {
-                            // grayscale images
-                            for ( int x = startX; x < stopX; x++, ptr++ )
-                            {
-                                if ( *ptr != 0 )
-                                {
-                                    pixels.Add( new IntPoint( x, y ) );
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // color images
-                            for ( int x = startX; x < stopX; x++, ptr += pixelWords )
-                            {
-                                if ( ( ptr[RGB.R] != 0 ) || ( ptr[RGB.G] != 0 ) || ( ptr[RGB.B] != 0 ) )
-                                {
-                                    pixels.Add( new IntPoint( x, y ) );
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    for ( int y = startY; y < stopY; y++ )
-                    {
-                        byte* ptr = basePtr + y * stride + startX * pixelSize;
-
-                        if ( pixelSize == 1 )
-                        {
-                            // grayscale images
-                            for ( int x = startX; x < stopX; x++, ptr++ )
-                            {
-                                if ( *ptr != 0 )
-                                {
-                                    pixels.Add( new IntPoint( x, y ) );
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // color images
-                            for ( int x = startX; x < stopX; x++, ptr += pixelSize )
-                            {
-                                if ( ( ptr[RGB.R] != 0 ) || ( ptr[RGB.G] != 0 ) || ( ptr[RGB.B] != 0 ) )
-                                {
-                                    pixels.Add( new IntPoint( x, y ) );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return pixels;
-        }
-
-        /// <summary>
-        /// Set pixels with the specified coordinates to the specified color.
-        /// </summary>
-        /// 
-        /// <param name="coordinates">List of points to set color for.</param>
-        /// <param name="color">Color to set for the specified points.</param>
-        /// 
-        /// <remarks><para><note>For images having 16 bpp per color plane, the method extends the specified color
-        /// value to 16 bit by multiplying it by 256.</note></para></remarks>
-        ///
-        public void SetPixels( List<IntPoint> coordinates, Color color )
-        {
-            unsafe
-            {
-                int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-                byte* basePtr = (byte*) imageData.ToPointer( );
-
-                byte red   = color.R;
-                byte green = color.G;
-                byte blue  = color.B;
-                byte alpha = color.A;
-
-                switch ( pixelFormat )
-                {
-                    case PixelFormat.Format8bppIndexed:
-                        {
-                            byte grayValue = (byte) ( 0.2125 * red + 0.7154 * green + 0.0721 * blue );
-
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    byte* ptr = basePtr + point.Y * stride + point.X;
-                                    *ptr = grayValue;
-                                }
-                            }
-                        }
-                        break;
-
-                    case PixelFormat.Format24bppRgb:
-                    case PixelFormat.Format32bppRgb:
-                        {
-
-
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    byte* ptr = basePtr + point.Y * stride + point.X * pixelSize;
-                                    ptr[RGB.R] = red;
-                                    ptr[RGB.G] = green;
-                                    ptr[RGB.B] = blue;
-                                }
-                            }
-                        }
-                        break;
-
-                    case PixelFormat.Format32bppArgb:
-                        {
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    byte* ptr = basePtr + point.Y * stride + point.X * pixelSize;
-                                    ptr[RGB.R] = red;
-                                    ptr[RGB.G] = green;
-                                    ptr[RGB.B] = blue;
-                                    ptr[RGB.A] = alpha;
-                                }
-                            }
-                        }
-                        break;
-
-                    case PixelFormat.Format16bppGrayScale:
-                        {
-                            ushort grayValue = (ushort) ( (ushort) ( 0.2125 * red + 0.7154 * green + 0.0721 * blue ) << 8 );
-
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride ) + point.X;
-                                    *ptr = grayValue;
-                                }
-                            }
-                        }
-                        break;
-
-                    case PixelFormat.Format48bppRgb:
-                        {
-                            ushort red16   = (ushort) ( red   << 8 );
-                            ushort green16 = (ushort) ( green << 8 );
-                            ushort blue16  = (ushort) ( blue  << 8 );
-
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride + point.X * pixelSize );
-                                    ptr[RGB.R] = red16;
-                                    ptr[RGB.G] = green16;
-                                    ptr[RGB.B] = blue16;
-                                }
-                            }
-                        }
-                        break;
-
-                    case PixelFormat.Format64bppArgb:
-                        {
-                            ushort red16   = (ushort) ( red   << 8 );
-                            ushort green16 = (ushort) ( green << 8 );
-                            ushort blue16  = (ushort) ( blue  << 8 );
-                            ushort alpha16 = (ushort) ( alpha << 8 );
-
-                            foreach ( IntPoint point in coordinates )
-                            {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
-                                {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride + point.X * pixelSize );
-                                    ptr[RGB.R] = red16;
-                                    ptr[RGB.G] = green16;
-                                    ptr[RGB.B] = blue16;
-                                    ptr[RGB.A] = alpha16;
-                                }
-                            }
-                        }
-                        break;
-
-                    default:
-                        throw new UnsupportedImageFormatException( "The pixel format is not supported: " + pixelFormat );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set pixel with the specified coordinates to the specified color.
-        /// </summary>
-        /// 
-        /// <param name="point">Point's coordiates to set color for.</param>
-        /// <param name="color">Color to set for the pixel.</param>
-        /// 
-        /// <remarks><para><note>For images having 16 bpp per color plane, the method extends the specified color
-        /// value to 16 bit by multiplying it by 256.</note></para></remarks>
-        ///
-        public void SetPixel( IntPoint point, Color color )
-        {
-            SetPixel( point.X, point.Y, color );
-        }
-
-        /// <summary>
-        /// Set pixel with the specified coordinates to the specified color.
-        /// </summary>
-        /// 
-        /// <param name="x">X coordinate of the pixel to set.</param>
-        /// <param name="y">Y coordinate of the pixel to set.</param>
-        /// <param name="color">Color to set for the pixel.</param>
-        /// 
-        /// <remarks><para><note>For images having 16 bpp per color plane, the method extends the specified color
-        /// value to 16 bit by multiplying it by 256.</note></para></remarks>
-        /// 
-        public void SetPixel( int x, int y, Color color )
-        {
-            if ( ( x >= 0 ) && ( y >= 0 ) && ( x < width ) && ( y < height ) )
-            {
-                unsafe
-                {
-                    int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-                    byte* ptr = (byte*) imageData.ToPointer( ) + y * stride + x * pixelSize;
-                    ushort* ptr2 = (ushort*) ptr;
-
-                    switch ( pixelFormat )
-                    {
-                        case PixelFormat.Format8bppIndexed:
-                            *ptr = (byte) ( 0.2125 * color.R + 0.7154 * color.G + 0.0721 * color.B );
-                            break;
-
-                        case PixelFormat.Format24bppRgb:
-                        case PixelFormat.Format32bppRgb:
-                            ptr[RGB.R] = color.R;
-                            ptr[RGB.G] = color.G;
-                            ptr[RGB.B] = color.B;
-                            break;
-
-                        case PixelFormat.Format32bppArgb:
-                            ptr[RGB.R] = color.R;
-                            ptr[RGB.G] = color.G;
-                            ptr[RGB.B] = color.B;
-                            ptr[RGB.A] = color.A;
-                            break;
-
-                        case PixelFormat.Format16bppGrayScale:
-                            *ptr2 = (ushort) ( (ushort) ( 0.2125 * color.R + 0.7154 * color.G + 0.0721 * color.B ) << 8 );
-                            break;
-
-                        case PixelFormat.Format48bppRgb:
-                            ptr2[RGB.R] = (ushort) ( color.R << 8 );
-                            ptr2[RGB.G] = (ushort) ( color.G << 8 );
-                            ptr2[RGB.B] = (ushort) ( color.B << 8 );
-                            break;
-
-                        case PixelFormat.Format64bppArgb:
-                            ptr2[RGB.R] = (ushort) ( color.R << 8 );
-                            ptr2[RGB.G] = (ushort) ( color.G << 8 );
-                            ptr2[RGB.B] = (ushort) ( color.B << 8 );
-                            ptr2[RGB.A] = (ushort) ( color.A << 8 );
-                            break;
-
-                        default:
-                            throw new UnsupportedImageFormatException( "The pixel format is not supported: " + pixelFormat );
-                    }
-                }
-            }
         }
 
         /// <summary>

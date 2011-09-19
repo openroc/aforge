@@ -154,13 +154,12 @@ namespace AForge.Imaging.Filters
             int stopX   = startX + rect.Width;
             int stopY   = startY + rect.Height;
             int offset  = image.Stride - rect.Width * pixelSize;
-            int radius2 = radius * radius;
 
-            int dr, dg, db;
+            byte r, g, b;
             // sphere's center
-            int cR = center.Red;
-            int cG = center.Green;
-            int cB = center.Blue;
+            byte cR = center.Red;
+            byte cG = center.Green;
+            byte cB = center.Blue;
             // fill color
             byte fR = fill.Red;
             byte fG = fill.Green;
@@ -178,12 +177,15 @@ namespace AForge.Imaging.Filters
                 // for each pixel
                 for ( int x = startX; x < stopX; x++, ptr += pixelSize )
                 {
-                    dr = cR - ptr[RGB.R];
-                    dg = cG - ptr[RGB.G];
-                    db = cB - ptr[RGB.B];
+                    r = ptr[RGB.R];
+                    g = ptr[RGB.G];
+                    b = ptr[RGB.B];
 
                     // calculate the distance
-                    if ( dr * dr + dg * dg + db * db <= radius2 )
+                    if ( (int) Math.Sqrt(
+                        Math.Pow( (int) r - (int) cR, 2 ) +
+                        Math.Pow( (int) g - (int) cG, 2 ) +
+                        Math.Pow( (int) b - (int) cB, 2 ) ) <= radius )
                     {
                         // inside sphere
                         if ( !fillOutside )

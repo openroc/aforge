@@ -54,12 +54,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncVideoSource.cs" />
     <Compile Include="ByteArrayUtils.cs" />
-    <Compile Include="Exceptions.cs" />
     <Compile Include="IVideoSource.cs" />
     <Compile Include="JPEGStream.cs" />
     <Compile Include="MJPEGStream.cs" />

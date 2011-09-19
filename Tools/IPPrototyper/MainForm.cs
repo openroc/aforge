@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2010-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2010
+// andrew.kirillov@aforgenet.com
 //
 
 using System;
@@ -87,40 +87,21 @@ namespace IPPrototyper
             {
                 try
                 {
-                    bool windowPositionIsValid = false;
                     // get window location/size
-                    Size windowSize = new Size(
-                        int.Parse( config.GetConfigurationOption( mainFormWidthOption ) ),
-                        int.Parse( config.GetConfigurationOption( mainFormHeightOption ) ) );
-                    System.Drawing.Point windowTopLeft = new System.Drawing.Point(
+                    Location = new Point(
                         int.Parse( config.GetConfigurationOption( mainFormXOption ) ),
                         int.Parse( config.GetConfigurationOption( mainFormYOption ) ) );
-                    System.Drawing.Point windowTopRight = new System.Drawing.Point(
-                        windowTopLeft.X + windowSize.Width, windowTopLeft.Y );
 
-                    // check if window location is within of the displays
-                    foreach ( Screen screen in Screen.AllScreens )
-                    {
-                        if ( ( screen.WorkingArea.Contains( windowTopLeft ) ) ||
-                             ( screen.WorkingArea.Contains( windowTopRight ) ) )
-                        {
-                            windowPositionIsValid = true;
-                            break;
-                        }
-                    }
+                    Size = new Size(
+                        int.Parse( config.GetConfigurationOption( mainFormWidthOption ) ),
+                        int.Parse( config.GetConfigurationOption( mainFormHeightOption ) ) );
 
-                    if ( windowPositionIsValid )
-                    {
-                        Location = windowTopLeft;
-                        Size = windowSize;
+                    WindowState = (FormWindowState) Enum.Parse( typeof( FormWindowState ),
+                        config.GetConfigurationOption( mainFormStateOption ) );
 
-                        WindowState = (FormWindowState) Enum.Parse( typeof( FormWindowState ),
-                            config.GetConfigurationOption( mainFormStateOption ) );
-
-                        mainSplitContainer.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter1Option ) );
-                        splitContainer1.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter2Option ) );
-                        splitContainer2.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter3Option ) );
-                    }
+                    mainSplitContainer.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter1Option ) );
+                    splitContainer1.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter2Option ) );
+                    splitContainer2.SplitterDistance = int.Parse( config.GetConfigurationOption( splitter3Option ) );
 
                     // get size mode of picture box
                     SetPictureBoxSizeMode( (PictureBoxSizeMode) Enum.Parse( typeof( PictureBoxSizeMode ),
@@ -204,15 +185,7 @@ namespace IPPrototyper
             }
             config.SetConfigurationOption( openLastOption, openLastFolderOnStartToolStripMenuItem.Checked.ToString( ) );
 
-            try
-            {
-                config.Save( );
-            }
-            catch ( IOException ex )
-            {
-                MessageBox.Show( "Failed saving confguration file.\r\n\r\n" + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
-            }
+            config.Save( );
         }
 
         // Add folder to the list of recently used folders
@@ -564,7 +537,7 @@ namespace IPPrototyper
             if ( sizeMode == PictureBoxSizeMode.AutoSize )
             {
                 pictureBox.Dock = DockStyle.None;
-                pictureBox.Location = new System.Drawing.Point( 0, 0 );
+                pictureBox.Location = new Point( 0, 0 );
                 splitContainer2.Panel1.AutoScroll = true;
             }
             else

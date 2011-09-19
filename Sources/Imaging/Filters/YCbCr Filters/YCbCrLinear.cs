@@ -1,8 +1,8 @@
 // AForge Image Processing Library
 // AForge.NET framework
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2008
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -28,8 +28,8 @@ namespace AForge.Imaging.Filters
     /// // create filter
     /// YCbCrLinear filter = new YCbCrLinear( );
     /// // configure the filter
-    /// filter.InCb = new Range( -0.276f, 0.163f );
-    /// filter.InCr = new Range( -0.202f, 0.500f );
+    /// filter.InCb = new DoubleRange( -0.276, 0.163 );
+    /// filter.InCr = new DoubleRange( -0.202, 0.500 );
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
@@ -45,13 +45,13 @@ namespace AForge.Imaging.Filters
     /// 
     public class YCbCrLinear : BaseInPlacePartialFilter
     {
-        private Range inY  = new Range(  0.0f, 1.0f );
-        private Range inCb = new Range( -0.5f, 0.5f );
-        private Range inCr = new Range( -0.5f, 0.5f );
+        private DoubleRange inY  = new DoubleRange(  0.0, 1.0 );
+        private DoubleRange inCb = new DoubleRange( -0.5, 0.5 );
+        private DoubleRange inCr = new DoubleRange( -0.5, 0.5 );
 
-        private Range outY  = new Range(  0.0f, 1.0f );
-        private Range outCb = new Range( -0.5f, 0.5f );
-        private Range outCr = new Range( -0.5f, 0.5f );
+        private DoubleRange outY  = new DoubleRange(  0.0, 1.0 );
+        private DoubleRange outCb = new DoubleRange( -0.5, 0.5 );
+        private DoubleRange outCr = new DoubleRange( -0.5, 0.5 );
 
         #region Public Propertis
 
@@ -61,7 +61,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Y component is measured in the range of [0, 1].</remarks>
         ///
-        public Range InY
+        public DoubleRange InY
         {
             get { return inY; }
             set { inY = value; }
@@ -73,7 +73,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Cb component is measured in the range of [-0.5, 0.5].</remarks>
         ///
-        public Range InCb
+        public DoubleRange InCb
         {
             get { return inCb; }
             set { inCb = value; }
@@ -85,7 +85,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Cr component is measured in the range of [-0.5, 0.5].</remarks>
         ///
-        public Range InCr
+        public DoubleRange InCr
         {
             get { return inCr; }
             set { inCr = value; }
@@ -97,7 +97,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Y component is measured in the range of [0, 1].</remarks>
         ///
-        public Range OutY
+        public DoubleRange OutY
         {
             get { return outY; }
             set { outY = value; }
@@ -109,7 +109,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Cb component is measured in the range of [-0.5, 0.5].</remarks>
         ///
-        public Range OutCb
+        public DoubleRange OutCb
         {
             get { return outCb; }
             set { outCb = value; }
@@ -121,7 +121,7 @@ namespace AForge.Imaging.Filters
         /// 
         /// <remarks>Cr component is measured in the range of [-0.5, 0.5].</remarks>
         ///
-        public Range OutCr
+        public DoubleRange OutCr
         {
             get { return outCr; }
             set { outCr = value; }
@@ -171,9 +171,9 @@ namespace AForge.Imaging.Filters
             RGB     rgb = new RGB( );
             YCbCr   ycbcr = new YCbCr( );
 
-            float ky  = 0, by  = 0;
-            float kcb = 0, bcb = 0;
-            float kcr = 0, bcr = 0;
+            double ky  = 0, by  = 0;
+            double kcb = 0, bcb = 0;
+            double kcr = 0, bcr = 0;
 
             // Y line parameters
             if ( inY.Max != inY.Min )

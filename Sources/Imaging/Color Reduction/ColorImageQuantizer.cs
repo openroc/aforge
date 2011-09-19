@@ -2,7 +2,7 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
+// Copyright © AForge.NET, 2005-2010
 // contacts@aforgenet.com
 //
 
@@ -29,7 +29,7 @@ namespace AForge.Imaging.ColorReduction
     /// // get 16 color palette for a given image
     /// Color[] colorTable = ciq.CalculatePalette( image, 16 );
     /// 
-    /// // ... or just reduce colors in the specified image
+    /// // ... or just reduce color in the specified image
     /// Bitmap newImage = ciq.ReduceColors( image, 16 );
     /// </code>
     /// 
@@ -68,7 +68,7 @@ namespace AForge.Imaging.ColorReduction
         /// <para><note>The property provides a trade off. On one hand it may speedup color reduction routine, but on another
         /// hand it increases memory usage. Also cache usage may not be efficient for very small target color tables.</note></para>
         /// 
-        /// <para>Default value is set to <see langword="false"/>.</para>
+        /// <para>Default value is set to <see langword="true"/>.</para>
         /// </remarks>
         /// 
         public bool UseCaching
@@ -183,9 +183,7 @@ namespace AForge.Imaging.ColorReduction
 
             try
             {
-                Bitmap result = ReduceColors( new UnmanagedImage( data ), paletteSize );
-                result.SetResolution( image.HorizontalResolution, image.VerticalResolution );
-                return result;
+                return ReduceColors( new UnmanagedImage( data ), paletteSize );
             }
             finally
             {
@@ -242,9 +240,7 @@ namespace AForge.Imaging.ColorReduction
 
             try
             {
-                Bitmap result = ReduceColors( new UnmanagedImage( data ), palette );
-                result.SetResolution( image.HorizontalResolution, image.VerticalResolution );
-                return result;
+                return ReduceColors( new UnmanagedImage( data ), palette );
             }
             finally
             {
@@ -286,6 +282,7 @@ namespace AForge.Imaging.ColorReduction
             {
                 throw new ArgumentException( "Invalid size of the target color palette." );
             }
+
 
             paletteToUse = palette;
             cache.Clear( );

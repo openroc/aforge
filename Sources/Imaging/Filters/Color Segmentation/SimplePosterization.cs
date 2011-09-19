@@ -37,7 +37,7 @@ namespace AForge.Imaging.Filters
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
-    /// SimplePosterization filter = new SimplePosterization( );
+    /// Posterization filter = new Posterization( );
     /// // process image
     /// filter.ApplyInPlace( sourceImage );
     /// </code>

@@ -2,10 +2,12 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2008-2010
+// andrew.kirillov@aforgenet.com
 //
-
+// Copyright © Fabio L. Caversan, 2008-2010
+// fabio.caversan@gmail.com
+//
 namespace AForge.Fuzzy
 {
     using System;
@@ -27,12 +29,12 @@ namespace AForge.Fuzzy
     /// FuzzySet fsNear = new FuzzySet( "Near", function2 );
     /// 
     /// // getting memberships
-    /// float m1 = fsCool.GetMembership( 15 );
-    /// float m2 = fsNear.GetMembership( 35 );
+    /// double m1 = fsCool.GetMembership( 15 );
+    /// double m2 = fsNear.GetMembership( 35 );
     /// 
     /// // computing the membership of "Cool AND Near"
     /// MinimumNorm AND = new MinimumNorm( );
-    /// float result = AND.Evaluate( m1, m2 );
+    /// double result = AND.Evaluate( m1, m2 );
     ///              
     /// // show result
     /// Console.WriteLine( result );
@@ -55,7 +57,7 @@ namespace AForge.Fuzzy
         /// <returns>The numerical result of the AND operation applied to <paramref name="membershipA"/>
         /// and <paramref name="membershipB"/>.</returns>
         /// 
-        public float Evaluate( float membershipA, float membershipB )
+        public double Evaluate( double membershipA, double membershipB )
         {
             return Math.Min( membershipA, membershipB );
         }

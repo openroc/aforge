@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Video
@@ -13,7 +13,6 @@ namespace AForge.Video
 	using System.IO;
 	using System.Threading;
 	using System.Net;
-    using System.Security;
 
 	/// <summary>
 	/// JPEG video source.
@@ -64,8 +63,6 @@ namespace AForge.Video
         // login and password for HTTP authentication
 		private string login = null;
 		private string password = null;
-        // proxy information
-        private IWebProxy proxy = null;
         // received frames count
 		private int framesReceived;
         // recieved byte count
@@ -192,25 +189,6 @@ namespace AForge.Video
 			get { return password; }
 			set { password = value; }
 		}
-
-        /// <summary>
-        /// Gets or sets proxy information for the request.
-        /// </summary>
-        /// 
-        /// <remarks><para>The local computer or application config file may specify that a default
-        /// proxy to be used. If the Proxy property is specified, then the proxy settings from the Proxy
-        /// property overridea the local computer or application config file and the instance will use
-        /// the proxy settings specified. If no proxy is specified in a config file
-        /// and the Proxy property is unspecified, the request uses the proxy settings
-        /// inherited from Internet Explorer on the local computer. If there are no proxy settings
-        /// in Internet Explorer, the request is sent directly to the server.
-        /// </para></remarks>
-        /// 
-        public IWebProxy Proxy
-        {
-            get { return proxy; }
-            set { proxy = value; }
-        }
 
         /// <summary>
         /// Received frames count.
@@ -420,7 +398,7 @@ namespace AForge.Video
 			DateTime start;
 			TimeSpan span;
 
-            while ( !stopEvent.WaitOne( 0, false ) )
+			while ( true )
 			{
 				int	read, total = 0;
 
@@ -440,13 +418,6 @@ namespace AForge.Video
                         // request with cache prevention
                         request = (HttpWebRequest) WebRequest.Create( source + ( ( source.IndexOf( '?' ) == -1 ) ? '?' : '&' ) + "fake=" + rand.Next( ).ToString( ) );
 					}
-
-                    // set proxy
-                    if ( proxy != null )
-                    {
-                        request.Proxy = proxy;
-                    }
-
                     // set timeout value for the request
                     request.Timeout = requestTimeout;
 					// set login and password
@@ -459,10 +430,9 @@ namespace AForge.Video
                     response = request.GetResponse( );
 					// get response stream
                     stream = response.GetResponseStream( );
-                    stream.ReadTimeout = requestTimeout;
 
 					// loop
-					while ( !stopEvent.WaitOne( 0, false ) )
+					while ( !stopEvent.WaitOne( 0, true ) )
 					{
 						// check total read
 						if ( total > bufferSize - readSize )
@@ -480,7 +450,7 @@ namespace AForge.Video
 						bytesReceived += read;
 					}
 
-					if ( !stopEvent.WaitOne( 0, false ) )
+					if ( !stopEvent.WaitOne( 0, true ) )
 					{
 						// increment frames counter
 						framesReceived++;
@@ -505,24 +475,27 @@ namespace AForge.Video
 						// miliseconds to sleep
 						int msec = frameInterval - (int) span.TotalMilliseconds;
 
-                        if ( ( msec > 0 ) && ( stopEvent.WaitOne( msec, false ) ) )
-                            break;
+						while ( ( msec > 0 ) && ( stopEvent.WaitOne( 0, true ) == false ) )
+						{
+							// sleeping ...
+							Thread.Sleep( ( msec < 100 ) ? msec : 100 );
+							msec -= 100;
+						}
 					}
 				}
-                catch ( ThreadAbortException )
-                {
-                    break;
-                }
-                catch ( Exception exception )
+				catch ( WebException exception )
 				{
                     // provide information to clients
                     if ( VideoSourceError != null )
                     {
                         VideoSourceError( this, new VideoSourceErrorEventArgs( exception.Message ) );
                     }
-                    // wait for a while before the next try
-                    Thread.Sleep( 250 );
-                }
+					// wait for a while before the next try
+					Thread.Sleep( 250 );
+				}
+				catch ( Exception )
+				{
+				}
 				finally
 				{
 					// abort request
@@ -546,7 +519,7 @@ namespace AForge.Video
 				}
 
 				// need to stop ?
-				if ( stopEvent.WaitOne( 0, false ) )
+				if ( stopEvent.WaitOne( 0, true ) )
 					break;
 			}
 

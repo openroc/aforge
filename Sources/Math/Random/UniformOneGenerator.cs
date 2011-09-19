@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2007-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Math.Random
@@ -27,7 +27,7 @@ namespace AForge.Math.Random
     /// // create instance of random generator
     /// IRandomNumberGenerator generator = new UniformOneGenerator( );
     /// // generate random number
-    /// float randomNumber = generator.Next( );
+    /// double randomNumber = generator.Next( );
     /// </code>
     /// </remarks>
     /// 
@@ -40,18 +40,18 @@ namespace AForge.Math.Random
         /// Mean value of the generator.
         /// </summary>
         ///
-        public float Mean
+        public double Mean
         {
-            get { return 0.5f; }
+            get { return 0.5; }
         }
 
         /// <summary>
         /// Variance value of the generator.
         /// </summary>
         ///
-        public float Variance
+        public double Variance
         {
-            get { return 1f / 12; }
+            get { return 1 / 12; }
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace AForge.Math.Random
         /// 
         /// <returns>Returns next random number.</returns>
         /// 
-        public float Next( )
+        public double Next( )
         {
-            return (float) rand.NextDouble( );
+            return rand.NextDouble( );
         }
 
         /// <summary>

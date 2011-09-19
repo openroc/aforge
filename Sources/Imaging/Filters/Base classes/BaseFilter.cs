@@ -2,8 +2,8 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2005-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2005-2009
+// andrew.kirillov@aforgenet.com
 //
 
 namespace AForge.Imaging.Filters
@@ -53,7 +53,7 @@ namespace AForge.Imaging.Filters
 		/// <returns>Returns filter's result obtained by applying the filter to
 		/// the source image.</returns>
 		/// 
-		/// <remarks>The method keeps the source image unchanged and returns
+		/// <remarks>The method keeps the source image unchanged and returns the
 		/// the result of image processing filter as new image.</remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
@@ -71,7 +71,6 @@ namespace AForge.Imaging.Filters
             {
                 // apply the filter
                 dstImage = Apply( srcData );
-                dstImage.SetResolution( image.HorizontalResolution, image.VerticalResolution );
             }
             finally
             {
@@ -115,12 +114,13 @@ namespace AForge.Imaging.Filters
                 new Bitmap( width, height, dstPixelFormat );
 
             // lock destination bitmap data
-            BitmapData dstData = dstImage.LockBits(
+             BitmapData dstData = dstImage.LockBits(
                 new Rectangle( 0, 0, width, height ),
                 ImageLockMode.ReadWrite, dstPixelFormat );
 
             try
             {
+
                 // process the filter
                 ProcessFilter( new UnmanagedImage( imageData ), new UnmanagedImage( dstData ) );
             }
@@ -142,7 +142,7 @@ namespace AForge.Imaging.Filters
         /// <returns>Returns filter's result obtained by applying the filter to
         /// the source image.</returns>
         /// 
-        /// <remarks>The method keeps the source image unchanged and returns
+        /// <remarks>The method keeps the source image unchanged and returns the
         /// the result of image processing filter as new image.</remarks>
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>

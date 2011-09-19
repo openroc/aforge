@@ -2,8 +2,20 @@
 // AForge.NET framework
 // http://www.aforgenet.com/framework/
 //
-// Copyright © AForge.NET, 2009-2011
-// contacts@aforgenet.com
+// Copyright © Andrew Kirillov, 2009
+// andrew.kirillov@gmail.com
+
+// ------------------------------------------------------------------
+// DirectX.Capture
+//
+// History:
+//	2003-Jan-24		BL		- created
+//
+// Copyright (c) 2003 Brian Low
+// ------------------------------------------------------------------
+// Adapted for AForge, Yves Vander Haeghen, 2009
+//
+// Changed a lot from the original by Andrew Kirillov to fit AForge.NET framework, 2009
 //
 
 namespace AForge.Video.DirectShow
@@ -27,9 +39,9 @@ namespace AForge.Video.DirectShow
         public readonly Size FrameSize;
 
         /// <summary>
-        /// Frame rate supported by video device for corresponding <see cref="FrameSize">frame size</see>.
+        /// Maximum frame rate supported by video device for corresponding <see cref="FrameSize">frame size</see>.
         /// </summary>
-        public readonly int FrameRate;
+        public readonly int MaxFrameRate;
 
         internal VideoCapabilities( ) { }
 
@@ -52,26 +64,18 @@ namespace AForge.Video.DirectShow
             if ( size > Marshal.SizeOf( typeof( VideoStreamConfigCaps ) ) )
                 throw new NotSupportedException( "Unable to retrieve video device capabilities. This video device requires a larger VideoStreamConfigCaps structure." );
 
-            // group capabilities with similar parameters
-            Dictionary<ulong, VideoCapabilities> videocapsList = new Dictionary<ulong, VideoCapabilities>( );
+            Dictionary<uint, VideoCapabilities> videocapsList = new Dictionary<uint, VideoCapabilities>( );
 
             for ( int i = 0; i < count; i++ )
             {
-                try
-                {
-                    VideoCapabilities vc = new VideoCapabilities( videoStreamConfig, i );
+                // vidcaps[i] = new VideoCapabilities( videoStreamConfig, i );
+                VideoCapabilities vc = new VideoCapabilities( videoStreamConfig, i );
 
-                    ulong key = ( ( (ulong) vc.FrameSize.Height ) << 32 ) |
-                                ( ( (ulong) vc.FrameSize.Width ) << 16 ) |
-                                  ( (ulong) (uint) vc.FrameRate );
+                uint key = ( ( (uint) vc.FrameSize.Height ) << 16 ) | (uint) vc.FrameSize.Width;
 
-                    if ( !videocapsList.ContainsKey( key ) )
-                    {
-                        videocapsList.Add( key, vc );
-                    }
-                }
-                catch
+                if ( !videocapsList.ContainsKey( key ) )
                 {
+                    videocapsList.Add( key, vc );
                 }
             }
 
@@ -96,8 +100,8 @@ namespace AForge.Video.DirectShow
                     Marshal.ThrowExceptionForHR( hr );
 
                 // extract info
-                FrameSize = caps.InputSize;
-                FrameRate = (int) ( 10000000 / caps.MinFrameInterval );
+                FrameSize    = caps.InputSize;
+                MaxFrameRate = (int) ( 10000000 / caps.MinFrameInterval );
             }
             finally
             {
